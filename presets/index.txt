@@ -1,0 +1,16 @@
+# ProjectM Preset Index
+# Add your .milk preset files to this folder and list them below
+# One filename per line (without the .milk extension)
+
+# Sample preset (included for demonstration):
+sample_preset.milk
+
+# Milk subdirectory presets:
+milk/$$$ Royal - Mashup (70).milk
+milk/Starz in MilkHDFX - Stahlregen & Aderrasi + EoS + Geiss + Unchained + Zylot + Flexi + Martin + AdamFX A.milk
+milk/stbenge - dripping_piles_B gained outside of mistranslation (dare rid vs tour ying) fixatives scathing hate.milk
+milk/suksma - selectron validumb blegula auralsect put the screws to you.milk
+milk/suksma - shape instance exp 3 - bulloxain - flacc - four cheeks is best.milk
+
+# Note: The system will automatically load all .milk files listed here
+# Make sure your .milk files are compatible with the WebGL renderer

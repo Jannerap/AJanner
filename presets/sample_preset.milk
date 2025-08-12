@@ -1,0 +1,29 @@
+# Sample ProjectM Preset
+# This is a comprehensive .milk preset file that creates real MilkDrop-style effects
+
+PRESET_NAME "Sample MilkDrop Effect"
+PRESET_AUTHOR "ProjectM System"
+PRESET_RATING 5
+PRESET_CATEGORY "Waveform"
+
+# Core wave parameters for real MilkDrop effects
+WAVES 16
+WAVE_SPEED 2.0
+WAVE_SCALE 1.5
+WAVE_SMOOTHING 0.9
+WAVE_MODE 1
+
+# Color and effect multipliers
+WAVE_A 0.8
+WAVE_B 0.6
+WAVE_C 1.0
+WAVE_D 0.4
+
+# Animation control
+SPEED 1.8
+SCALE 1.3
+SMOOTHING 0.85
+
+# This preset creates flowing, organic wave patterns
+# that look like real MilkDrop visualizations
+# The parameters control wave frequency, amplitude, and color evolution

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>MilkDrop Visualizer (Butterchurn) — Drop‑in Page</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100%; background: #000; color: #eee;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    #stage {
+      position: fixed; inset: 0; overflow: hidden;
+      display: grid; grid-template-rows: 1fr auto;
+    }
+    #canvas { width: 100%; height: 100%; display: block; }
+    #hud {
+      display: flex; flex-wrap: wrap; gap: .5rem; align-items: center;
+      padding: .5rem .75rem; background: rgba(0,0,0,.6); backdrop-filter: blur(6px);
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    #hud > * { font-size: 14px; }
+    button, select, input[type="checkbox"], label {
+      background: rgba(255,255,255,.06); color: #eee; border: 1px solid rgba(255,255,255,.2);
+      border-radius: 8px; padding: .4rem .6rem; cursor: pointer;
+    }
+    button:hover, select:hover { background: rgba(255,255,255,.12); }
+    .spacer { flex: 1 1 auto; }
+    #mediaBar {
+      display: flex; gap: .5rem; align-items: center; margin-left: .5rem;
+    }
+    audio, video {
+      max-height: 34px; border-radius: 8px; background: #111;
+    }
+    #log { position: fixed; right: 8px; bottom: 60px; max-width: 40ch;
+      font-size: 12px; opacity: .7; white-space: pre-wrap; pointer-events: none; }
+  </style>
+
+  <!-- Butterchurn core and community presets (browser builds) -->
+  <!-- If one CDN fails, switch to the other by uncommenting -->
+  <script src="https://cdn.jsdelivr.net/npm/butterchurn@2.6.7/butterchurn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/butterchurn-presets@2.4.7/dist/butterchurn-presets.min.js"></script>
+  <!-- <script src="https://unpkg.com/butterchurn@2.6.7/butterchurn.min.js"></script> -->
+  <!-- <script src="https://unpkg.com/butterchurn-presets@2.4.7/dist/butterchurn-presets.min.js"></script> -->
+</head>
+<body>
+  <div id="stage">
+    <canvas id="canvas"></canvas>
+
+    <div id="hud">
+      <button id="startBtn">Start Visualizer</button>
+      <button id="prevBtn" title="Previous preset">⟵ Prev</button>
+      <button id="nextBtn" title="Next preset">Next ⟶</button>
+      <button id="randBtn" title="Random preset">🎲 Random</button>
+      <label>Auto:
+        <select id="autoMs">
+          <option value="0">Off</option>
+          <option value="15000">15s</option>
+          <option value="30000">30s</option>
+          <option value="60000">1m</option>
+          <option value="120000">2m</option>
+          <option value="300000">5m</option>
+        </select>
+      </label>
+      <label>Blend (s):
+        <input id="blendSec" type="number" min="0" max="10" step="0.5" value="2">
+      </label>
+      <label>Preset:
+        <select id="presetSelect"></select>
+      </label>
+      <div class="spacer"></div>
+      <div id="mediaBar">
+        <!-- We auto-detect existing media elements on your page. These are fallbacks -->
+        <audio id="bcAudio" preload="auto" controls style="display:none"></audio>
+        <video id="bcVideo" preload="auto" controls style="display:none" muted></video>
+        <button id="selectFileBtn">Load Audio/Video…</button>
+        <input id="filePicker" type="file" accept="audio/*,video/*" style="display:none">
+      </div>
+    </div>
+  </div>
+
+  <div id="log" aria-live="polite"></div>
+
+<script>
+(function() {
+  const $ = sel => document.querySelector(sel);
+  const canvas = $("#canvas");
+  const startBtn = $("#startBtn");
+  const prevBtn = $("#prevBtn");
+  const nextBtn = $("#nextBtn");
+  const randBtn = $("#randBtn");
+  const presetSelect = $("#presetSelect");
+  const autoMsSel = $("#autoMs");
+  const blendSec = $("#blendSec");
+  const filePicker = $("#filePicker");
+  const selectFileBtn = $("#selectFileBtn");
+  const logEl = $("#log");
+  const bcAudio = document.getElementById("bcAudio");
+  const bcVideo = document.getElementById("bcVideo");
+
+  let ctx, analyser, viz, rafId, autoTimer = null;
+  let mediaNodes = new Map(); // element -> {node, gain}
+  let activeElement = null;
+  let presets = [];
+  let currentIndex = 0;
+
+  function log(msg) {
+    console.log("[viz]", msg);
+    logEl.textContent = String(msg);
+    setTimeout(() => { if (logEl.textContent === msg) logEl.textContent = ""; }, 3000);
+  }
+
+  function findMediaElements() {
+    // Prefer elements the site already has:
+    const all = Array.from(document.querySelectorAll("audio,video"));
+    // Ensure our own fallbacks are last
+    if (!all.includes(bcAudio)) all.push(bcAudio);
+    if (!all.includes(bcVideo)) all.push(bcVideo);
+    // Make them CORS-friendly when needed (local files will ignore)
+    all.forEach(m => { m.crossOrigin = m.crossOrigin || "anonymous"; });
+    return all;
+  }
+
+  function ensureAudioGraph() {
+    if (ctx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    ctx = new AC();
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 2048;
+    analyser.smoothingTimeConstant = 0.8;
+
+    viz = butterchurn.createVisualizer(ctx, canvas, {
+      width: canvas.clientWidth || window.innerWidth,
+      height: canvas.clientHeight || window.innerHeight,
+      pixelRatio: Math.min(window.devicePixelRatio || 1, 2)
+    });
+    viz.connectAudio(analyser);
+    window.addEventListener("resize", () => {
+      viz.setRendererSize(window.innerWidth, window.innerHeight);
+    });
+  }
+
+  function connectElement(el) {
+    if (mediaNodes.has(el)) return mediaNodes.get(el);
+    const node = ctx.createMediaElementSource(el);
+    const gain = ctx.createGain();
+    node.connect(gain);
+    gain.connect(analyser);
+    // also route to speakers:
+    gain.connect(ctx.destination);
+    const obj = { node, gain };
+    mediaNodes.set(el, obj);
+    return obj;
+  }
+
+  function activateElement(el) {
+    if (!el) return;
+    ensureAudioGraph();
+    connectElement(el);
+    activeElement = el;
+    // drive the render loop
+    if (!rafId) tick();
+  }
+
+  function tick() {
+    viz.render();
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function loadAllPresets() {
+    try {
+      // butterchurn-presets exposes a global `butterchurnPresets`
+      // Collect both "community" and "official" if present
+      const banks = [];
+      if (window.butterchurnPresets?.getPresets) {
+        banks.push(window.butterchurnPresets.getPresets("community"));
+        banks.push(window.butterchurnPresets.getPresets("legacy"));
+        banks.push(window.butterchurnPresets.getPresets("monstercat"));
+      }
+      // Flatten to [{name, obj}]
+      const list = [];
+      banks.forEach(bank => {
+        if (!bank) return;
+        Object.keys(bank).forEach(name => list.push({ name, obj: bank[name] }));
+      });
+      // Fallback: if no packs, put a tiny built-in
+      if (list.length === 0) {
+        list.push({
+          name: "Built‑in: simple waves",
+          obj: {
+            name: "simple-waves",
+            author: "butterchurn-inline",
+            shaders: { /* butterchurn will fill defaults */ }
+          }
+        });
+      }
+      // Sort by name for easier finding
+      list.sort((a,b) => a.name.localeCompare(b.name));
+      presets = list;
+      // Fill dropdown
+      presetSelect.innerHTML = "";
+      presets.forEach((p, idx) => {
+        const opt = document.createElement("option");
+        opt.value = String(idx);
+        opt.textContent = p.name;
+        presetSelect.appendChild(opt);
+      });
+      currentIndex = 0;
+      presetSelect.value = "0";
+      // Load first
+      if (viz && presets[0]) viz.loadPreset(presets[0].obj, 0.0);
+      log(`Loaded ${presets.length} presets`);
+    } catch (e) {
+      console.error(e);
+      log("Failed to load presets");
+    }
+  }
+
+  function cycle(delta) {
+    if (!presets.length) return;
+    currentIndex = (currentIndex + delta + presets.length) % presets.length;
+    presetSelect.value = String(currentIndex);
+    viz.loadPreset(presets[currentIndex].obj, Number(blendSec.value || 2));
+  }
+
+  function randomPreset() {
+    if (!presets.length) return;
+    let n = currentIndex;
+    while (n === currentIndex && presets.length > 1) {
+      n = (Math.random() * presets.length) | 0;
+    }
+    currentIndex = n;
+    presetSelect.value = String(currentIndex);
+    viz.loadPreset(presets[currentIndex].obj, Number(blendSec.value || 2));
+  }
+
+  function setAuto(ms) {
+    if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    const n = Number(ms);
+    if (n > 0) autoTimer = setInterval(() => cycle(+1), n);
+  }
+
+  // Controls
+  startBtn.addEventListener("click", async () => {
+    ensureAudioGraph();
+    // Prefer a media element already playing; else show our file loader
+    const media = findMediaElements();
+    let chosen = media.find(m => !m.paused && !m.ended);
+    if (!chosen) {
+      // if none playing, try the first and show controls
+      chosen = media[0];
+      if (chosen === bcAudio) bcAudio.style.display = "";
+      if (chosen === bcVideo) bcVideo.style.display = "";
+    }
+    try { await ctx.resume(); } catch {}
+    activateElement(chosen);
+    loadAllPresets();
+    startBtn.disabled = true;
+    log("Visualizer started");
+  });
+
+  prevBtn.addEventListener("click", () => cycle(-1));
+  nextBtn.addEventListener("click", () => cycle(+1));
+  randBtn.addEventListener("click", randomPreset);
+  presetSelect.addEventListener("change", () => {
+    const idx = Number(presetSelect.value);
+    if (!Number.isNaN(idx) && presets[idx]) {
+      currentIndex = idx;
+      viz.loadPreset(presets[idx].obj, Number(blendSec.value || 2));
+    }
+  });
+  autoMsSel.addEventListener("change", () => setAuto(autoMsSel.value));
+
+  // File picker for quick testing
+  selectFileBtn.addEventListener("click", () => filePicker.click());
+  filePicker.addEventListener("change", () => {
+    const file = filePicker.files && filePicker.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const isVideo = file.type.startsWith("video/");
+    if (isVideo) {
+      bcVideo.src = url; bcVideo.style.display = "";
+      bcVideo.play().catch(()=>{});
+      activateElement(bcVideo);
+    } else {
+      bcAudio.src = url; bcAudio.style.display = "";
+      bcAudio.play().catch(()=>{});
+      activateElement(bcAudio);
+    }
+  });
+
+  // If the page already has its own player UI, hook play events to follow the active element
+  document.addEventListener("play", function(e) {
+    if (e.target instanceof HTMLMediaElement) {
+      if (ctx && ctx.state !== "running") ctx.resume().catch(()=>{});
+      activateElement(e.target);
+    }
+  }, true);
+})();
+</script>
+</body>
+</html>

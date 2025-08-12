@@ -1,0 +1,695 @@
+[
+  {
+    "title": "Breaking: Release v1.0 is live",
+    "url": "https://example.com/blog/v1",
+    "source": "manual",
+    "ts": 1754962597996,
+    "id": "d63f98d1c252d223ff69e8e19d69eb6ed6016d5f"
+  },
+  {
+    "title": "Ars Technica",
+    "url": "https://arstechnica.com/",
+    "source": "arstechnica.com",
+    "ts": 1754962597995,
+    "id": "31e0abdd7fd351b67994316e6142aa3732087e39"
+  },
+  {
+    "title": "TechCrunch | Startup and Technology News",
+    "url": "https://techcrunch.com/",
+    "source": "techcrunch.com",
+    "ts": 1754962596027,
+    "id": "54a52f42923695097803548617423cd2230cb587"
+  },
+  {
+    "title": "Bloomberg UK",
+    "url": "https://www.bloomberg.com/uk",
+    "source": "www.bloomberg.com",
+    "ts": 1754962595819,
+    "id": "4751ff980ff180aa1d4f8e12730314f9f9837ac4"
+  },
+  {
+    "title": "Two dead and 10 injured in Pennsylvania steel plant explosion",
+    "url": "https://www.bbc.com/news/articles/ckgjj49neldo?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754962157000,
+    "id": "abfed773e098847a1655f6e0baf59ff78201e785"
+  },
+  {
+    "title": "US and China extend tariff truce deadline to November",
+    "url": "https://www.bbc.com/news/articles/cg7jjkvzmkxo?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754961788000,
+    "id": "12c5c9f4a2d9cad1afa6a3e7b546bb3b007391fd"
+  },
+  {
+    "title": "Trump picks conservative economist to lead jobs data agency",
+    "url": "https://www.bbc.com/news/articles/c93ddrp17zko?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754959836000,
+    "id": "7610bad6fdf7be8fdef686fbcaa3ff394cc4d7d0"
+  },
+  {
+    "title": "Hot weather to peak amid water shortage fears",
+    "url": "https://www.bbc.com/news/articles/czerrzdewzxo?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754957716000,
+    "id": "1b96dce366c10297a310ce60c6cd20bfe29a8533"
+  },
+  {
+    "title": "iPhone 17 release is rumored for September: Everything you need to know about the 'thinnest iPhone ever' and the Apple fall event",
+    "url": "https://www.engadget.com/mobile/smartphones/iphone-17-release-is-rumored-for-september-everything-you-need-to-know-about-the-thinnest-iphone-ever-and-the-apple-fall-event-153024456.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754954885000,
+    "id": "b6b6290a819af5282aae525e86420d75a0c61a86"
+  },
+  {
+    "title": "Ready for Apple's iOS 26? Here are all the compatible iPhones that can run the beta today",
+    "url": "https://www.engadget.com/mobile/ready-for-apples-ios-26-here-are-all-the-compatible-iphones-that-can-run-the-beta-today-191854135.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754953936000,
+    "id": "3943179c8c235360dda6c8c020ec63c3935295e5"
+  },
+  {
+    "title": "Staff fear UK's Turing AI Institute at risk of collapse",
+    "url": "https://www.bbc.com/news/articles/c24zz2vdv51o?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754953286000,
+    "id": "cd2cb6440d3e6cf56e4dd665a00043ec95927c7c"
+  },
+  {
+    "title": "Carter feared James would face 'astronomical' racist abuse",
+    "url": "https://www.bbc.com/sport/football/articles/c3wnn0lgzqgo?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754953264000,
+    "id": "5639d1988ceb73bfe447d0fb9580cd5f7ee45543"
+  },
+  {
+    "title": "The Papers: 'Don't trust Putin' and 'Two weddings and a feud'",
+    "url": "https://www.bbc.com/news/articles/c6266y42xndo?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754953167000,
+    "id": "743b82b5fe7172857cfa1441d72698346c4983d3"
+  },
+  {
+    "title": "How a Red Bull can helped solve mystery of missing cyclist",
+    "url": "https://www.bbc.com/news/articles/c9d0j2y3w3eo?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754952109000,
+    "id": "73d70676e552811c521942c3f78a2a5784e3e3dc"
+  },
+  {
+    "title": "iOS 26 and iPadOS 26 public beta: Everything you need to know about the new Apple updates",
+    "url": "https://www.engadget.com/mobile/ios-26-and-ipados-26-public-beta-everything-you-need-to-know-about-the-new-apple-updates-135749093.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754951431000,
+    "id": "b5145da0489df579b5267d56f765a0678414493a"
+  },
+  {
+    "title": "Is crime in Washington DC 'out of control', as Trump claims?",
+    "url": "https://www.bbc.com/news/articles/c8600x7dnn4o?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754951002000,
+    "id": "b3db458afeb9e98b17c76b0dc111fa92a1911d87"
+  },
+  {
+    "title": "That viral video of a ‘deactivated’ Tesla Cybertruck is a fake",
+    "url": "https://www.theverge.com/tesla/757594/tesla-cybertruck-deactivated-viral-video-fake",
+    "source": "www.theverge.com",
+    "ts": 1754949819000,
+    "id": "8507de7cfc42189fc157b4da694172e5fa53e5b3"
+  },
+  {
+    "title": "Raducanu 'getting back to best' but edged out by Sabalenka",
+    "url": "https://www.bbc.com/sport/tennis/articles/cz600zzy6yno?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754949507000,
+    "id": "8f7e2f436746ec18a7aa7384ea7df2db0b222275"
+  },
+  {
+    "title": "Anthropic’s Claude chatbot can now remember your past conversations",
+    "url": "https://www.theverge.com/news/757743/anthropic-claude-ai-search-past-chats",
+    "source": "www.theverge.com",
+    "ts": 1754949375000,
+    "id": "1b369e7291f17c9b6c8f6584dbf6465393948d79"
+  },
+  {
+    "title": "'Closest thing to Jimmy' - young quick Baker shines for Originals",
+    "url": "https://www.bbc.com/sport/cricket/articles/c8ryyn1z4mro?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754948044000,
+    "id": "434e5f01c5f6716893154b10cfdb43b44ebcb290"
+  },
+  {
+    "title": "Trump says he will try to get back territory for Ukraine in talks with Putin",
+    "url": "https://www.bbc.com/news/articles/c0e99yqv332o?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754947543000,
+    "id": "2b092c45b7e32faa0633be3b662dbc1d0aff6ad3"
+  },
+  {
+    "title": "Claude can now reference past chats, if you want it to",
+    "url": "https://www.engadget.com/ai/claude-can-now-reference-past-chats-if-you-want-it-to-211806343.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754947086000,
+    "id": "1ade3e84f084949ba2746ad0e8ac9edccd7b08cd"
+  },
+  {
+    "title": "Rapists 'probably' forfeit right to choose gender, says Nicola Sturgeon",
+    "url": "https://www.bbc.com/news/articles/c05eedgp804o?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754946497000,
+    "id": "c6a2afa031d5a4d2d701719405709ec7d174a982"
+  },
+  {
+    "title": "Zelensky could still attend Trump-Putin meeting, but rest of Europe is shut out",
+    "url": "https://www.bbc.com/news/articles/cn5eedq7ldro?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754945461000,
+    "id": "150824c97955c6803b606881ad4d51ace0fcaf2d"
+  },
+  {
+    "title": "AI summaries can downplay medical issues for female patients, UK research finds",
+    "url": "https://www.engadget.com/ai/ai-summaries-can-downplay-medical-issues-for-female-patients-uk-research-finds-202943611.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754944184000,
+    "id": "f68c6cec519315f34e9e69152264fda35bf23e29"
+  },
+  {
+    "title": "Even the lowly canister vacuum now wants access to your Wi-Fi network",
+    "url": "https://www.theverge.com/news/757731/miele-guard-l1-electro-canister-vacuum-smart-wifi-mobile-app",
+    "source": "www.theverge.com",
+    "ts": 1754943632000,
+    "id": "22614267a3d5c39235714956a806c1be2a907313"
+  },
+  {
+    "title": "Trump delays China tariff increases by another 90 days",
+    "url": "https://www.engadget.com/big-tech/trump-delays-china-tariff-increases-by-another-90-days-201443024.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754943283000,
+    "id": "311471c9b11c77bfc5bb8c7310c2eb13db9c7f3c"
+  },
+  {
+    "title": "Owners worth billions, so why might Red Bull era dawn slowly at Newcastle?",
+    "url": "https://www.bbc.com/sport/rugby-union/articles/cn0rrnzx74jo?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754940926000,
+    "id": "155a049d5775560b40f018a99b25b105184b378b"
+  },
+  {
+    "title": "Trump deploys National Guard to Washington DC and pledges crime crackdown",
+    "url": "https://www.bbc.com/news/articles/cm2110me5g4o?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754940676000,
+    "id": "6ebb869829713a660eaeea6dc7ec376a292919db"
+  },
+  {
+    "title": "European demotion could galvanise Palace - Sutton",
+    "url": "https://www.bbc.com/sport/football/articles/cx2ppkvxx0ro?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754940238000,
+    "id": "2120f5dc883678311d5cee273fec7b7212e278f2"
+  },
+  {
+    "title": "This see-thru Game Boy is a work of art — because she designed a transparent circuit board",
+    "url": "https://www.theverge.com/games/757662/natalie-the-nerd-transparent-translucent-game-boy-pcb",
+    "source": "www.theverge.com",
+    "ts": 1754940113000,
+    "id": "5959ebd982de40ac1775ef51ed2c05be331d953b"
+  },
+  {
+    "title": "Revel shutters rideshare business, pivots to EV charging",
+    "url": "https://www.theverge.com/news/757661/revel-shutters-rideshare-business-pivots-to-ev-charging",
+    "source": "www.theverge.com",
+    "ts": 1754939066000,
+    "id": "43198b3c6b3b392fd580fdf0d3c335a3526c6420"
+  },
+  {
+    "title": "The Trump-Putin Meeting: What About Zelensky?",
+    "url": "https://www.bbc.co.uk/sounds/play/p0lwdhyt?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754938800000,
+    "id": "5235bfae810922105f2d0fcc65620005335e20b9"
+  },
+  {
+    "title": "You can save $30 on the OnePlus Watch 3, a great Galaxy Watch 8 alternative",
+    "url": "https://www.theverge.com/tech/757554/oneplus-watch-3-2-back-to-school-deal-sale",
+    "source": "www.theverge.com",
+    "ts": 1754938028000,
+    "id": "3d6d070830f7564d4971a3cad49d49c7d5c2e0da"
+  },
+  {
+    "title": "Americanswers…on 5 Live! Why is Donald Trump deploying the National Guard to Washington DC?",
+    "url": "https://www.bbc.co.uk/sounds/play/p0lwdfhf?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754937720000,
+    "id": "ca2a6634a621a19095ec5a8ae5c1926c5c771a5f"
+  },
+  {
+    "title": "YouTuber recreates a floppy disk from scratch",
+    "url": "https://www.engadget.com/entertainment/youtube/youtuber-recreates-a-floppy-disk-from-scratch-183045582.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754937045000,
+    "id": "23caf1fe15714e2e80c4e4347d5e2f7da7caee2f"
+  },
+  {
+    "title": "More celebrities unveiled for Strictly Come Dancing",
+    "url": "https://www.bbc.com/news/articles/cly3318nrmpo?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754937039000,
+    "id": "27d11969f5ec388fa416de833e217b20654811a6"
+  },
+  {
+    "title": "These are my favorite Switch 2 accessories",
+    "url": "https://www.theverge.com/buying-guides/720160/best-switch-2-accessories",
+    "source": "www.theverge.com",
+    "ts": 1754937025000,
+    "id": "ba3cb96bf094f0842e99e60c8f8889f6cc5d6f27"
+  },
+  {
+    "title": "How do Newcastle resolve Isak saga & rescue 'nightmare' window?",
+    "url": "https://www.bbc.com/sport/football/articles/c0mllyjp881o?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754936399000,
+    "id": "6fa6918f7b02e89bd78959ecf1bc1e1c60652de8"
+  },
+  {
+    "title": "Revel is ending its ridesharing operation to focus on EV charging",
+    "url": "https://www.engadget.com/transportation/evs/revel-is-ending-its-ridesharing-operation-to-focus-on-ev-charging-181814989.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754936294000,
+    "id": "7b1f0889f70084a6b13425d9d2d9d6d4e0dbaef9"
+  },
+  {
+    "title": "iRobot’s future isn’t looking up",
+    "url": "https://www.theverge.com/news/757434/irobot-earnings-show-roomba-maker-still-struggling",
+    "source": "www.theverge.com",
+    "ts": 1754934532000,
+    "id": "f4395ccd4c9105391c67c82e240dd111accd693a"
+  },
+  {
+    "title": "UN condemns targeted Israeli attack that killed five Al Jazeera journalists",
+    "url": "https://www.bbc.com/news/articles/cq688qz3rlro?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754934443000,
+    "id": "aaaf46fdc85b1c32172edb8a2accce1fd5b2bc30"
+  },
+  {
+    "title": "Who was Anas al-Sharif, prominent Gaza journalist killed by Israel?",
+    "url": "https://www.bbc.com/news/articles/c6200wnez73o?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754932611000,
+    "id": "dee76c0244ecf53e08c28c9365bec28f36b383a0"
+  },
+  {
+    "title": "Drivers warned about scam car finance payout calls",
+    "url": "https://www.bbc.com/news/articles/c860021w3g8o?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754932044000,
+    "id": "4a945cf6633ed5f745f3991dbac6dcb274e85a2b"
+  },
+  {
+    "title": "Harry and Meghan sign new multi-year Netflix deal",
+    "url": "https://www.bbc.com/news/articles/cvgnne6lznzo?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754931992000,
+    "id": "33a76f9f9dbd70580d5433d699817970e07a5193"
+  },
+  {
+    "title": "Meta makes conservative activist an AI bias advisor following lawsuit",
+    "url": "https://www.theverge.com/news/757537/meta-robby-starbuck-conservative-activist-ai-bias-advisor",
+    "source": "www.theverge.com",
+    "ts": 1754931877000,
+    "id": "03f79ccf97aae5e7323db28ba9174e512d42b8bc"
+  },
+  {
+    "title": "Reddit is restricting its availability to the Internet Archive's Wayback Machine",
+    "url": "https://www.engadget.com/social-media/reddit-is-restricting-its-availability-to-the-internet-archives-wayback-machine-170035482.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754931635000,
+    "id": "5ae6d2a491b2226350e4ea0ee1a5144c73c8bf31"
+  },
+  {
+    "title": "Reddit will block the Internet Archive",
+    "url": "https://www.theverge.com/news/757538/reddit-internet-archive-wayback-machine-block-limit",
+    "source": "www.theverge.com",
+    "ts": 1754931600000,
+    "id": "3e84511885369dfab4c16495d850907c9a87ee14"
+  },
+  {
+    "title": "Three children arrested on suspicion of murder of man in Kent",
+    "url": "https://www.bbc.com/news/articles/cn855zj319yo?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754929625000,
+    "id": "b8b7c826f54a30f301103e63d37ed1b8deec189c"
+  },
+  {
+    "title": "Paramount buys UFC rights for $7.7 billion, ending PPV events",
+    "url": "https://www.engadget.com/entertainment/tv-movies/paramount-buys-ufc-rights-for-77-billion-ending-ppv-events-161512875.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754928912000,
+    "id": "790badffbe7c9ce194239a7b9226c10bcea4ae4c"
+  },
+  {
+    "title": "When, where and how to catch a glimpse of the Perseid meteor shower",
+    "url": "https://www.bbc.com/news/articles/cwy7d7e82gno?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754928152000,
+    "id": "5c7b4715ba5e96cfd1c714d6f64fb55762a47771"
+  },
+  {
+    "title": "Blippo+ arrives on Nintendo Switch and PC in color September 23",
+    "url": "https://www.engadget.com/gaming/blippo-arrives-on-nintendo-switch-and-pc-in-color-september-23-160014279.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754928014000,
+    "id": "6c10222f489c5969f5183ad55adb682b130ca5f1"
+  },
+  {
+    "title": "Tough, stoic and ahead of her time - how Dame Stephanie changed women's role in the tech industry",
+    "url": "https://www.bbc.com/news/articles/c4gzzlp7p3po?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754925658000,
+    "id": "05bc87f0934386477b71440cab2335eb7611cd37"
+  },
+  {
+    "title": "Sonos is raising prices this year to make up for tariff expenses",
+    "url": "https://www.engadget.com/audio/sonos-is-raising-prices-this-year-to-make-up-for-tariff-expenses-123031336.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754924895000,
+    "id": "231fbbdb8788c9268eceea6248b14f295b476d81"
+  },
+  {
+    "title": "The best deals on MacBooks, AirPods, iPads and other Apple gear you can get right now",
+    "url": "https://www.engadget.com/deals/best-apple-deals-150020110.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754923971000,
+    "id": "f14aec81084f77bff9c8b5538edf9d5936dcc048"
+  },
+  {
+    "title": "Some don't know 'full nature' of Palestine Action, says Cooper",
+    "url": "https://www.bbc.com/news/articles/cj0yyvj7jmmo?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754923592000,
+    "id": "753937be0a9ab78a427a081a91bd3837c05c47b3"
+  },
+  {
+    "title": "Sony Bravia Theater Bar 6 review: Great sound, greater frustration",
+    "url": "https://www.engadget.com/home/home-theater/sony-bravia-theater-bar-6-review-great-sound-greater-frustration-144512450.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754923512000,
+    "id": "b48167ab869502905e259554827b5571b7aa9458"
+  },
+  {
+    "title": "Ford is developing a $30,000 midsized EV pickup",
+    "url": "https://www.engadget.com/transportation/evs/ford-is-developing-a-30000-midsized-ev-pickup-143030877.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754922630000,
+    "id": "a6c891f40d619935f2e28ed4c965bccdf77d670f"
+  },
+  {
+    "title": "UK's biggest toy shop chain The Entertainer handed to staff",
+    "url": "https://www.bbc.com/news/articles/cgm2jjwmw9jo?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754921682000,
+    "id": "bbb98f73b06fc06734596e7e435c6469b4a147a8"
+  },
+  {
+    "title": "Canadian man rescued after 9 days in wilderness surviving on pond water",
+    "url": "https://www.bbc.com/news/articles/c23ppzevgpvo?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754920555000,
+    "id": "390c7e50067b8f8a2afb9032be08d96dfdedc17a"
+  },
+  {
+    "title": "Everton agree loan deal for Grealish - why Man City dream turned sour",
+    "url": "https://www.bbc.com/sport/football/articles/cp8zjrnw6yro?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754919670000,
+    "id": "248127faf7e3169d2a272eeae76ce9684a67e5c9"
+  },
+  {
+    "title": "MacBook Air deal: Get the M4-powered laptop for a record-low price",
+    "url": "https://www.engadget.com/deals/macbook-air-deal-get-the-m4-powered-laptop-for-a-record-low-price-123031593.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754919037000,
+    "id": "c11b244deb09bb59a09befbd05b457bf42456ade"
+  },
+  {
+    "title": "One of our favorite Bluetooth speakers is cheaper than ever right now",
+    "url": "https://www.engadget.com/deals/one-of-our-favorite-bluetooth-speakers-is-cheaper-than-ever-right-now-132149449.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754918509000,
+    "id": "c0d6a116fbf12dbae36147892ad7159bf8128d4c"
+  },
+  {
+    "title": "The HORI Piranha Plant camera for Switch 2 is 33 percent off right now",
+    "url": "https://www.engadget.com/deals/the-hori-piranha-plant-camera-for-switch-2-is-33-percent-off-right-now-145031796.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754916987000,
+    "id": "5d81c67e184f87ca9c9ff3ef7d682f280419884c"
+  },
+  {
+    "title": "Apple's AirPods Pro 2 are back on sale for $169",
+    "url": "https://www.engadget.com/deals/apples-airpods-pro-2-are-back-on-sale-for-169-142401799.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754915722000,
+    "id": "4b4ea8e9a8528de686c48f4c9837c747f6356300"
+  },
+  {
+    "title": "NVIDIA may give US government a cut of its profits to sell AI chips to China",
+    "url": "https://www.engadget.com/ai/nvidia-may-give-us-government-a-cut-of-its-profits-to-sell-ai-chips-to-china-120003260.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754913603000,
+    "id": "503eed953ec238a6434e196fb46dfea94bc6cdc3"
+  },
+  {
+    "title": "British man who perished in Antarctic glacier found 65 years later",
+    "url": "https://www.bbc.com/news/articles/c4g034yx4gjo?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1754903151000,
+    "id": "cc950ce360476a46aa4918d18d27ec41641c030b"
+  },
+  {
+    "title": "The best gadgets for students under $50",
+    "url": "https://www.engadget.com/school-tech-under-50-140026676.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754902886000,
+    "id": "920b72879efe13b5149b7619e20bf194e71b040d"
+  },
+  {
+    "title": "The best Nintendo Switch 2 games for 2025",
+    "url": "https://www.engadget.com/gaming/nintendo/best-nintendo-switch-2-games-070007467.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754895607000,
+    "id": "919e90bda7e6882d4cb9f3e41319376368540df3"
+  },
+  {
+    "title": "AOL's dial-up internet still exists, but not for much longer",
+    "url": "https://www.engadget.com/computing/aols-dial-up-internet-still-exists-but-not-for-much-longer-193004233.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754854205000,
+    "id": "2c0710dc75c98b4760feca771f5215e9c6ce6cc9"
+  },
+  {
+    "title": "An updated Siri that interacts with apps reportedly won't be here until next spring",
+    "url": "https://www.engadget.com/ai/an-updated-siri-that-interacts-with-apps-reportedly-wont-be-here-until-next-spring-183000378.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754850600000,
+    "id": "5590b0e2054f4f7b66594b911a0b7b0db5966cd2"
+  },
+  {
+    "title": "Rod Fergusson leaves Blizzard after five years leading Diablo",
+    "url": "https://www.engadget.com/gaming/rod-fergusson-leaves-blizzard-after-five-years-leading-diablo-180049767.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754848849000,
+    "id": "c16f3dec794bd9c9009a124f9b7ab24d83f204ba"
+  },
+  {
+    "title": "Ubisoft may have prematurely revealed FX's TV adaptation of Far Cry",
+    "url": "https://www.engadget.com/entertainment/tv-movies/ubisoft-may-have-prematurely-revealed-fxs-tv-adaptation-of-far-cry-162918984.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754843359000,
+    "id": "2c920b66e73356ac906c131989a2aba8b5dd56b4"
+  },
+  {
+    "title": "The Space Invaders movie is apparently still happening",
+    "url": "https://www.engadget.com/entertainment/tv-movies/the-space-invaders-movie-is-apparently-still-happening-210851306.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754773731000,
+    "id": "25c3c2adcaf429b0b1d43bd32ff5a85a7e77296e"
+  },
+  {
+    "title": "DJI repurposed its drones' obstacle detection tech for robot vacuums",
+    "url": "https://www.engadget.com/home/smart-home/dji-repurposed-its-drones-obstacle-detection-tech-for-robot-vacuums-191136030.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754766696000,
+    "id": "e88bb7ec97e12ab7cc5da811b0c49c7f582ab9ab"
+  },
+  {
+    "title": "OpenAI brings GPT-4o back online after users melt down over the new model",
+    "url": "https://www.engadget.com/ai/openai-brings-gpt-4o-after-users-melt-down-over-the-new-model-172523159.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754760323000,
+    "id": "5824b5e6ee9a1f2b952434fc17050118d5262dbc"
+  },
+  {
+    "title": "Watch NASA's SpaceX Crew-10 astronauts return to Earth",
+    "url": "https://www.engadget.com/science/space/watch-nasas-spacex-crew-10-astronauts-return-to-earth-133004329.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754746204000,
+    "id": "57016146c0c8fc24692e85ca0e5f156eb3a97a29"
+  },
+  {
+    "title": "A magical farming sim, cat museum exploration and other new indie games worth checking out",
+    "url": "https://www.engadget.com/gaming/a-magical-farming-sim-cat-museum-exploration-and-other-new-indie-games-worth-checking-out-120042340.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754740842000,
+    "id": "dc0ad0f08a4be92512bebacfdaecac3c6b3e47e7"
+  },
+  {
+    "title": "Nintendo designed a Playdate-like crank for the Switch 2",
+    "url": "https://www.engadget.com/gaming/nintendo/nintendo-designed-a-playdate-like-crank-for-the-switch-2-211420947.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754687661000,
+    "id": "2e0700dc51da9394501970cb8803b1c001cb9f18"
+  },
+  {
+    "title": "Steam for Chromebooks is reportedly being discontinued",
+    "url": "https://www.engadget.com/gaming/steam-for-chromebooks-is-reportedly-being-discontinued-194020340.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754682020000,
+    "id": "7c62ef0ba24c3543e791d31bdd381a9e12087f5d"
+  },
+  {
+    "title": "Here's the absolutely massive Tamagotchi Paradise next to other objects in the wild, for scale",
+    "url": "https://www.engadget.com/gaming/heres-the-absolutely-massive-tamagotchi-paradise-next-to-other-objects-in-the-wild-for-scale-172017149.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754673617000,
+    "id": "c4aca85f593866ee695ce34086cb90b64a7afc51"
+  },
+  {
+    "title": "Nintendo's upcoming app lets kids smoosh Mario's face",
+    "url": "https://www.engadget.com/apps/nintendos-upcoming-app-lets-kids-smoosh-marios-face-170150258.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754672511000,
+    "id": "0d6fa1dbe047c0bbaa4b85147f03675e4e44d91d"
+  },
+  {
+    "title": "How to watch Google's Pixel 10 event",
+    "url": "https://www.engadget.com/mobile/smartphones/how-to-watch-googles-pixel-10-event-163933494.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754671173000,
+    "id": "1c62e862660e35b2b1cd3a03b29adad9c41a2a7f"
+  },
+  {
+    "title": "Apple's iPad Air M3 is $150 off and down to a new all-time low",
+    "url": "https://www.engadget.com/deals/apples-ipad-air-m3-is-150-off-and-down-to-a-new-all-time-low-162908159.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754670548000,
+    "id": "f92ebad372fb332c1b66dc13be3b73bdd8f28744"
+  },
+  {
+    "title": "Apple will bring GPT-5 to Apple Intelligence in iOS, iPad OS and macOS 26",
+    "url": "https://www.engadget.com/ai/apple-will-bring-gpt-5-to-apple-intelligence-in-ios-ipad-os-and-macos-26-143210831.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754669977000,
+    "id": "43ffdadb5c6d5bf30dc044cef26edf16992c542f"
+  },
+  {
+    "title": "Ask Engadget: What are my options when Windows 10 support ends on October 14?",
+    "url": "https://www.engadget.com/computing/ask-engadget-what-are-my-options-when-windows-10-support-ends-on-october-14-160534495.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754669135000,
+    "id": "34dd05ccad283b4332174c7aee9c6bdd5eac87d8"
+  },
+  {
+    "title": "The best live TV streaming services to cut cable in 2025",
+    "url": "https://www.engadget.com/entertainment/streaming/best-live-tv-streaming-service-133000410.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754668835000,
+    "id": "c7dcf9de7d7b955ccbf312b4fb8130f75fbd6d4a"
+  },
+  {
+    "title": "Tesla shuts down in-house Dojo AI supercomputer project",
+    "url": "https://www.engadget.com/ai/tesla-shuts-down-in-house-dojo-ai-supercomputer-project-155420734.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754668460000,
+    "id": "ff76788edddb95d12aadad405d7d1afe2d8f1657"
+  },
+  {
+    "title": "Google Finance redesign goes all in on AI, complete with a chatbot",
+    "url": "https://www.engadget.com/ai/google-finance-redesign-goes-all-in-on-ai-complete-with-a-chatbot-151923704.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754666364000,
+    "id": "3c4f48d2b34526eb10792e8b531f397ed257f2c7"
+  },
+  {
+    "title": "Google's latest Nest Learning Thermostat is $50 off right now",
+    "url": "https://www.engadget.com/deals/googles-latest-nest-learning-thermostat-is-50-off-right-now-140033869.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754661633000,
+    "id": "9d9a827942c357e2be8dcc091a5435ff8d33fc6b"
+  },
+  {
+    "title": "Google is fixing a bug that causes Gemini to keep calling itself a 'failure'",
+    "url": "https://www.engadget.com/ai/google-is-fixing-a-bug-that-causes-gemini-to-keep-calling-itself-a-failure-143033024.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754659833000,
+    "id": "3d55e878bedeb7946b4d794c14314e9d18135579"
+  },
+  {
+    "title": "Pick up the Fitbit Charge 6 fitness tracker while it's $50 off",
+    "url": "https://www.engadget.com/deals/pick-up-the-fitbit-charge-6-fitness-tracker-while-its-50-off-130041372.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754658041000,
+    "id": "8fd17927ea46f4b87f5fc9e2991479140bfb3830"
+  },
+  {
+    "title": "Intel CEO Lip-Bu Tan responds to Trump comments that he should resign",
+    "url": "https://www.engadget.com/big-tech/intel-ceo-lip-bu-tan-responds-to-trump-comments-that-he-should-resign-123008812.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754656208000,
+    "id": "8ddcd219278f9a653df74419cee7c2309e23aaff"
+  },
+  {
+    "title": "The best microSD cards in 2025",
+    "url": "https://www.engadget.com/computing/accessories/best-microsd-card-130038282.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754654436000,
+    "id": "b6228b3bdafbb833b003ed522f6fde0787251747"
+  },
+  {
+    "title": "How to watch Gamescom 2025 and what to expect",
+    "url": "https://www.engadget.com/gaming/how-to-watch-gamescom-2025-and-what-to-expect-120024733.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754654424000,
+    "id": "61959fd3d5bb9ff0980a2619d21c8546c954e308"
+  },
+  {
+    "title": "Engadget Podcast: Apple bows to the Trump regime (again)",
+    "url": "https://www.engadget.com/mobile/engadget-podcast-apple-bows-to-the-trump-regime-again-113025360.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754652625000,
+    "id": "e90957473e2b87e5aa11290ec6aff1e25365a332"
+  },
+  {
+    "title": "The Morning After: Meta teases high-spec VR headset prototypes",
+    "url": "https://www.engadget.com/general/the-morning-after-engadget-newsletter-111503390.html?src=rss",
+    "source": "www.engadget.com",
+    "ts": 1754651703000,
+    "id": "69827c583af7dbb44eb620a02bcf4e1a4b37456c"
+  },
+  {
+    "title": "A legendary automotive dream, stalled by scandal and greed",
+    "url": "https://www.bbc.co.uk/iplayer/episode/m000rqw8?at_mid=vO2HrMRESU&at_campaign=DeLorean_Back_from_the_Future&at_medium=display_ad&at_campaign_type=owned&at_nation=NET&at_audience_id=SS&at_product=iplayer&at_brand=m000vrth&at_ptr_name=bbc&at_ptr_type=media&at_format=image&at_objective=consumption&at_link_title=DeLorean_Back_from_the_Future&at_bbc_team=BBC",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1753828864000,
+    "id": "27ff41af7c16744737d191e524401591353f011a"
+  },
+  {
+    "title": "BBC News app",
+    "url": "https://www.bbc.co.uk/news/10628994?at_medium=RSS&at_campaign=rss",
+    "source": "feeds.bbci.co.uk",
+    "ts": 1746021868000,
+    "id": "0cb368990e4fc1c0af15782c4aa1d5b86babcb92"
+  }
+]

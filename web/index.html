@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Ticker Demo - Argyle</title>
+    <link rel="stylesheet" href="ticker.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .demo-header h1 {
+            color: #8FE04A;
+            margin-bottom: 10px;
+        }
+        
+        .demo-header p {
+            color: #888;
+            font-size: 16px;
+        }
+        
+        .demo-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .demo-section h2 {
+            color: #8FE04A;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .control-group label {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .control-group input, .control-group select {
+            padding: 8px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background: #2a2a2a;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .control-group button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: #8FE04A;
+            color: #000;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        
+        .control-group button:hover {
+            background: #7dd03a;
+        }
+        
+        .control-group button:active {
+            background: #6bc02a;
+        }
+        
+        .status {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .ticker-example {
+            margin: 20px 0;
+            border: 2px solid #444;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .example-label {
+            background: #333;
+            padding: 10px;
+            font-weight: bold;
+            color: #8FE04A;
+            border-bottom: 1px solid #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>📰 Argyle News Ticker Demo</h1>
+            <p>A production-ready news ticker module with RSS feeds, site scraping, and smooth animations</p>
+        </div>
+
+        <div class="demo-section">
+            <h2>🎛️ Ticker Controls</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Speed (px/s)</label>
+                    <input type="range" id="speed" min="20" max="120" value="60">
+                    <span id="speedValue">60</span>
+                </div>
+                
+                <div class="control-group">
+                    <label>Direction</label>
+                    <select id="direction">
+                        <option value="ltr">Left to Right</option>
+                        <option value="rtl">Right to Left</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Theme</label>
+                    <select id="theme">
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Actions</label>
+                    <button id="pauseBtn">⏸️ Pause</button>
+                    <button id="refreshBtn">🔄 Refresh</button>
+                </div>
+            </div>
+            
+            <div class="status" id="status">
+                Status: Initializing...
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>📰 News Ticker</h2>
+            <div class="ticker-example">
+                <div class="example-label">Live News Feed</div>
+                <div id="news-ticker"></div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🔧 Features</h2>
+            <ul>
+                <li><strong>RSS/Atom Support:</strong> Automatically parses RSS and Atom feeds</li>
+                <li><strong>Site Scraping:</strong> Extracts headlines from HTML pages using OpenGraph and JSON-LD</li>
+                <li><strong>Smart Caching:</strong> Respects ETag and Last-Modified headers</li>
+                <li><strong>Rate Limiting:</strong> Prevents hammering news sources</li>
+                <li><strong>Offline Support:</strong> Falls back to cached headlines when offline</li>
+                <li><strong>Accessibility:</strong> Supports reduced motion and high contrast preferences</li>
+                <li><strong>Responsive Design:</strong> Adapts to different screen sizes</li>
+                <li><strong>Hover Pause:</strong> Pauses animation on mouse hover</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h2>📋 Configuration</h2>
+            <p>The ticker is configured via <code>news.txt</code> files:</p>
+            <pre style="background: #2a2a2a; padding: 15px; border-radius: 4px; overflow-x: auto;">
+# Primary feeds
+feed https://feeds.bbci.co.uk/news/rss.xml
+feed https://www.reuters.com/rssFeed/topNews
+
+# Sites to auto-discover/scrape
+site https://www.bloomberg.com
+url  https://techcrunch.com
+
+# Sub-list
+list lists/tech.txt
+
+# Manual pin
+headline "Breaking: Release v1.0 is live" https://example.com/blog/v1</pre>
+        </div>
+    </div>
+
+    <script src="ticker.js"></script>
+    <script>
+        let ticker = null;
+        let isPaused = false;
+
+        // Initialize ticker when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTicker();
+            setupControls();
+        });
+
+        function initializeTicker() {
+            try {
+                ticker = initNewsTicker({
+                    target: '#news-ticker',
+                    endpoint: '/api/news',
+                    speed: 60,
+                    gap: 48,
+                    pauseOnHover: true,
+                    direction: 'ltr',
+                    maxHeadlines: 50
+                });
+                
+                updateStatus('Ticker initialized successfully');
+            } catch (error) {
+                updateStatus(`Failed to initialize ticker: ${error.message}`);
+            }
+        }
+
+        function setupControls() {
+            // Speed control
+            const speedSlider = document.getElementById('speed');
+            const speedValue = document.getElementById('speedValue');
+            
+            speedSlider.addEventListener('input', (e) => {
+                const speed = parseInt(e.target.value);
+                speedValue.textContent = speed;
+                if (ticker) {
+                    ticker.setSpeed(speed);
+                }
+            });
+
+            // Direction control
+            const directionSelect = document.getElementById('direction');
+            directionSelect.addEventListener('change', (e) => {
+                if (ticker) {
+                    ticker.setDirection(e.target.value);
+                }
+            });
+
+            // Theme control
+            const themeSelect = document.getElementById('theme');
+            themeSelect.addEventListener('change', (e) => {
+                const tickerContainer = document.querySelector('.news-ticker-container');
+                if (tickerContainer) {
+                    tickerContainer.className = `news-ticker-container ${e.target.value}`;
+                }
+            });
+
+            // Pause/Resume button
+            const pauseBtn = document.getElementById('pauseBtn');
+            pauseBtn.addEventListener('click', () => {
+                if (ticker) {
+                    if (isPaused) {
+                        ticker.resume();
+                        pauseBtn.textContent = '⏸️ Pause';
+                        isPaused = false;
+                    } else {
+                        ticker.pause();
+                        pauseBtn.textContent = '▶️ Resume';
+                        isPaused = true;
+                    }
+                }
+            });
+
+            // Refresh button
+            const refreshBtn = document.getElementById('refreshBtn');
+            refreshBtn.addEventListener('click', () => {
+                if (ticker) {
+                    ticker.refresh();
+                    updateStatus('Refreshing headlines...');
+                }
+            });
+        }
+
+        function updateStatus(message) {
+            const statusElement = document.getElementById('status');
+            if (statusElement) {
+                statusElement.textContent = `Status: ${message}`;
+            }
+        }
+
+        // Handle window focus to refresh ticker
+        window.addEventListener('focus', () => {
+            if (ticker) {
+                ticker.refresh();
+            }
+        });
+
+        // Handle online/offline events
+        window.addEventListener('online', () => {
+            updateStatus('Connection restored - refreshing headlines');
+            if (ticker) {
+                ticker.refresh();
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            updateStatus('Connection lost - using cached headlines');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2223 @@
+/* ===== MINDS EYE - STYLES ===== */
+
+/* ===== BASE STYLES ===== */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: black;
+  font-family: sans-serif;
+}
+
+/* ===== TOOLBAR STYLES ===== */
+#toolbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: #111;
+  opacity: 0.7;
+  color: white;
+  padding: 2px 0px 10px 0px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  z-index: 10001;
+  transition: opacity 0.5s ease;
+  min-height: 60px;
+  max-height: 200px;
+}
+
+#toolbar button {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: gold;
+  border: none;
+  font-family: 'Monaco', serif;
+  border-radius: 6px;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1 1 0;
+  height: 100%;
+  min-width: 60px;
+  max-width: none;
+  min-height: 50px;
+  max-height: none;
+  aspect-ratio: 1;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.toolbar-btn {
+  background-image: none;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: transparent;
+  font-size: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 0;
+  min-width: 60px;
+  max-width: none;
+  min-height: 50px;
+  max-height: none;
+  aspect-ratio: 1;
+  border: none;
+}
+
+.toolbar-btn.has-png {
+  background-image: var(--png-url);
+}
+
+/* Toolbar dropdown section - takes space of two buttons */
+#toolbarDropdowns {
+  flex: 2 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Container for the two dropdown boxes - horizontal layout */
+#toolbarDropdowns > div:first-child {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* Individual dropdown containers */
+#toolbarDropdowns > div > div {
+  min-width: 0;
+  flex-shrink: 1;
+  max-height: 50px;
+}
+
+/* Ensure dropdowns can shrink and match button width */
+#toolbarDropdowns select {
+  min-width: 0;
+  flex-shrink: 1;
+  height: 40px;
+  padding: 8px 20px;
+  width: 200%;
+}
+
+/* Ensure slider fits underneath and doesn't interfere with layout */
+#toolbarDropdowns label {
+  margin: 0;
+  padding: 0;
+  height: 30px;
+}
+
+#toolbarDropdowns input[type="range"] {
+  height: 16px;
+  margin: 0;
+  padding: 0;
+}
+
+/* Video and music button containers - match button sizing exactly */
+#toolbar > div[style*="flex-direction: column"] {
+  flex: 1 1 0 !important;
+  min-width: 30px !important;
+  min-height: 30px !important;
+  aspect-ratio: 1 !important;
+}
+
+/* Ensure the wrapper divs maintain uniform sizing */
+#toolbar > div[style*="flex-direction: column"] {
+  height: auto !important;
+}
+
+/* Ensure buttons inside video and music containers maintain square shape */
+#toolbar > div[style*="flex-direction: column"] .toolbar-btn {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 60px !important;
+  max-width: none !important;
+  min-height: 50px !important;
+  max-height: none !important;
+  aspect-ratio: 1 !important;
+  flex: 1 1 0 !important;
+}
+
+/* Override inline styles for video and music buttons specifically */
+#toolbar button[data-icon="video"],
+#toolbar button[data-icon="music"] {
+  aspect-ratio: 1 !important;
+  min-width: 30px !important;
+  max-width: none !important;
+  min-height: 30px !important;
+  max-height: none !important;
+  flex: 1 1 0 !important;
+}
+
+/* Ensure all toolbar buttons maintain consistent sizing and aspect ratio */
+#toolbar button,
+#toolbar .toolbar-btn {
+  aspect-ratio: 1;
+}
+
+/* Responsive design for smaller screens - maintain button proportions */
+@media screen and (max-width: 1200px) {
+  #toolbar button,
+  #toolbar .toolbar-btn {
+    min-width: 70px;
+    max-width: none;
+    min-height: 45px;
+    max-height: none;
+  }
+  
+  #toolbar > div[style*="flex-direction: column"] {
+    flex: 1 1 0 !important;
+    min-width: 35px !important;
+    min-height: 35px !important;
+    aspect-ratio: 1 !important;
+  }
+  
+  #toolbarDropdowns {
+    flex: 2 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  /* Container for the two dropdown boxes - horizontal layout */
+  #toolbarDropdowns > div:first-child {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  
+  /* Individual dropdown containers */
+  #toolbarDropdowns > div > div {
+    min-width: 0;
+    flex-shrink: 1;
+    max-height: 44px;
+  }
+  
+  #toolbarDropdowns select {
+    min-width: 0;
+    flex-shrink: 1;
+    height: 36px;
+    padding: 6px 16px;
+    width: 200%;
+  }
+  
+  #toolbarDropdowns label {
+    margin: 0;
+    padding: 0;
+    height: 26px;
+  }
+  
+  #toolbarDropdowns input[type="range"] {
+    height: 14px;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Ensure buttons inside video and music containers maintain square shape at 1200px */
+  #toolbar > div[style*="flex-direction: column"] .toolbar-btn {
+    min-width: 35px !important;
+    max-width: none !important;
+    min-height: 35px !important;
+    max-height: none !important;
+    aspect-ratio: 1 !important;
+  }
+  
+  #toolbar button[data-icon="video"],
+  #toolbar button[data-icon="music"] {
+    min-width: 35px !important;
+    max-width: none !important;
+    min-height: 35px !important;
+    max-height: none !important;
+    aspect-ratio: 1 !important;
+  }
+  
+  /* Ensure visualizers match button dimensions at 1200px */
+  #toolbar #musicVisualizer,
+  #toolbar #musicVisualizer2 {
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: 1 !important;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  #toolbar button,
+  #toolbar .toolbar-btn {
+    min-width: 50px;
+    max-width: none;
+    min-height: 40px;
+    max-height: none;
+  }
+  
+  #toolbar > div[style*="flex-direction: column"] {
+    flex: 1 1 0 !important;
+    min-width: 25px !important;
+    min-height: 25px !important;
+    aspect-ratio: 1 !important;
+  }
+  
+  #toolbarDropdowns {
+    flex: 2 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  /* Container for the two dropdown boxes - horizontal layout */
+  #toolbarDropdowns > div:first-child {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  
+  /* Individual dropdown containers */
+  #toolbarDropdowns > div > div {
+    min-width: 0;
+    flex-shrink: 1;
+    max-height: 40px;
+  }
+  
+  #toolbarDropdowns select {
+    min-width: 0;
+    flex-shrink: 1;
+    height: 32px;
+    padding: 4px 12px;
+    width: 200%;
+  }
+  
+  #toolbarDropdowns label {
+    margin: 0;
+    padding: 0;
+    height: 24px;
+  }
+  
+  #toolbarDropdowns input[type="range"] {
+    height: 12px;
+    margin: 0;
+    padding: 0;
+  }
+  
+    /* Ensure buttons inside video and music containers maintain square shape at 900px */
+  #toolbar > div[style*="flex-direction: column"] .toolbar-btn {
+    min-width: 25px !important;
+    max-width: none !important;
+    min-height: 25px !important;
+    max-height: none !important;
+    aspect-ratio: 1 !important;
+  }
+  
+  #toolbar button[data-icon="video"],
+  #toolbar button[data-icon="music"] {
+    min-width: 25px !important;
+    max-width: none !important;
+    min-height: 25px !important;
+    max-height: none !important;
+    aspect-ratio: 1 !important;
+  }
+  
+  /* Ensure visualizers match button dimensions at 900px */
+  #toolbar #musicVisualizer,
+  #toolbar #musicVisualizer2 {
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: 1 !important;
+  }
+}
+
+
+
+/* All buttons - uniform sizing */
+#toolbar > button {
+  flex: 1 1 0;
+  min-width: 50px;
+  min-height: 50px;
+  aspect-ratio: 1;
+}
+
+.toolbar-btn[data-icon="dice"] {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  font-size: 0;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  transition: all 0.3s ease;
+}
+
+/* Add right padding to Blank Canvas button */
+
+
+/* ===== CANVAS STYLES ===== */
+#canvas {
+  display: block;
+  z-index: 70000;
+}
+
+#drawingSettingsPanel {
+  z-index: 70001;
+}
+
+/* Drawing mode cursor */
+#canvas.drawing-mode {
+  cursor: url(images/cross.png) 16 16, crosshair !important;
+}
+
+
+
+/* ===== PANEL STYLES ===== */
+.panel {
+  position: fixed;
+  top: 130px;
+  left: 15px;
+  transform: none;
+  width: 300px;
+  min-width: 250px;
+  max-width: 1000px;
+  background: rgba(34, 34, 34, 0.90);
+  color: white;
+  padding: 0 20px 20px 20px;
+  border-radius: 0px 16px 16px 0px; /* Left side sharp, right side rounded for left-alignment */
+  z-index: 999;
+  display: none;
+  resize: both;
+  overflow: auto;
+  transition: all 0.3s ease;
+}
+
+.panel.minimized {
+  width: 15px !important;
+  min-width: 15px !important;
+  height: 200px;
+  overflow: hidden;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.panel.minimized input,
+.panel.minimized textarea,
+.panel.minimized div:not(:first-child),
+.panel.minimized label,
+.panel.minimized button,
+.panel.minimized .panel-close-btn {
+  display: none;
+}
+
+.panel-close-btn {
+  position: absolute;
+  top: 5px;
+  left: 8px;
+  width: 12px;
+  height: 12px;
+  background: rgba(255, 0, 0, 0.8);
+  color: white;
+  border: 2px solid #ff4444;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.panel.minimized .panel-close-btn {
+  display: none;
+}
+
+.panel-close-btn:hover {
+  background: rgba(255, 0, 0, 1);
+  transform: scale(1.1);
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.5);
+}
+
+.resize-handle {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  cursor: se-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.panel input, .panel textarea {
+  width: 100%;
+  margin: 5px 0;
+  background: #333;
+  border: none;
+  color: white;
+  padding: 5px;
+}
+
+.panel button {
+  margin-right: 10px;
+  padding: 6px 12px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: gold;
+  border: 2px solid darkgreen;
+  font-family: 'Monaco', serif;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.panel button:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  transform: scale(1.05);
+}
+
+/* Bubble panel buttons with PNG support */
+.bubble-btn {
+  margin: 0 !important;
+  padding: 2px 4px !important;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: gold;
+  border: 2px solid darkgreen;
+  font-family: 'Monaco', serif;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-sizing: border-box;
+  height: auto;
+  min-height: 32px;
+}
+
+.bubble-btn:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  transform: scale(1.05);
+}
+
+.bubble-btn.has-png {
+  color: transparent;
+  font-size: 0;
+  background-color: transparent !important;
+  padding: 4px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  flex: 0 0 auto !important;
+  max-width: 120px !important;
+  background-size: contain !important;
+}
+
+.bubble-btn.large {
+  height: 48px !important;
+  width: 48px !important;
+  min-height: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  font-size: 1.5em !important;
+  padding: 6px !important;
+  flex: 0 0 auto !important;
+  aspect-ratio: 1 !important;
+  box-sizing: border-box !important;
+}
+
+.bubble-btn.large.has-png {
+  height: 48px !important;
+  width: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  max-width: 48px !important;
+  padding: 6px !important;
+  flex: 0 0 auto !important;
+  aspect-ratio: 1 !important;
+  box-sizing: border-box !important;
+}
+
+/* Special fix for bucheck.png */
+button[data-png="bucheck"].has-png {
+  background-image: url(images/bucheck.png) !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-color: transparent !important;
+  color: transparent !important;
+  font-size: 0 !important;
+}
+
+
+
+/* ===== ANALYSIS PANEL STYLES ===== */
+.analysis-panel {
+  position: fixed;
+  top: 130px;
+  left: 15px;
+  width: 125px;
+  background: rgba(34, 34, 34, 0.95);
+  color: white;
+  padding: 15px;
+  border-radius: 8px; /* Rounded corners on all sides with smaller radius */
+  border: 2px solid darkgreen;
+  z-index: 29995;
+  display: none;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  transition: opacity 1s ease-out;
+}
+
+.analysis-panel h3 {
+  margin: 0 0 10px 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.analysis-panel button {
+  width: 100%;
+  margin: 3px 0;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.analysis-panel button:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.analysis-panel .panel-close-btn {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 0, 0, 0.8);
+  color: white;
+  border: 1px solid #ff4444;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 8px;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.analysis-panel .panel-close-btn:hover {
+  background: rgba(255, 0, 0, 1);
+  transform: scale(1.1);
+  box-shadow: 0 0 4px rgba(255, 0, 0, 0.5);
+}
+
+.analysis-iframe-container {
+  position: fixed;
+  top: 80px; /* Position just below the toolbar */
+  left: 50%;
+  transform: translateX(-50%); /* Center horizontally */
+  height: calc(100vh - 160px); /* Reduced height to create more bottom gap */
+  width: calc((100vh - 160px) * 0.68); /* Height * 0.68 for 1:2.35 ratio with 20% reduced width (0.85 * 0.8 = 0.68) */
+  max-width: calc(100vw - 40px); /* Don't exceed viewport width */
+  background: rgba(34, 34, 34, 0.95);
+  border-radius: 0px 16px 16px 0px; /* Left side sharp, right side rounded for left-alignment */
+  border: 2px solid darkgreen;
+  z-index: 29996;
+  display: none;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  pointer-events: auto;
+  /* Ensure proper sizing and positioning */
+  box-sizing: border-box;
+  overflow: hidden;
+  /* Ensure iframe content fits properly */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.analysis-iframe-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 6px;
+  pointer-events: none;
+  /* Ensure iframe content fits container dimensions */
+  min-width: 100%;
+  min-height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  /* Force iframe to scale content properly */
+  transform-origin: top left;
+  /* Ensure proper scaling behavior */
+  box-sizing: border-box;
+  /* Additional scaling properties for better fit */
+  scale: 1;
+  /* Ensure iframe respects container boundaries */
+  overflow: hidden;
+  /* Force iframe to fit container exactly */
+  object-fit: contain;
+  /* Ensure proper aspect ratio maintenance */
+  aspect-ratio: auto;
+}
+
+.analysis-iframe-container .panel-close-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  left: auto;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+.analysis-iframe-container .panel-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.1);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+/* ===== DRAWING DROPDOWNS STYLES ===== */
+.drawing-dropdowns {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  min-width: 20px;
+  max-width: none;
+  min-height: 20px;
+  max-height: 180px;
+  aspect-ratio: 1;
+  box-sizing: border-box;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.drawing-dropdown {
+  width: 100%;
+  height: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: gold;
+  border: 2px solid darkgreen;
+  border-radius: 6px;
+  font-family: 'Monaco', serif;
+  font-size: 10px;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease;
+  text-align: center;
+  line-height: 1.2;
+  white-space: normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drawing-dropdown#drawingWidthDropdown {
+  font-size: 16px;
+}
+
+.drawing-dropdown:hover {
+  background: rgba(0, 0, 0, 0.9);
+  border-color: gold;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+}
+
+.drawing-dropdown:focus {
+  border-color: gold;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+.drawing-dropdown option {
+  background: rgba(0, 0, 0, 0.9);
+  color: gold;
+  padding: 0;
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: normal;
+  height: auto;
+  min-height: 2em;
+}
+
+.drawing-dropdown#drawingWidthDropdown option {
+  font-size: 16px;
+}
+
+/* ===== DICE OVERLAY STYLES ===== */
+.dice-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: gold;
+  font-size: 120px;
+  font-weight: bold;
+  padding: 40px;
+  border-radius: 20px;
+  border: 3px solid darkgreen;
+  z-index: 30000;
+  display: none;
+  animation: diceFadeIn 0.3s ease-in;
+}
+
+@keyframes diceFadeIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* ===== DICE SLIDER STYLES ===== */
+#diceSlider {
+  animation: diceFadeIn 0.3s ease-in;
+  z-index: 60000;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: gold;
+  padding: 20px;
+  border-radius: 10px;
+  border: 2px solid darkgreen;
+}
+
+/* ===== READ PANEL STYLES ===== */
+.read-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: gold;
+  padding: 20px;
+  border-radius: 10px;
+  border: 2px solid darkgreen;
+  z-index: 60000;
+  display: none;
+  animation: diceFadeIn 0.3s ease-in;
+  min-width: 400px;
+  max-width: 80vw;
+  width: auto;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+#diceSlider input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid darkgreen;
+  border-radius: 5px;
+  outline: none;
+  margin: 10px 0;
+}
+
+#diceSlider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: gold;
+  cursor: pointer;
+  border: 2px solid darkgreen;
+  box-shadow: 0 0 4px gold;
+}
+
+#diceSlider input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: gold;
+  cursor: pointer;
+  border: 2px solid darkgreen;
+  box-shadow: 0 0 4px gold;
+}
+
+/* ===== RADIO INPUT PANEL STYLES ===== */
+.radio-input-panel {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid #4CAF50;
+  border-radius: 10px;
+  padding: 20px;
+  color: white;
+  z-index: 2000;
+  min-width: 400px;
+  max-width: 500px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(15px);
+}
+
+/* ===== PLAYLIST CONFIRMATION PANEL STYLES ===== */
+.playlist-confirmation-panel {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid #4CAF50;
+  border-radius: 10px;
+  padding: 25px;
+  color: white;
+  z-index: 2000;
+  min-width: 450px;
+  max-width: 550px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(15px);
+  animation: confirmationSlideIn 0.3s ease-out;
+}
+
+@keyframes confirmationSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.radio-input-panel h3 {
+  margin: 0 0 15px 0;
+  color: #4CAF50;
+  text-align: center;
+  font-size: 18px;
+}
+
+.radio-input-panel input[type="text"] {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.radio-input-panel input[type="text"]:focus {
+  border-color: #66BB6A;
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+}
+
+.radio-input-panel button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.playlist-confirmation-panel h3 {
+  margin: 0 0 20px 0;
+  color: #4CAF50;
+  text-align: center;
+  font-size: 20px;
+}
+
+.playlist-confirmation-panel button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+}
+
+/* ===== MUSIC PANEL STYLES ===== */
+.music-panel {
+  position: fixed;
+  top: 130px;
+  left: 20px;
+  width: 300px; /* Match video playlist width */
+  background: rgba(34, 34, 34, 0.95);
+  color: white;
+  padding: 15px; /* Match video playlist padding */
+  border-radius: 8px;
+  border: 2px solid #4CAF50;
+  z-index: 60000;
+  display: none;
+  max-height: 70vh; /* Match video playlist height */
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  direction: rtl; /* Move scrollbar to left */
+}
+
+.music-panel > * {
+  direction: ltr; /* Keep content left-to-right */
+  text-align: left;
+}
+
+.music-panel h3 {
+  color: #E6064D;
+  margin-top: 0;
+  text-align: center;
+  position: relative; /* For positioning the close button */
+}
+
+.music-panel .music-close-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 25px;
+  height: 25px;
+  background: rgba(0, 0, 0, 0.9);
+  color: #E6064D;
+  border: 2px solid #E6064D;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60001;
+  transition: all 0.3s ease;
+  font-weight: bold;
+}
+
+.music-panel .music-close-btn:hover {
+  background: #E6064D;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* ===== PROJECTM VISUALIZATION PANEL STYLES ===== */
+.projectm-panel {
+  position: fixed;
+  top: 130px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 450px;
+  background: rgba(34, 34, 34, 0.95);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 2px solid #9C27B0;
+  z-index: 60000;
+  display: none;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.projectm-panel h3 {
+  margin: 0 0 15px 0;
+  color: #9C27B0;
+  font-size: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.projectm-close-btn {
+  cursor: pointer;
+  font-size: 16px;
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 4px;
+  padding: 4px 8px;
+  transition: background 0.2s;
+}
+
+.projectm-close-btn:hover {
+  background: rgba(255, 107, 107, 0.2);
+}
+
+.projectm-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.projectm-controls button {
+  background: linear-gradient(45deg, #9C27B0, #7B1FA2);
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.projectm-controls button:hover {
+  background: linear-gradient(45deg, #BA68C8, #9C27B0);
+  transform: translateY(-1px);
+}
+
+.preset-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.preset-controls label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #ddd;
+}
+
+.preset-controls select,
+.preset-controls input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.preset-controls select option {
+  background: #333;
+  color: white;
+}
+
+.visualization-canvas-container {
+  margin-bottom: 15px;
+  text-align: center;
+  background: #000;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#butterchurnCanvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  background: #000;
+}
+
+.preset-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  font-size: 12px;
+  color: #ccc;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.preset-info div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.preset-info span {
+  color: #9C27B0;
+  font-weight: bold;
+}
+
+.projectm-container {
+  width: 100%;
+  height: 300px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.projectm-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: inherit;
+}
+
+/* Fullscreen ProjectM */
+.projectm-panel.fullscreen {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  border-radius: 0;
+  z-index: 70000;
+}
+
+.projectm-panel.fullscreen .projectm-container {
+  height: calc(100vh - 120px);
+}
+
+/* ===== NOW PLAYING SECTION STYLES ===== */
+.now-playing-section {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(230, 6, 77, 0.5);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin: 10px 0;
+}
+
+.now-playing-label {
+  color: #E6064D;
+  font-weight: bold;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.now-playing-info {
+  color: white;
+  font-size: 11px;
+  min-height: 16px;
+  word-wrap: break-word;
+  line-height: 1.2;
+}
+
+
+.music-item {
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: 1px solid darkgreen;
+  padding: 8px 12px;
+  margin: 5px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.music-item:hover {
+  background: rgba(0, 0, 0, 0.8);
+  color: gold;
+}
+
+.music-item.playing {
+  background: #35CF3A !important;
+  color: white;
+  border-color: #35CF3A;
+  font-weight: bold;
+}
+
+/* ===== VIDEO PLAYER STYLES ===== */
+#videoPlayer {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  height: 42%;
+  z-index: 1000;
+  display: none;
+  background: rgba(0, 0, 0, 0.9);
+  transition: all 0.5s ease;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  opacity: 0.5;
+  overflow: hidden;
+}
+
+#videoPlayer.fullscreen {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
+  border-radius: 0;
+  z-index: 1000;
+}
+
+#videoPlayer.centered {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50%;
+  height: 50%;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+#videoPlayer iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: inherit;
+  display: block !important;
+  position: relative;
+  z-index: 1;
+  opacity: 1;
+  visibility: visible;
+}
+
+#videoControls {
+  position: fixed;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20001 !important;
+  display: none;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 10px 30px;
+  border-radius: 10px;
+  border: 2px solid #4CAF50;
+  box-shadow: 0 0 0 2px white;
+  transition: opacity 0.5s ease;
+  opacity: 1;
+  pointer-events: auto;
+  text-align: center;
+  font-size: 0;
+}
+
+#videoControls.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+
+
+#videoControls {
+  white-space: nowrap;
+  letter-spacing: 0;
+  word-spacing: 0;
+}
+
+#videoControls button {
+  background: black;
+  border: none;
+  color: white;
+  padding: 0;
+  margin: 0 1px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  width: 60px;
+  height: 60px;
+  display: inline-block;
+  align-items: center;
+  justify-content: center;
+  vertical-align: top;
+  position: relative;
+  font-size: 0;
+  box-sizing: border-box;
+}
+
+#videoControls button:hover {
+  border: 1px solid green;
+}
+
+/* Line indents removed - no borders between buttons */
+
+/* Timeline markers for animation recording */
+.timeline-marker {
+  position: absolute;
+  top: -5px;
+  width: 12px;
+  height: 24px;
+  border-radius: 3px;
+  cursor: pointer;
+  z-index: 10;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.timeline-control {
+  position: relative;
+  margin: 10px 0;
+}
+
+.timeline-control input[type="range"] {
+  width: 100%;
+  position: relative;
+}
+
+/* Animation recording buttons */
+.record-btn {
+  background: linear-gradient(45deg, #ff6b6b, #ee5a52) !important;
+  color: white !important;
+  font-weight: bold !important;
+}
+
+.record-btn:hover {
+  background: linear-gradient(45deg, #ff5252, #d32f2f) !important;
+}
+
+.play-btn {
+  background: linear-gradient(45deg, #4CAF50, #45a049) !important;
+  color: white !important;
+  font-weight: bold !important;
+}
+
+.play-btn:hover {
+  background: linear-gradient(45deg, #388E3C, #2E7D32) !important;
+}
+
+/* PNG button overrides */
+.has-png {
+  background-image: var(--png-url) !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  color: transparent !important;
+  font-size: 0 !important;
+}
+
+#videoControls button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Video control button icons - fallback to emoji if PNG not available */
+.video-control-btn {
+  background-image: none;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: relative;
+  border: none;
+  outline: none;
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* When PNG images are available, these classes will be used */
+.video-control-btn[data-icon="prev"] {
+  background-image: url('images/previous.png');
+}
+
+.video-control-btn[data-icon="play"] {
+  background-image: url('images/play.png');
+}
+
+.video-control-btn[data-icon="pause"] {
+  background-image: url('images/stop.png');
+}
+
+.video-control-btn[data-icon="next"] {
+  background-image: url('images/next.png');
+}
+
+.video-control-btn[data-icon="playlist"] {
+  background-image: url('images/playlist.png');
+}
+
+.video-control-btn[data-icon="fullscreen"] {
+  background-image: url('images/fullscreen.png');
+}
+
+.video-control-btn[data-icon="close"] {
+  background-image: url('images/stop.png');
+}
+
+/* Hide text when PNG is loaded */
+.video-control-btn.has-png {
+  color: transparent !important;
+  font-size: 0 !important;
+}
+
+/* Ensure buttons are clickable even with PNG */
+.video-control-btn {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* PNG images will be applied via JavaScript */
+
+#videoPlaylist {
+  position: fixed;
+  top: 130px;
+  right: 15px;
+  width: 300px;
+  max-height: 70vh;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 15px;
+  border-radius: 10px;
+  border: 2px solid #4CAF50;
+  z-index: 60000 !important;
+  display: none;
+  overflow-y: auto;
+  transition: all 0.3s ease;
+  opacity: 1;
+  pointer-events: auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+#videoPlaylist.minimized {
+  width: 30px;
+  height: 200px;
+  overflow: hidden;
+  padding: 5px;
+  cursor: pointer;
+}
+
+#videoPlaylist.minimized h3,
+#videoPlaylist.minimized div:not(:first-child) {
+  display: none;
+}
+
+#videoPlaylist.minimized::before {
+  content: '▶️';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 16px;
+  color: #4CAF50;
+}
+
+#videoPlaylist h3 {
+  color: #4CAF50;
+  margin-top: 0;
+  text-align: center;
+}
+
+.playlist-item {
+  background: rgba(255, 255, 255, 0.1);
+  color: #4CAF50;
+  border: 1px solid #4CAF50;
+  padding: 6px 10px;
+  margin: 3px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.playlist-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #4CAF50;
+}
+
+.playlist-item.playing {
+  background: rgba(76, 175, 80, 0.6);
+  color: white;
+  border-color: #4CAF50;
+}
+
+/* ===== PLAYBACK TOOLBAR STYLES ===== */
+#playbackToolbar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+  color: white;
+  display: flex;
+  justify-content: center; 
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  z-index: 1000;
+  display: none;
+  flex-wrap: wrap;
+  border-top: 2px solid #333;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+}
+
+#playbackToolbar .record-btn,
+#playbackToolbar .play-btn,
+#playbackToolbar .snapshot-btn {
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+#playbackToolbar .record-btn:hover,
+#playbackToolbar .play-btn:hover,
+#playbackToolbar .snapshot-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+#playbackToolbar .end-btn {
+  background: linear-gradient(45deg, #f44336, #da190b);
+}
+
+#playbackToolbar .play-btn {
+  background: linear-gradient(45deg, #2196F3, #1976D2);
+}
+
+#playbackToolbar .snapshot-btn {
+  background: linear-gradient(45deg, #FF9800, #F57C00);
+}
+
+#playbackToolbar .timeline-control,
+#playbackToolbar .duration-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#playbackToolbar .timeline-control span,
+#playbackToolbar .duration-control span {
+  color: #ccc;
+  font-size: 12px;
+}
+
+#playbackToolbar #playbackSlider {
+  width: 250px;
+  height: 6px;
+  border-radius: 3px;
+  background: #333;
+  outline: none;
+}
+
+#playbackToolbar #playbackDuration {
+  background: #333;
+  color: white;
+  border: 1px solid #555;
+  padding: 6px;
+  border-radius: 4px;
+  outline: none;
+}
+
+/* ===== MEDIA TOOLBAR STYLES ===== */
+#mediaToolbar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  z-index: 1000;
+  display: none;
+  border-top: 2px solid #333;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+  flex-wrap: wrap;
+  overflow-x: auto;
+  transition: all 0.3s ease;
+}
+
+#mediaToolbar.minimized {
+  height: 52px;
+  overflow: hidden;
+  padding: 2px 5px;
+  border-top: none;
+  box-shadow: 0 -1px 5px rgba(0,0,0,0.2);
+}
+
+#mediaToolbar.minimized .media-separator,
+#mediaToolbar.minimized .timeline-control,
+#mediaToolbar.minimized .duration-control,
+#mediaToolbar.minimized label,
+#mediaToolbar.minimized input,
+#mediaToolbar.minimized select {
+  display: none;
+}
+
+#mediaToolbar.minimized button {
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: none !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+}
+
+/* Special styling for minimized state PNG buttons in media toolbar only */
+#mediaToolbar.minimized button.has-png {
+  background-size: 36px 36px !important;
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+}
+
+#mediaToolbar button[data-icon="hide"] {
+  /* Hide button inherits the standard button sizing */
+}
+
+#mediaToolbar label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #ccc;
+}
+
+#mediaToolbar input[type="file"],
+#mediaToolbar input[type="text"] {
+  background: #333;
+  color: white;
+  border: 1px solid #555;
+  padding: 6px;
+  border-radius: 4px;
+  outline: none;
+}
+
+#mediaToolbar button {
+  background: linear-gradient(45deg, #2196F3, #1976D2);
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  margin: 0;
+  font-size: 12px;
+}
+
+/* Override for PNG buttons */
+#mediaToolbar button.has-png,
+#toolbar button.has-png,
+.video-control-btn.has-png {
+  background: none !important;
+  background-image: var(--png-url, none) !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  color: transparent !important;
+  font-size: 0 !important;
+}
+
+/* Music panel control buttons with PNG - stretch to fill entire button */
+.music-control-btn.has-png {
+  background: none !important;
+  background-image: var(--png-url, none) !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  color: transparent !important;
+  font-size: 0 !important;
+}
+
+/* Special override for dice button when showing number */
+#toolbar button.has-png[data-icon="dice"].showing-number {
+  color: gold !important;
+  font-size: 24px !important;
+  font-weight: bold !important;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8) !important;
+  z-index: 10 !important;
+}
+
+#mediaToolbar button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+#mediaToolbar .media-separator {
+  width: 1px;
+  height: 30px;
+  background: #555;
+  margin: 0 10px;
+}
+
+#mediaToolbar .record-btn,
+#mediaToolbar .play-btn,
+#mediaToolbar .snapshot-btn {
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+#mediaToolbar .record-btn:hover,
+#mediaToolbar .play-btn:hover,
+#mediaToolbar .snapshot-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+#mediaToolbar .end-btn {
+  background: linear-gradient(45deg, #f44336, #da190b);
+}
+
+#mediaToolbar .play-btn {
+  background: linear-gradient(45deg, #2196F3, #1976D2);
+}
+
+#mediaToolbar .snapshot-btn {
+  background: linear-gradient(45deg, #FF9800, #F57C00);
+}
+
+#mediaToolbar .timeline-control,
+#mediaToolbar .duration-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ===== MOBILE DEVICE TOP TOOLBAR RULES ===== */
+/* Simple mobile rule: just ensure toolbar stays visible */
+@media screen and (max-width: 768px), (hover: none) and (pointer: coarse) {
+  #toolbar {
+    display: flex !important;
+    opacity: 1 !important;
+  }
+  
+  #toolbar.mobile-always-visible {
+    display: flex !important;
+    opacity: 1 !important;
+  }
+  
+  /* Mobile adjustments for Analysis iframe container */
+  .analysis-iframe-container {
+    top: 70px; /* Slightly closer to toolbar on mobile */
+    left: 10px;
+    right: 10px;
+    height: calc(100vh - 140px); /* Maintain bottom gap on mobile */
+    width: calc(100vw - 20px); /* Full width on mobile */
+    max-width: none;
+    transform: none;
+  }
+  
+  /* Mobile toolbar button sizing - ensure consistent sizing without breaking layout */
+  #toolbar button {
+    min-width: 40px;
+    max-width: none;
+    min-height: 40px;
+    max-height: none;
+    aspect-ratio: 1;
+    flex: 1 1 0 !important;
+  }
+  
+  /* Ensure all buttons maintain consistent sizing */
+  #toolbar > button:nth-child(-n+5),
+  #toolbar > button:nth-child(n+6) {
+    min-width: 40px;
+    max-width: 60px;
+    flex: 1 1 0 !important;
+  }
+  
+  /* Fix video and music button containers on mobile - maintain square shape and scaling */
+  #toolbar > div[style*="flex-direction: column"] {
+    flex: 1 1 0 !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+    aspect-ratio: 1 !important;
+    max-width: none !important;
+    max-height: none !important;
+  }
+  
+  /* Override inline styles for video and music buttons on mobile - maintain square shape */
+  #toolbar button[data-icon="video"],
+  #toolbar button[data-icon="music"] {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 20px !important;
+    max-width: none !important;
+    min-height: 20px !important;
+    max-height: none !important;
+    aspect-ratio: 1 !important;
+    flex: 1 1 0 !important;
+  }
+  
+  /* Scale visualizations to match button size on mobile */
+  #toolbar #musicVisualizer,
+  #toolbar #musicVisualizer2 {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: 1 !important;
+  }
+  
+  /* Scale visualization bars to fit properly */
+  #toolbar #visualizerBars,
+  #toolbar #visualizerBars2 {
+    width: 100% !important;
+    height: 100% !important;
+    padding: 2px !important;
+  }
+  
+  /* Scale individual visualization bars */
+  #toolbar .viz-bar {
+    width: 2px !important;
+    min-width: 2px !important;
+    max-width: 2px !important;
+  }
+  
+
+  
+
+  
+  /* Eliminate right-side gap by adjusting toolbar layout on mobile */
+  #toolbar {
+    justify-content: flex-start !important;
+    gap: 0 !important;
+  }
+  
+  /* Ensure buttons are tightly packed with no extra spacing */
+  #toolbar > button,
+  #toolbar > div {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
+  
+  /* Scale entire toolbar proportionally on mobile while maintaining ratios */
+  #toolbar {
+    justify-content: flex-start !important;
+    gap: 0 !important;
+    width: 100% !important;
+  }
+  
+  /* All elements use consistent sizing on mobile */
+  #toolbarDropdowns {
+    flex: 2 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  /* Container for the two dropdown boxes - horizontal layout */
+  #toolbarDropdowns > div:first-child {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  
+  /* Individual dropdown containers */
+  #toolbarDropdowns > div > div {
+    min-width: 0;
+    flex-shrink: 1;
+    max-height: 36px;
+  }
+  
+  #toolbarDropdowns select {
+    min-width: 0;
+    flex-shrink: 1;
+    height: 28px;
+    padding: 2px 8px;
+    width: 200%;
+  }
+  
+  #toolbarDropdowns label {
+    margin: 0;
+    padding: 0;
+    height: 20px;
+  }
+  
+  #toolbarDropdowns input[type="range"] {
+    height: 10px;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* All buttons use consistent sizing on mobile */
+  #toolbar > button {
+    flex: 1 1 0 !important;
+    min-width: 40px !important;
+    max-width: 60px !important;
+    min-height: 40px !important;
+    max-height: 60px !important;
+  }
+  
+
+}
+
+#mediaToolbar .timeline-control span,
+#mediaToolbar .duration-control span {
+  color: #ccc;
+  font-size: 12px;
+}
+
+#mediaToolbar #mediaPlaybackSlider {
+  width: 200px;
+  height: 6px;
+  border-radius: 3px;
+  background: #333;
+  outline: none;
+}
+
+#mediaToolbar #mediaPlaybackDuration {
+  background: #333;
+  color: white;
+  border: 1px solid #555;
+  padding: 6px;
+  border-radius: 4px;
+  outline: none;
+}
+
+/* ===== FORM ELEMENT STYLES ===== */
+#themeSelector, #presetSelector {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: gold;
+  border: 2px solid darkgreen;
+  font-family: 'Monaco', serif;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  appearance: none;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+#themeSelector:hover, #presetSelector:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid darkgreen;
+  border-radius: 5px;
+  outline: none;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Video control sliders with enhanced hover titles */
+#videoControls input[type="range"] {
+  position: relative;
+}
+
+#videoControls input[type="range"]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10000;
+  pointer-events: none;
+  border: 1px solid #4CAF50;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: gold;
+  cursor: pointer;
+  border: 2px solid darkgreen;
+  box-shadow: 0 0 4px gold;
+  transition: background-color 0.3s ease;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: gold;
+  cursor: pointer;
+  border: 2px solid darkgreen;
+  box-shadow: 0 0 4px gold;
+  transition: background-color 0.3s ease;
+}
+
+/* Red thumb when paused */
+input[type="range"].paused::-webkit-slider-thumb {
+  background: red;
+  box-shadow: 0 0 4px red;
+}
+
+input[type="range"].paused::-moz-range-thumb {
+  background: red;
+  box-shadow: 0 0 4px red;
+}
+
+input[type="file"] {
+  background-color: rgba(0, 0, 0, 0.6);
+  color: gold;
+  border: 2px solid darkgreen;
+  font-family: 'Monaco', serif;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+input[type="text"] {
+  background-color: rgba(0, 0, 0, 0.6);
+  color: gold;
+  border: 2px solid darkgreen;
+  font-family: 'Monaco', serif;
+  padding: 6px;
+  border-radius: 6px;
+  width: 120px;
+}
+
+/* ===== BUBBLE STYLES ===== */
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  text-align: center;
+  padding: 5px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.bubble img {
+  position: absolute;
+  width: 90%;
+  height: 90%;
+  border-radius: 50%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.bubble span {
+  position: relative;
+  z-index: 1;
+}
+
+.glow {
+  box-shadow: 0 0 20px 5px white;
+}
+
+.flash {
+  animation: flash 0.5s infinite alternate;
+}
+
+@keyframes flash {
+  from { opacity: 1; }
+  to { opacity: 0.5; }
+}
+
+.animate-colors {
+  animation: colorCycle 5s infinite linear;
+}
+
+@keyframes colorCycle {
+  0% { background-color: red; }
+  25% { background-color: yellow; }
+  50% { background-color: green; }
+  75% { background-color: blue; }
+  100% { background-color: red; }
+}
+
+.transparent {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== MEDIA ELEMENT STYLES ===== */
+#bgVideo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -2;
+  pointer-events: none;
+  display: none;
+  background: black;
+}
+
+#bubblePanel {
+  resize: both;
+  overflow: auto;
+  min-width: 200px;
+  min-height: 150px;
+}
+
+/* ===== MUSIC VISUALIZER ===== */
+
+.viz-bar {
+  border-radius: 2px;
+  min-height: 2px;
+  transition: height 0.1s ease;
+  opacity: 0.8;
+}
+
+#musicVisualizer, #musicVisualizer2 {
+  border: none;
+}
+
+/* Ensure toolbar visualizers match button dimensions exactly */
+#toolbar #musicVisualizer,
+#toolbar #musicVisualizer2 {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  border-radius: 6px !important;
+  aspect-ratio: 1 !important;
+}
+
+/* Ensure toolbar visualizer bars fit properly within the container */
+#toolbar #visualizerBars,
+#toolbar #visualizerBars2 {
+  width: 100% !important;
+  height: 100% !important;
+  padding: 2px !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure toolbar individual visualization bars scale properly */
+#toolbar .viz-bar {
+  width: 2px !important;
+  min-width: 2px !important;
+  max-width: 2px !important;
+  border-radius: 2px !important;
+} 

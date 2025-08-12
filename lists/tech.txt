@@ -1,0 +1,3 @@
+feed https://www.theverge.com/rss/index.xml
+feed https://www.engadget.com/rss.xml
+url  https://arstechnica.com/

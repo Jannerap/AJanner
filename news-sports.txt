@@ -1,0 +1,19 @@
+# Sports News Sources
+# Plymouth Argyle News (Auto-scraped from website)
+plymouth-argyle https://www.pafc.co.uk/news
+
+# Plymouth Herald Football News (Auto-scraped from website)
+plymouth-herald-sports https://www.plymouthherald.co.uk/sport/football/
+
+# General Sports Feeds
+feed https://www.bbc.co.uk/sport/rss.xml
+feed https://www.skysports.com/rss/0,20514,11661,00.xml
+feed https://www.espn.com/espn/rss/news
+feed https://www.goal.com/en/rss/news
+feed https://www.football365.com/feed/
+feed https://www.90min.com/feed
+feed https://www.sportbible.com/feed
+feed https://www.givemesport.com/feed
+feed https://www.talksport.com/feed/
+feed https://www.bbc.co.uk/sport/football/rss.xml
+feed https://www.espn.com/espn/rss/soccer/news

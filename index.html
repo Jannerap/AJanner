@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <link href="favicon.ico" rel="icon" type="image/x-icon"/>
+  
+  <!-- Butterchurn visualization library - Loaded dynamically to avoid CDN issues -->
+  <script>
+    // Dynamic loading system to avoid CDN security blocks
+    window.loadButterchurnDynamically = function() {
+      return new Promise((resolve, reject) => {
+        // Try multiple CDN sources with better error handling
+        const sources = [
+          'https://unpkg.com/butterchurn@2.6.7/butterchurn.min.js',
+          'https://cdnjs.cloudflare.com/ajax/libs/butterchurn/2.6.7/butterchurn.min.js',
+          'https://fastly.jsdelivr.net/npm/butterchurn@2.6.7/butterchurn.min.js'
+        ];
+        
+        let currentSource = 0;
+        
+        function tryNextSource() {
+          if (currentSource >= sources.length) {
+            reject(new Error('All CDN sources failed'));
+            return;
+          }
+          
+          const script = document.createElement('script');
+          script.src = sources[currentSource];
+          script.onload = () => {
+            console.log(`✅ Butterchurn loaded from: ${sources[currentSource]}`);
+            resolve();
+          };
+          script.onerror = () => {
+            console.warn(`⚠️ Failed to load from: ${sources[currentSource]}`);
+            currentSource++;
+            tryNextSource();
+          };
+          
+          document.head.appendChild(script);
+        }
+        
+        tryNextSource();
+      });
+    };
+    
+    window.loadButterchurnPresetsDynamically = function() {
+      return new Promise((resolve, reject) => {
+        const sources = [
+          'https://unpkg.com/butterchurn-presets@2.4.7/dist/butterchurn-presets.min.js',
+          'https://cdnjs.cloudflare.com/ajax/libs/butterchurn-presets/2.4.7/butterchurn-presets.min.js',
+          'https://fastly.jsdelivr.net/npm/butterchurn-presets@2.4.7/dist/butterchurn-presets.min.js'
+        ];
+        
+        let currentSource = 0;
+        
+        function tryNextSource() {
+          if (currentSource >= sources.length) {
+            reject(new Error('All preset CDN sources failed'));
+            return;
+          }
+          
+          const script = document.createElement('script');
+          script.src = sources[currentSource];
+          script.onload = () => {
+            console.log(`✅ Butterchurn presets loaded from: ${sources[currentSource]}`);
+            resolve();
+          };
+          script.onerror = () => {
+            console.warn(`⚠️ Failed to load presets from: ${sources[currentSource]}`);
+            currentSource++;
+            tryNextSource();
+          };
+          
+          document.head.appendChild(script);
+        }
+        
+        tryNextSource();
+      });
+    };
+  </script>
+  
+  <title>💭MindsEye💬~Ideas</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <!-- Toolbar -->
+  <div id="toolbar">
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 20px; max-width: none; min-height: 20px; max-height: 180px;">
+      <div id="musicVisualizer" style="display: none; position: absolute; top: 2px; left: 0; width: 100%; height: calc(100% - 4px); background: rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; z-index: 1;">
+        <div id="visualizerBars" style="display: flex; justify-content: space-around; align-items: center; height: 100%; padding: 2px;">
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+        </div>
+      </div>
+      <button onclick="toggleVideoPlayer()" oncontextmenu="handleVideoRightClick(); return false;" title="Toggle Video Player (Right-click to close)" class="toolbar-btn" data-icon="video" style="position: relative; z-index: 2; width: 100%; height: 100%;">📹</button>
+    </div>
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 20px; max-width: none; min-height: 20px; max-height: 180px;">
+      <div id="musicVisualizer2" style="display: none; position: absolute; top: 2px; left: 0; width: 100%; height: calc(100% - 4px); background: rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; z-index: 1;">
+        <div id="visualizerBars2" style="display: flex; justify-content: space-around; align-items: flex-end; height: 100%; padding: 2px;">
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+          <div class="viz-bar" style="width: 4px; background: #8FE04A; transition: height 0.1s ease;"></div>
+        </div>
+      </div>
+      <button onclick="toggleMusicPanel()" oncontextmenu="handleMusicRightClick(); return false;" title="Music Panel (Right-click to start playlist, then play/pause)" class="toolbar-btn" data-icon="music" style="position: relative; z-index: 2; width: 100%; height: 100%;">🎶</button>
+    </div>
+    <button onclick="rollDice()" oncontextmenu="showDiceSlider(); return false;" title="Random (Right-click for slider)" class="toolbar-btn" data-icon="dice" id="diceButton"></button>
+    <button onclick="cycleBackground()" oncontextmenu="rotateBackground(); return false;" title="Change Background (Right-click to rotate)" class="toolbar-btn" data-icon="cycle">🔄</button>
+    <button onclick="togglePauseButton()" title="Pause/Unpause" class="toolbar-btn" data-icon="pause">⏯️</button>
+    
+    <div id="toolbarDropdowns">
+      <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+        <select id="themeSelector" onchange="switchTheme(this.value)" title="Select Use" style="flex: 1;">
+          <option value="default">Start 😀</option>
+          <option value="argyle">Argyle ♻️</option>
+          <option value="games">Games 🎮</option>
+          <option value="blank">Blank 😶</option>
+          <option value="meme">Memes 🙄</option>
+          <option value="foods">Food 😋</option>
+          <option value="sleep">🥱 😴</option>
+          <option value="credits"> 💚</option>
+        </select>
+        
+        <select id="presetSelector" onchange="switchPreset(this.value)" title="Select Preset" style="flex: 1;">
+          <option value="">Preset 😇</option>
+        </select>
+      </div>
+      <label title="Motion (Right-click to pause/unpause)" style="width: 100%; display: block; margin: 0; padding: 0;"> 
+        <input max="3" min="0.0" onchange="const slider = this; const value = parseFloat(slider.value); if(value !== 0) { previousSpeed = value; originalSpeed = value; slider.classList.remove('paused'); } else { slider.classList.add('paused'); } speedMultiplier = value" oncontextmenu="toggleSpeed(); return false;" step="0.1" type="range" value="1.3" style="width: 100%; margin: 0; padding: 0;"/>
+      </label>
+    </div>
+    
+    <button onclick="toggleDrawingMode()" oncontextmenu="handleDrawButtonRightClick(event)" title="Toggle Drawing Mode (Right-click for settings when active, clear drawings when inactive)" class="toolbar-btn" data-icon="draw">✏️</button>
+    <button onclick="toggleAnalysisPanel()" title="Analysis" class="toolbar-btn" data-icon="analysis">📊</button>
+    
+    <!-- Drawing Dropdowns (hidden by default) -->
+    <div id="drawingDropdowns" class="drawing-dropdowns" style="display: none;">
+      <select id="drawingColorDropdown" class="drawing-dropdown" onchange="setDrawingColor(this.value)" title="Drawing Color">
+        <option value="#FF3131">🔴 Neon</option>
+        <option value="#00FF00">🟢 Argyle</option>
+        <option value="#0000FF">🔵 Blue</option>
+        <option value="#FFFF00">🟡 Yellow</option>
+        <option value="#FF00FF">🟣 Magenta</option>
+        <option value="#00FFFF">🔵 Cyan</option>
+        <option value="#FFA500">🟠 Orange</option>
+        <option value="#800080">🟣 Purple</option>
+        <option value="#008000">🟢 Dark Green</option>
+        <option value="#000080">🔵 Navy</option>
+        <option value="#FFD700">🟡 Gold</option>
+        <option value="#FF69B4">🩷 Hot Pink</option>
+        <option value="#32CD32">🟢 Lime Green</option>
+        <option value="#FF4500">🟠 Orange Red</option>
+        <option value="#8A2BE2">🟣 Blue Violet</option>
+        <option value="#00CED1">🔵 Dark Turquoise</option>
+        <option value="#FF1493">🩷 Deep Pink</option>
+        <option value="#FF6347">🟠 Tomato</option>
+        <option value="#9370DB">🟣 Medium Purple</option>
+        <option value="#20B2AA">🔵 Light Sea Green</option>
+        <option value="#FFB6C1">🩷 Light Pink</option>
+        <option value="#DDA0DD">🟣 Plum</option>
+        <option value="#98FB98">🟢 Pale Green</option>
+        <option value="#F0E68C">🟡 Khaki</option>
+        <option value="#FFA07A">🟠 Light Salmon</option>
+        <option value="#87CEEB">🔵 Sky Blue</option>
+        <option value="#90EE90">🟢 Light Green</option>
+      </select>
+      <select id="drawingWidthDropdown" class="drawing-dropdown" onchange="setDrawingWidth(parseInt(this.value))" title="Drawing Width">
+        <option value="1">1px</option>
+        <option value="2">2px</option>
+        <option value="3">3px</option>
+        <option value="4">4px</option>
+        <option value="5">5px</option>
+        <option value="8">8px</option>
+        <option value="12">12px</option>
+        <option value="16">16px</option>
+        <option value="20">20px</option>
+      </select>
+    </div>
+    
+    <button onclick="saveIdeas()" title="Save .json File" class="toolbar-btn" data-icon="save">💾Save.json</button>
+    <input accept=".json" id="fileLoader" style="display:none" type="file"/>
+    <button onclick="document.getElementById('fileLoader').click()" title="Load .json File" class="toolbar-btn" data-icon="load">🆙 Load.json</button>
+    <button onclick="captureCanvasOnly()" oncontextmenu="deleteAllIdeas(); return false;" title="Snapshot (Right-click to clear canvas)" class="toolbar-btn" data-icon="clear">🚮Clear💭Ideas🗑️</button>
+  </div>
+
+  <!-- Media Toolbar -->
+  <div id="mediaToolbar">
+    <label>🫟 Background:
+      <input accept="image/*" id="bgLoader" type="file"/>
+    </label>
+    <label>📀 Video:
+      <input accept="video/*" id="videoLoader" type="file"/>
+    </label>
+    <label>🎥 YouTube:
+      <input id="youtubeLink" placeholder="Paste Video URL" type="text"/>
+      <button onclick="loadYouTubeVideo()" class="toolbar-btn" data-icon="youtube">Load</button>
+    </label>
+    <div class="media-separator"></div>
+    <button onclick="recordState('start')" class="record-btn start-btn toolbar-btn" data-icon="record-in" title="Mark In Point">🎬 In</button>
+    
+    <button onclick="recordState('keyframe')" class="record-btn keyframe-btn toolbar-btn" data-icon="keyframe" title="Add Keyframe">📍 Key</button>
+    <button onclick="recordState('end')" class="record-btn end-btn toolbar-btn" data-icon="record-out" title="Mark Out Point">🏁 Out</button>
+    <button onclick="startPlayback()" class="play-btn toolbar-btn" data-icon="play" title="Play In to Out">▶️ Play</button>
+    <div class="timeline-control">
+      <span>Timeline:</span>
+      <input id="mediaPlaybackSlider" max="1" min="0" step="0.01" type="range" value="0"/>
+      <span id="playbackTimeDisplay" style="color: white; font-size: 12px; margin-left: 10px;">00:00 / 00:00</span>
+    </div>
+    <div class="duration-control">
+      <span>Duration:</span>
+      <select id="mediaPlaybackDuration">
+        <option value="5000">5s</option>
+        <option selected="" value="10000">10s</option>
+        <option value="15000">15s</option>
+        <option value="20000">20s</option>
+        <option value="30000">30s</option>
+        <option value="40000">40s</option>
+        <option value="50000">50s</option>
+      </select>
+    </div>
+    <button onclick="saveAnimation()" class="save-btn toolbar-btn" data-icon="save" title="Save Animation">💾 Save</button>
+    <button onclick="loadAnimation()" class="load-btn toolbar-btn" data-icon="load" title="Load Animation">📂 Load</button>
+    <button onclick="captureCanvas()" class="snapshot-btn toolbar-btn" data-icon="snapshot-media" title="Snapshot">📷 Snapshot</button>
+    <button onclick="toggleMediaToolbarMinimize()" class="minimize-btn toolbar-btn" data-icon="hide" title="Hide/Show"></button>
+  </div>
+
+  <!-- Video Elements -->
+  <video id="bgVideo" loop="" muted="" playsinline="" style="position:fixed; top:0; left:0; width:100vw; height:100vh; object-fit:cover; z-index:-2; display:none; pointer-events: none;"></video>
+  <iframe allow="autoplay" allowfullscreen="" frameborder="0" id="ytFrame" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-3; display:none;"></iframe>
+
+  <!-- Video Player -->
+  <div id="videoPlayer" onmouseenter="showVideoControls()">
+    <iframe id="videoIframe" allow="autoplay" allowfullscreen="" frameborder="0"></iframe>
+  </div>
+
+  <!-- Video Controls -->
+  <div id="videoControls">
+    <div style="margin-bottom: 10px;">
+      <input type="range" id="videoOpacitySlider" min="0.0" max="1.0" step="0.1" value="0.5" style="width: 100px;" oninput="updateVideoOpacity(this.value)" title="Video Opacity"/>
+      <input type="range" id="videoSizeSlider" min="0.3" max="1.5" step="0.1" value="1.0" style="width: 100px; margin-left: 10px;" oninput="updateVideoSize(this.value)" title="Video Size"/>
+      <input type="range" id="videoVerticalSlider" min="-200" max="200" step="10" value="0" style="width: 100px; margin-left: 10px;" oninput="updateVideoVertical(this.value)" title="Video Vertical Position"/>
+    </div>
+    <button onclick="videoTogglePlaylist()" title="Show Playlist" class="video-control-btn" data-icon="playlist">📋</button>
+    <button onclick="videoPrev()" title="Previous" class="video-control-btn" data-icon="prev">⏮️</button>
+    <button onclick="videoTogglePlay()" title="Play/Pause" class="video-control-btn" data-icon="play">🟢</button>
+
+    <button onclick="videoNext()" title="Next" class="video-control-btn" data-icon="next">⏭️</button>
+
+    <button onclick="videoClose()" title="Close" class="video-control-btn" data-icon="close">��</button>
+  </div>
+
+  <!-- Video Playlist Panel -->
+  <div id="videoPlaylist">
+    <div style="position: relative;">
+      <h3>💚 YouTube Playlist ♻️</h3>
+      <button onclick="minimizePlaylist()" title="Minimize" style="position: absolute; top: 5px; right: 30px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px;">−</button>
+      <button onclick="closePlaylist()" title="Close" style="position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px;">✕</button>
+    </div>
+    <div style="margin-bottom: 10px; padding: 10px; background: rgba(0, 0, 0, 0.3); border-radius: 5px;">
+      <label id="currentPlaylistLabel" style="display: block; margin-bottom: 5px; color: gold;">📋 Upload Playlist (.txt):</label>
+      <input type="file" id="playlistUpload" accept=".txt" style="width: 100%; margin-bottom: 5px;"/>
+      <button onclick="uploadPlaylist()" style="background: linear-gradient(45deg, #4CAF50, #45a049); border: none; color: black; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px;">📤 Upload</button>
+      <button onclick="previousPlaylist()" style="background: linear-gradient(45deg, #FF9800, #F57C00); border: none; color: black; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-left: 5px;">◀️</button>
+      <button onclick="nextPlaylist()" style="background: linear-gradient(45deg, #2196F3, #1976D2); border: none; color: black; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-left: 5px;">▶️</button>
+      <button onclick="playRandomVideo()" style="background: linear-gradient(45deg, #9C27B0, #7B1FA2); border: none; color: black; padding: 5px 10px; border-radius: 3px 0px 0px 3px; cursor: pointer; font-size: 12px; margin-left: 5px;">🔄</button><input type="file" id="mp4Upload" accept=".mp4,video/mp4" style="display: none;" onchange="uploadMp4Video(event)"/><button onclick="document.getElementById('mp4Upload').click()" style="background: linear-gradient(45deg, #FF6B6B, #EE5A52); border: none; color: black; padding: 5px 10px; border-radius: 0px 3px 3px 0px; cursor: pointer; font-size: 12px;">🀄️</button>
+    </div>
+    <div style="margin-bottom: 10px; padding: 1px; background: rgba(0, 0, 0, 0.3); border-radius: 5px;">
+      <label style="display: block; margin-bottom: 5px; color: gold; font-size: 12px;">🌐 URL Viewer (Websites/YouTube):</label>
+      <div style="display: flex; gap: 5px; align-items: center;">
+        <input type="text" id="singleVideoUrl" placeholder="https://example.com, https://youtube.com/watch?v=..., video.mp4" onkeydown="if(event.key==='Enter') playSingleVideoStream()" style="flex: 1; padding: 6px; border: 2px solid #FF4444; border-radius: 3px; background: rgba(0, 0, 0, 0.6); color: white; font-size: 12px; outline: none;"/>
+        <button onclick="playSingleVideoStream()" style="background: linear-gradient(45deg, #FF4444, #CC3333); border: none; color: white; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight: bold;">🌐 Load</button>
+      </div>
+    </div>
+    <div id="videoPlaylistItems">
+      <!-- Playlist items will be loaded here -->
+    </div>
+  </div>
+
+  <!-- Drawing Settings Panel -->
+  <div id="drawingSettingsPanel" class="panel" style="display: none; width: 15%;">
+    <h3 style="margin: 5px 0;">🎨 Drawing Settings</h3>
+    <div style="margin: 10px 0;">
+      <label for="drawingColorSelect">Color:</label>
+      <select id="drawingColorSelect" onchange="setDrawingColor(this.value)">
+        <option value="#FF3131">Neon</option>
+        <option value="#00FF00">Argyle</option>
+        <option value="#0000FF">Blue</option>
+        <option value="#FFFF00">Yellow</option>
+        <option value="#FF00FF">Magenta</option>
+        <option value="#00FFFF">Cyan</option>
+        <option value="#FFA500">Orange</option>
+        <option value="#800080">Purple</option>
+        <option value="#008000">Dark Green</option>
+        <option value="#000080">Navy</option>
+        <option value="#FFD700">Gold</option>
+        <option value="#FF69B4">Hot Pink</option>
+        <option value="#32CD32">Lime Green</option>
+        <option value="#FF4500">Orange Red</option>
+        <option value="#8A2BE2">Blue Violet</option>
+        <option value="#00CED1">Dark Turquoise</option>
+        <option value="#FF1493">Deep Pink</option>
+        <option value="#FF6347">Tomato</option>
+        <option value="#9370DB">Medium Purple</option>
+        <option value="#20B2AA">Light Sea Green</option>
+        <option value="#FFB6C1">Light Pink</option>
+        <option value="#DDA0DD">Plum</option>
+        <option value="#98FB98">Pale Green</option>
+        <option value="#F0E68C">Khaki</option>
+        <option value="#FFA07A">Light Salmon</option>
+        <option value="#87CEEB">Sky Blue</option>
+        <option value="#90EE90">Light Green</option>
+      </select>
+    </div>
+    <div style="margin: 10px 0;">
+      <label for="drawingWidthSelect">Width:</label>
+      <select id="drawingWidthSelect" onchange="setDrawingWidth(parseInt(this.value))">
+        <option value="1">1px</option>
+        <option value="2">2px</option>
+        <option value="3">3px</option>
+        <option value="4">4px</option>
+        <option value="5">5px</option>
+        <option value="8">8px</option>
+        <option value="12">12px</option>
+        <option value="16">16px</option>
+        <option value="20">20px</option>
+      </select>
+    </div>
+    <div style="margin: 10px 0; text-align: center;">
+      <button onclick="switchToBubbleMode()" style="background: linear-gradient(45deg, #2196F3, #1976D2); border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 5px;">🫧 Switch to Bubble Mode</button>
+      <button onclick="clearDrawingFromPanel()" style="background: linear-gradient(45deg, #f44336, #da190b); border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 5px;">🧹 Clear Drawing</button>
+      <button onclick="toggleDrawingFlash()" id="flashDrawingBtn" style="background: linear-gradient(45deg, #FFD700, #FFA500); border: none; color: black; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 5px;">✨ Flash Drawing</button>
+      <button onclick="smoothLastLine()" style="background: linear-gradient(45deg, #4CAF50, #45a049); border: none; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%;">🔄 Smooth Last Line</button>
+    </div>
+    <button onclick="closeDrawingSettings()" class="panel-close-btn">✖️</button>
+  </div>
+
+  <!-- Analysis Panel -->
+  <div id="analysisPanel" class="analysis-panel" style="display: none;">
+    <h3 style="margin: 5px 0; color: gold;">📊 Analysis</h3>
+    <div style="display: flex; flex-direction: column; gap: 8px; margin: 15px 0;">
+      <button onclick="openAnalysisIframe('suggestions')" style="background: linear-gradient(45deg, #4CAF50, #45a049); border: none; color: white; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left;">🍿 Suggestions:<br>Current: Anime (All)</button>
+      <button onclick="openAnalysisIframe('ideas')" style="background: linear-gradient(45deg, #2196F3, #1976D2); border: none; color: white; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left;">🧠 Ideas:<br>Current: Comedy (All)</button>
+      <button onclick="toggleProjectMPanel()" style="background: linear-gradient(45deg, #9C27B0, #7B1FA2); border: none; color: white; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left;">🎨 Music Visualization<br><span style="font-size: 11px; opacity: 0.8;">Butterchurn & MilkDrop</span></button>
+      <button onclick="openAnalysisIframe('v6')" style="background: linear-gradient(45deg, #9C27B0, #7B1FA2); border: none; color: white; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left;">🎯 V6</button>
+      <button onclick="openAnalysisIframe('credits')" style="background: linear-gradient(45deg, #607D8B, #455A64); border: none; color: white; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left;">👥 Credits</button>
+    </div>
+    <button onclick="closeAnalysisPanel()" class="panel-close-btn">✖️</button>
+  </div>
+
+  <!-- Analysis Iframe Container -->
+  <div id="analysisIframeContainer" class="analysis-iframe-container" style="display: none;">
+    <div style="position: relative; height: 100%;">
+      <button onclick="closeAnalysisIframe()" class="panel-close-btn" style="position: absolute; top: 5px; right: 5px; z-index: 1;">✖️</button>
+      <iframe id="analysisIframe" style="width: 100%; height: 100%; border: none; border-radius: 6px;"></iframe>
+    </div>
+  </div>
+
+  <!-- Dice Overlay -->
+  <div class="dice-overlay" id="diceOverlay"></div>
+
+  <!-- Read Panel -->
+  <div class="read-panel" id="readPanel">
+    <div style="margin-bottom: 15px; font-weight: bold; color: gold;">🤔💭ME💬v5😎</div>
+    <div style="color: white; margin-bottom: 20px; line-height: 1.4;">
+      Welcome to MindsEye! This is a creative space for capturing ideas, thoughts, and inspiration. 
+      Use the drawing tools to sketch, the music panel for background ambiance, and the video player for visual inspiration.
+      Click on the canvas to create idea bubbles, and explore the various themes and presets available.
+    </div>
+    <button onclick="hideReadPanel()" style="padding: 8px 16px; background: rgba(0, 0, 0, 0.7); color: gold; border: 2px solid darkgreen; border-radius: 6px; cursor: pointer;">OK</button>
+  </div>
+
+  <!-- Canvas -->
+  <canvas id="canvas"></canvas>
+
+  <!-- Radio URL Input Panel -->
+  <div class="radio-input-panel" id="radioInputPanel" style="display: none;">
+    <h3>📻 Radio Station</h3>
+    <div style="margin-bottom: 15px;">
+      <label style="display: block; margin-bottom: 8px; color: #fff; font-weight: bold;">Enter Radio Stream URL:</label>
+      <input type="text" id="radioUrlInput" placeholder="https://example.com/stream.m3u8" style="width: 100%; padding: 10px; border: 2px solid #4CAF50; border-radius: 6px; background: rgba(0, 0, 0, 0.8); color: #fff; font-size: 14px; outline: none;" />
+    </div>
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button onclick="cancelRadioInput()" style="background: linear-gradient(45deg, #f44336, #da190b); border: none; color: white; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Cancel</button>
+      <button onclick="confirmRadioInput()" style="background: linear-gradient(45deg, #4CAF50, #45a049); border: none; color: white; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Connect</button>
+    </div>
+  </div>
+
+  <!-- Playlist Upload Confirmation Panel -->
+  <div class="playlist-confirmation-panel" id="playlistConfirmationPanel" style="display: none;">
+    <h3>🎵 Playlist Upload Success</h3>
+    <div style="margin-bottom: 20px; text-align: center;">
+      <div id="playlistConfirmationIcon" style="font-size: 48px; margin-bottom: 10px;">✅</div>
+      <div id="playlistConfirmationMessage" style="color: #fff; font-size: 16px; line-height: 1.4; margin-bottom: 15px;">
+        Successfully uploaded playlist with <span id="trackCount" style="color: #4CAF50; font-weight: bold;">0</span> tracks!
+      </div>
+      <div style="color: #ccc; font-size: 14px;">
+        You can now play through them using the <strong>Previous/Next</strong> buttons.
+      </div>
+    </div>
+    <div style="display: flex; justify-content: center;">
+      <button onclick="closePlaylistConfirmation()" style="background: linear-gradient(45deg, #4CAF50, #45a049); border: none; color: white; padding: 12px 30px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px;">Got it!</button>
+    </div>
+  </div>
+
+  <!-- Music Panel -->
+  <div class="music-panel" id="musicPanel">
+    <h3>🎵 Music Player
+      <div class="music-close-btn" onclick="closeMusicPanel()" title="Close Music Panel">✖️</div>
+    </h3>
+    <!-- Now Playing Section -->
+    <div class="now-playing-section">
+      <div class="now-playing-label">Now Playing:</div>
+      <div id="nowPlayingInfo" class="now-playing-info">No track playing</div>
+    </div>
+    <div style="display: flex; gap: 0px; margin-bottom: 10px;">
+      <button onclick="previousMusicTrack()" class="music-control-btn" data-icon="mprevious" style="background: linear-gradient(45deg, #FF9800, #F57C00); border: none; color: white; padding: 1px; border-radius: 6px 0px 0px 6px; cursor: pointer; font-weight: bold; flex: 1; height: 48px; background-size: 100% 100% !important; background-position: center !important;">⏮️ Previous</button>
+      <button onclick="stopMusic()" class="music-control-btn" data-icon="mplay" style="background: linear-gradient(45deg, #f44336, #da190b); border: none; color: white; padding: 1px; border-radius: 0px; cursor: pointer; font-weight: bold; flex: 1; height: 48px; background-size: 100% 100% !important; background-position: center !important;">⏯️Play🎚️</button>
+      <button onclick="nextMusicTrack()" class="music-control-btn" data-icon="mnext" style="background: linear-gradient(45deg, #2196F3, #1976D2); border: none; color: white; padding: 1px; border-radius: 0px 6px 6px 0px; cursor: pointer; font-weight: bold; flex: 1; height: 48px; background-size: 100% 100% !important; background-position: center !important;">⏭️ Next</button>
+    </div>
+    <!-- Music Player Slider Container -->
+    <div id="musicPlayerSlider" style="margin: 10px 0; display: none;">
+      <input type="range" id="musicSeekBar" min="0" max="100" value="0" style="width: 100%; height: 6px; background: rgba(0, 0, 0, 0.6); border: 2px solid darkgreen; border-radius: 5px; outline: none;">
+      <div id="musicTime" style="text-align: center; font-size: 12px; color: #888; margin-top: 5px;">00:00 / 00:00</div>
+    </div>
+    <div style="display: flex; gap: 0px; margin-bottom: 10px;">
+      <button onclick="loadRadioStation()" class="music-control-btn" data-icon="mradio" style="background: linear-gradient(45deg, #9C27B0, #7B1FA2); border: none; color: white; padding: 1px; border-radius: 6px 0px 0px 6px; cursor: pointer; font-weight: bold; flex: 1; height: 96px; background-size: 100% 100% !important; background-position: center !important;">📻 Radio</button>
+      <input type="file" id="musicPlaylistUpload" accept=".txt" style="display: none;" onchange="uploadMusicPlaylist(event)"/>
+      <button onclick="document.getElementById('musicPlaylistUpload').click()" class="music-control-btn" data-icon="mplaylist" style="background: linear-gradient(45deg, #4CAF50, #45a049); border: none; color: white; padding: 1px; border-radius: 0px 6px 6px 0px; cursor: pointer; font-weight: bold; flex: 1; height: 96px; background-size: 100% 100% !important; background-position: center !important;">📁 Upload Playlist</button>
+    </div>
+    <div id="musicList">
+      <!-- Music items will be loaded here -->
+    </div>
+  </div>
+
+  <!-- ProjectM Visualization Panel -->
+  <div class="projectm-panel" id="projectmPanel">
+    <h3>🎨 Music Visualization (Butterchurn)
+      <div class="projectm-close-btn" onclick="closeProjectMPanel()" title="Close Visualization">✖️</div>
+    </h3>
+    <div class="projectm-controls">
+      <button onclick="startButterchurn()">🎵 Start Visualizer</button>
+      <button onclick="retryButterchurn()" id="retryBtn" style="display: none;">🔄 Retry Loading</button>
+      <button onclick="nextLocalEffect()" id="nextLocalEffectBtn" style="display: none;">🎨 Next Effect</button>
+      <button onclick="previousPreset()">⏮️ Previous</button>
+      <button onclick="nextPreset()">⏭️ Next</button>
+      <button onclick="randomPreset()">🎲 Random</button>
+      <button onclick="toggleAutoPreset()">🔄 Auto</button>
+              <button onclick="toggleVisualizationFullscreen()">⛶ Fullscreen</button>
+    </div>
+    <div class="preset-controls">
+      <label>Preset: <select id="presetSelect" onchange="selectPreset(this.value)"></select></label>
+      <label>Auto: <select id="autoMs" onchange="setAutoPreset(this.value)">
+        <option value="0">Off</option>
+        <option value="15000">15s</option>
+        <option value="30000">30s</option>
+        <option value="60000">1m</option>
+        <option value="120000">2m</option>
+        <option value="300000">5m</option>
+      </select></label>
+      <label>Blend: <input id="blendSec" type="number" min="0" max="10" step="0.5" value="2" style="width: 60px;">s</label>
+    </div>
+    <div class="visualization-canvas-container">
+      <canvas id="butterchurnCanvas" width="400" height="300"></canvas>
+    </div>
+    <div class="preset-info">
+      <div>Current: <span id="currentPreset">None</span></div>
+      <div>Total: <span id="totalPresets">0</span></div>
+      <div>Status: <span id="presetStatus">Ready</span></div>
+    </div>
+  </div>
+
+  <!-- Main Panel -->
+  <div class="panel" id="panel">
+    <div style="position: relative; margin-bottom: 10px; padding-top: 5px; height: 30px; display: flex; align-items: center; gap: 0px;">
+      <div class="panel-close-btn" onclick="closePanel()" title="Close Panel" style="position: static;">🅇</div>
+      <button onclick="minimizePanel()" title="Minimize" style="background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px;">⌑</button>
+      <input type="checkbox" id="disablePanelTimeout" title="Disable Panel Timeout" style="width: 12px; height: 12px; cursor: pointer;">
+    </div>
+    <input id="title" placeholder="Title"/>
+    <div style="display: flex; gap: 10px; margin: 10px 0;">
+      <input id="dateField" type="date" style="flex: 1; background-color: rgba(0, 0, 0, 0.6); color: gold; border: 2px solid darkgreen; font-family: 'Monaco', serif; padding: 6px; border-radius: 6px;"/>
+      <input id="timeField" type="time" style="flex: 1; background-color: rgba(0, 0, 0, 0.6); color: gold; border: 2px solid darkgreen; font-family: 'Monaco', serif; padding: 6px; border-radius: 6px;"/>
+    </div>
+    <textarea id="description" placeholder="Description" rows="1"></textarea>
+    
+    <div style="margin: 10px 0; display: flex; flex-wrap: wrap; gap: 0px;">
+      <button onclick="savePanel()" title="Save" class="bubble-btn" data-png="busave" style="flex: 0 0 33.333%;">Save💾</button>
+      <button onclick="deleteIdea()" title="Delete Bubble" class="bubble-btn" data-png="budelete" style="flex: 0 0 33.333%;">Delete💭️</button>
+      <button onclick="clearUploadedImage()" title="Clear IMG" class="bubble-btn" data-png="buimage" style="flex: 0 0 33.333%;">🗑️Image</button>
+    </div>
+    
+    <div class="resize-handle">⤡</div>
+    
+    <div style="margin-top: 1px;">
+      <input accept="image/*" id="uploadImage" type="file"/>
+    </div>
+    
+    <label style="margin-left: 10px;">⬆️ Upload PNG | ⬇️ Change 💭 Size
+      <input id="sizeSlider" title="Bubble Size" max="200" min="10" oninput="selectedIdea.radius = parseInt(this.value)" type="range" value="75"/>
+    </label><br>
+    
+    <div style="margin-left: 10px; display: flex; gap: 10px; align-items: center;">
+      <label style="flex: 1;">⬇️ Text Size
+        <input id="fontSizeSlider" title="Text Size" max="48" min="8" oninput="selectedIdea.fontSize = parseInt(this.value)" type="range" value="14"/>
+      </label>
+      <label style="flex: 1;">⬇️ Ratio
+        <input id="heightRatioSlider" title="Ratio" max="1.7" min="0.3" step="0.1" oninput="updateBubbleRatio(this.value)" type="range" value="1.0"/>
+      </label>
+    </div>
+    
+    <div style="margin: 10px 0;">
+      <label style="margin-left: 10px;">⬆️ Rotation | ⬇️ Shape
+        <select id="shapeSelector" style="background-color: rgba(0, 0, 0, 0.6); color: gold; border: 2px solid darkgreen; font-family: 'Monaco', serif; padding: 6px; border-radius: 6px; width: 100%; margin-top: 5px;">
+          <option value="circle">Circle</option>
+          <option value="square">Square</option>
+          <option value="triangle">Triangle</option>
+          <option value="pentagon">Pentagon</option>
+          <option value="hexagon">Hexagon</option>
+          <option value="octagon">Octagon</option>
+          <option value="striker">Striker</option>
+          <option value="goal">Goal</option>
+          <option value="ball">Ball</option>
+          <option value="puck">Puck</option>
+        </select>
+      </label>
+    </div>
+    
+    <div id="actionSliderContainer" style="margin: 10px 0; display: none;">
+      <label style="margin-left: 10px;">⚡ Action
+        <input id="actionSlider" title="Action" max="20" min="1" step="1" oninput="updateActionSlider(this.value)" type="range" value="5"/>
+        <span id="actionSliderValue" style="color: gold; font-size: 12px; margin-left: 10px;">5</span>
+      </label>
+    </div>
+    
+    <input id="rotationSlider" title="Rotate Bubble" max="360" min="0" oninput="selectedIdea.rotation = parseInt(this.value)" type="range" value="0"/>
+    
+    <div style="margin-bottom: 10px;">
+      <label style="margin-left: 10px;">⬆️ Rotation | ⬇️ Select Image 👾
+        <select id="imageSelector" style="background-color: rgba(0, 0, 0, 0.6); color: gold; border: 2px solid darkgreen; font-family: 'Monaco', serif; padding: 6px; border-radius: 6px; width: 100%; margin-top: 5px;">
+          <option value="">None</option>
+          <option value="images/a1.png">a1.png</option>
+          <option value="images/a2.png">a2.png</option>
+          <option value="images/a3.png">a3.png</option>
+          <option value="images/a4.png">a4.png</option>
+          <option value="images/a5.png">a5.png</option>
+          <option value="images/a6.png">a6.png</option>
+          <option value="images/a7.png">a7.png</option>
+          <option value="images/a8.png">a8.png</option>
+          <option value="images/a9.png">a9.png</option>
+          <option value="images/a10.png">a10.png</option>
+          <option value="images/a11.png">a11.png</option>
+          <option value="images/a12.png">a12.png</option>
+          <option value="images/a13.png">a13.png</option>
+          <option value="images/a14.png">a14.png</option>
+          <option value="images/a15.png">a15.png</option>
+          <option value="images/a16.png">a16.png</option>
+          <option value="images/a17.png">a17.png</option>
+          <option value="images/a18.png">a18.png</option>
+          <option value="images/a19.png">a19.png</option>
+          <option value="images/a20.png">a20.png</option>
+          <option value="images/a21.png">a21.png</option>
+          <option value="images/a22.png">a22.png</option>
+          <option value="images/a23.png">a23.png</option>
+          <option value="images/a24.png">a24.png</option>
+          <option value="images/a25.png">a25.png</option>
+          <option value="images/a26.png">a26.png</option>
+          <option value="images/a27.png">a27.png</option>
+          <option value="images/a28.png">a28.png</option>
+          <option value="images/a29.png">a29.png</option>
+          <option value="None">---♻️Archive💚---</option>
+          <option value="images/l1.png">l1.png</option>
+          <option value="images/l2.png">l2.png</option>
+          <option value="images/l3.png">l3.png</option>
+          <option value="images/l4.png">l4.png</option>
+          <option value="images/l5.png">l5.png</option>
+          <option value="images/l6.png">l6.png</option>
+          <option value="images/l7.png">l7.png</option>
+          <option value="images/l8.png">l8.png</option>
+          <option value="images/l9.png">l9.png</option>
+          <option value="images/l10.png">l10.png</option>
+          <option value="images/l11.png">l11.png</option>
+          <option value="images/l12.png">l12.png</option>
+          <option value="images/l13.png">l13.png</option>
+          <option value="images/l14.png">l14.png</option>
+          <option value="images/l15.png">l15.png</option>
+          <option value="images/l16.png">l16.png</option>
+          <option value="images/l17.png">l17.png</option>
+          <option value="images/l18.png">l18.png</option>
+          <option value="images/l19.png">l19.png</option>
+          <option value="images/l20.png">l20.png</option>
+          <option value="images/l21.png">l21.png</option>
+          <option value="images/l22.png">l22.png</option>
+          <option value="images/l23.png">l23.png</option>
+          <option value="images/l24.png">l24.png</option>
+          <option value="images/l25.png">l25.png</option>
+          <option value="images/l26.png">l26.png</option>
+          <option value="images/l27.png">l27.png</option>
+          <option value="images/l28.png">l28.png</option>
+          <option value="images/l29.png">l29.png</option>
+          <option value="images/l30.png">l30.png</option>
+          <option value="images/l31.png">l31.png</option>
+          <option value="images/l32.png">l32.png</option>
+          <option value="images/l33.png">l33.png</option>
+          <option value="images/l34.png">l34.png</option>
+          <option value="images/l35.png">l35.png</option>
+          <option value="images/l36.png">l36.png</option>
+          <option value="images/l37.png">l37.png</option>
+          <option value="images/l38.png">l38.png</option>
+          <option value="images/l39.png">l39.png</option>
+          <option value="images/l40.png">l40.png</option>
+          <option value="images/l41.png">l41.png</option>
+          <option value="images/l42.png">l42.png</option>
+        </select>
+      </label>
+    </div>
+    
+    <div style="margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 0px;">
+      <button onclick="changeColor()" title="Bubble Colour" class="bubble-btn large" data-png="bucolor">💭️Colour</button>
+      <button onclick="changeTextColor()" title="Text Colour" class="bubble-btn large" data-png="butextcolor">💬Colour</button>
+      <button onclick="closePanel()" title="Close" class="bubble-btn large" data-png="buclose">Close💭️</button>
+      <button onclick="toggleGlow()" title="Toggle Glow" class="bubble-btn large" data-png="buglow">Glow🔆</button>
+      <button onclick="changeGlowColor()" title="Change Glow Color" class="bubble-btn large" data-png="buglowcolor">Colour🔅</button>
+      <button onclick="toggleFlash()" title="Toggle Flash" class="bubble-btn large" data-png="buflash">Flash🎇</button>
+      <button onclick="toggleTransparent()" title="Toggle Transparent" class="bubble-btn large" data-png="buopaque">Opaque</button>
+      <button onclick="toggleFixed()" title="Toggle Fixed Mode" class="bubble-btn large" data-png="busolid">Solid🗿</button>
+      <button onclick="toggleStatic()" title="Toggle Static Mode" class="bubble-btn large" data-png="bustatic">Static🧽</button>
+      <button onclick="cycleFont()" title="Cycle Fonts" class="bubble-btn large" data-png="bufont">Font</button>
+      <button onclick="toggleCheckeredBorder()" title="Toggle Checkered Border" class="bubble-btn large" data-png="bucheck">Check🏁</button>
+      <button onclick="togglePanelSide()" title="Toggle Panel Side" class="bubble-btn large" data-png="buside">↔️</button>
+    </div>
+    
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="themes.js"></script>
+  <script src="main.js"></script>
+  <script src="media.js"></script>
+  <script src="video.js"></script>
+  <script>
+    // Global scope exports - ensure all functions are available immediately
+    console.log("🔧 Setting up global function exports...");
+    
+    // Function to export all functions to global scope
+    function exportAllFunctions() {
+      console.log("🔧 Starting function export...");
+      console.log("🔧 Available functions:", {
+        loadYouTubeVideo: typeof loadYouTubeVideo,
+        toggleMediaToolbar: typeof toggleMediaToolbar,
+        captureCanvasOnly: typeof captureCanvasOnly
+      });
+      
+      try {
+        // Export all functions to global scope
+        window.loadYouTubeVideo = loadYouTubeVideo;
+        window.toggleMusicPanel = toggleMusicPanel;
+        window.closeMusicPanel = closeMusicPanel;
+        window.updateNowPlayingInfo = updateNowPlayingInfo;
+        window.loadMusicList = loadMusicList;
+        window.toggleProjectMPanel = toggleProjectMPanel;
+        window.closeProjectMPanel = closeProjectMPanel;
+        window.toggleProjectM = toggleProjectM;
+        window.changeProjectMPreset = changeProjectMPreset;
+        window.toggleProjectMFullscreen = toggleProjectMFullscreen;
+        window.toggleVisualizationFullscreen = function() {
+          if (typeof window.LocalVisualizer !== 'undefined') {
+            window.LocalVisualizer.toggleFullscreen();
+          }
+        };
+        window.resetProjectMVisualizer = resetProjectMVisualizer;
+        window.playMusic = playMusic;
+        window.stopMusic = stopMusic;
+        window.startMusicPlaylist = startMusicPlaylist;
+        window.playMusicFromPlaylist = playMusicFromPlaylist;
+        window.nextMusicTrack = nextMusicTrack;
+        window.previousMusicTrack = previousMusicTrack;
+        window.loadRadioStation = loadRadioStation;
+window.uploadMusicPlaylist = uploadMusicPlaylist;
+        window.handleMusicRightClick = handleMusicRightClick;
+        window.loadMusicPlaylist = loadMusicPlaylist;
+        window.getDefaultPlaylist = getDefaultPlaylist;
+        window.playRadioStream = playRadioStream;
+        window.handleVideoRightClick = handleVideoRightClick;
+        window.showReadPanel = showReadPanel;
+        window.hideReadPanel = hideReadPanel;
+        window.toggleMediaToolbar = toggleMediaToolbar;
+        window.toggleMediaToolbarMinimize = toggleMediaToolbarMinimize;
+        window.toggleMediaToolbarVisibility = toggleMediaToolbarVisibility;
+        window.isMobileDevice = isMobileDevice;
+        window.ensureMobileToolbarVisibility = ensureMobileToolbarVisibility;
+        window.playRadioStreamFromPlaylist = playRadioStreamFromPlaylist;
+        window.handleBackgroundUpload = handleBackgroundUpload;
+        window.handleVideoUpload = handleVideoUpload;
+        window.captureCanvas = captureCanvas;
+        window.captureCanvasOnly = captureCanvasOnly;
+        window.rollDice = rollDice;
+        window.showDiceSlider = showDiceSlider;
+        window.hideDiceSlider = hideDiceSlider;
+        window.uploadPlaylist = uploadPlaylist;
+        window.nextPlaylist = nextPlaylist;
+        window.previousPlaylist = previousPlaylist;
+        window.playRandomVideo = playRandomVideo;
+        window.preloadPlaylists = preloadPlaylists;
+        window.updateVideoPlaylistDisplaySilent = updateVideoPlaylistDisplaySilent;
+        window.captureBubblePositions = captureBubblePositions;
+        window.addTimelineMarker = addTimelineMarker;
+        window.updateTimelineDisplay = updateTimelineDisplay;
+        window.loadUploadedPlaylist = loadUploadedPlaylist;
+        window.loadVideoPlaylist = loadVideoPlaylist;
+        window.videoPlayVideo = videoPlayVideo;
+        window.videoPlay = videoPlay;
+        window.videoPause = videoPause;
+        window.videoTogglePlay = videoTogglePlay;
+        window.videoIsPlaying = videoIsPlaying;
+        window.videoNext = videoNext;
+        window.videoPrev = videoPrev;
+        window.videoTogglePlaylist = videoTogglePlaylist;
+        window.videoToggleFullscreen = videoToggleFullscreen;
+        window.videoClose = videoClose;
+        window.showVideoControls = showVideoControls;
+        window.showVideoPlaylist = showVideoPlaylist;
+        window.updateVideoPlaylistDisplay = updateVideoPlaylistDisplay;
+        window.toggleVideoPlayer = toggleVideoPlayer;
+        window.initVideoPlayer = initVideoPlayer;
+        
+        // Recording functions
+                       window.recordState = recordState;
+               window.startPlayback = startPlayback;
+               window.stopPlayback = stopPlayback;
+               window.animateBubbles = animateBubbles;
+               window.interpolateBubblePositions = interpolateBubblePositions;
+               window.saveAnimation = saveAnimation;
+               window.loadAnimation = loadAnimation;
+               window.updatePlaybackTimeDisplay = updatePlaybackTimeDisplay;
+               window.updateTimelineMarkers = updateTimelineMarkers;
+               window.toggleVideoPlayer = toggleVideoPlayer;
+        
+        // Main.js functions
+        window.init = init;
+        window.setupEventListeners = setupEventListeners;
+        window.switchTheme = switchTheme;
+        window.addIdea = addIdea;
+        window.saveIdeas = saveIdeas;
+        window.deleteAllIdeas = deleteAllIdeas;
+        window.cycleBackground = cycleBackground;
+        window.rotateBackground = rotateBackground;
+        window.showPanel = showPanel;
+        window.savePanel = savePanel;
+        window.deleteIdea = deleteIdea;
+        window.closePanel = closePanel;
+        window.toggleGlow = toggleGlow;
+        window.toggleFlash = toggleFlash;
+        window.toggleAnimateColors = toggleAnimateColors;
+        window.toggleTransparent = toggleTransparent;
+        window.changeGlowColor = changeGlowColor;
+        window.toggleFixed = toggleFixed;
+        window.toggleStatic = toggleStatic;
+        window.changeColor = changeColor;
+        window.changeTextColor = changeTextColor;
+        window.cycleFont = cycleFont;
+        window.handleImageUpload = handleImageUpload;
+        window.handleImageSelect = handleImageSelect;
+        window.clearUploadedImage = clearUploadedImage;
+        window.loadBackgroundImage = loadBackgroundImage;
+        window.updatePresetSelector = updatePresetSelector;
+        window.switchPreset = switchPreset;
+        window.testImageUpload = testImageUpload;
+        window.testEffects = testEffects;
+        window.togglePanelSide = togglePanelSide;
+        window.toggleSpeed = toggleSpeed;
+        window.togglePauseButton = togglePauseButton;
+        window.toggleCheckeredBorder = toggleCheckeredBorder;
+        window.minimizePanel = minimizePanel;
+        window.restorePanel = restorePanel;
+        window.toggleDrawingMode = toggleDrawingMode;
+        window.clearDrawing = clearDrawing;
+        window.changeDrawingColor = changeDrawingColor;
+        window.changeDrawingWidth = changeDrawingWidth;
+        window.testDrawing = testDrawing;
+        window.showDrawingSettings = showDrawingSettings;
+        window.closeDrawingSettings = closeDrawingSettings;
+        window.setDrawingColor = setDrawingColor;
+        window.setDrawingWidth = setDrawingWidth;
+        window.clearDrawingFromPanel = clearDrawingFromPanel;
+        window.clearDrawingOnly = clearDrawingOnly;
+        window.toggleDrawingFlash = toggleDrawingFlash;
+        window.smoothLastLine = smoothLastLine;
+        window.debugDrawingPaths = debugDrawingPaths;
+        window.switchToBubbleMode = switchToBubbleMode;
+        window.clearDrawingsOnRightClick = clearDrawingsOnRightClick;
+        
+        // Video.js functions
+        window.videoPlayVideo = videoPlayVideo;
+        window.extractYouTubeId = extractYouTubeId;
+        window.fetchVideoTitle = fetchVideoTitle;
+        window.videoTogglePlaylist = videoTogglePlaylist;
+        window.videoToggleFullscreen = videoToggleFullscreen;
+        window.showVideoControls = showVideoControls;
+        window.showVideoPlaylist = showVideoPlaylist;
+        window.showVideoControlsOnMouseMove = showVideoControlsOnMouseMove;
+        window.startVideoControlsAutoHide = startVideoControlsAutoHide;
+        window.hideVideoControls = hideVideoControls;
+        window.forceCloseVideo = forceCloseVideo;
+        window.updateVideoOpacity = updateVideoOpacity;
+        window.updateVideoSize = updateVideoSize;
+        window.updateVideoVertical = updateVideoVertical;
+        window.loadVideoControlImages = loadVideoControlImages;
+        window.setupMediaEventListeners = setupMediaEventListeners;
+        window.closePlaylist = closePlaylist;
+        window.minimizePlaylist = minimizePlaylist;
+        window.debugVideoControls = debugVideoControls;
+        window.testPngAccess = testPngAccess;
+        window.loadToolbarButtonImages = loadToolbarButtonImages;
+        window.updatePauseButtonIcon = updatePauseButtonIcon;
+        window.updateVideoPlayButtonIcon = updateVideoPlayButtonIcon;
+        
+        console.log("✅ All functions exported successfully");
+        
+      } catch (error) {
+        console.error("❌ Error setting up global functions:", error);
+      }
+    }
+    
+    // Test function
+    window.testFunction = function() {
+      console.log('✅ Test function is working!');
+      return 'test';
+    };
+    
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("🚀 Starting MindsEye initialization...");
+      
+      // Export functions after DOM is ready
+      setTimeout(exportAllFunctions, 100);
+      
+      // Test if functions are available after export
+      setTimeout(() => {
+        console.log("🔧 Testing function availability:");
+        console.log("  rollDice:", typeof window.rollDice);
+        console.log("  toggleMusicPanel:", typeof window.toggleMusicPanel);
+        console.log("  captureCanvasOnly:", typeof window.captureCanvasOnly);
+        console.log("  toggleMediaToolbar:", typeof window.toggleMediaToolbar);
+        console.log("  toggleVideoPlayer:", typeof window.toggleVideoPlayer);
+        console.log("  testFunction:", typeof window.testFunction);
+      }, 300);
+      
+      // Initialize core functionality
+      if (typeof init === 'function') {
+        init();
+      }
+      
+      // Set up event listeners
+      if (typeof setupEventListeners === 'function') {
+        setupEventListeners();
+      }
+      
+      // Initialize video player
+      if (typeof initVideoPlayer === 'function') {
+        initVideoPlayer();
+      }
+      
+      // Set up media event listeners
+      if (typeof setupMediaEventListeners === 'function') {
+        setupMediaEventListeners();
+      }
+      
+      // Set up toolbar auto-hide
+      let toolbar = document.getElementById('toolbar');
+      let inactivityTimeout;
+      
+      function showToolbar() {
+        toolbar.style.opacity = "1";
+        clearTimeout(inactivityTimeout);
+        
+        // Don't auto-hide toolbar on mobile devices
+        if (typeof isMobileDevice === 'function' && isMobileDevice()) {
+  
+          return;
+        }
+        
+        inactivityTimeout = setTimeout(() => {
+          toolbar.style.opacity = "0";
+        }, 5000);
+      }
+      
+      // Video controls auto-hide on mouse movement
+      function handleMouseMove() {
+        showToolbar();
+        if (typeof showVideoControlsOnMouseMove === 'function') {
+          showVideoControlsOnMouseMove();
+        }
+      }
+      
+      document.addEventListener("mousemove", handleMouseMove);
+      showToolbar();
+      
+      // Ensure mobile toolbar visibility
+      if (typeof ensureMobileToolbarVisibility === 'function') {
+        ensureMobileToolbarVisibility();
+      }
+      
+      console.log("✅ MindsEye initialization complete");
+    });
+  </script>
+  <!-- News Ticker Module -->
+  <link rel="stylesheet" href="web/ticker.css">
+  <div id="news-ticker"></div>
+  
+  <!-- Load presets first -->
+  <script type="module" src="./presets/index.js"></script>
+  
+  <!-- Module-based visualization system - Load Second -->
+  <script type="module">
+    import { initializeVisualizer } from './modules/index.js';
+    
+    // Wait for presets to be loaded
+    const waitForPresets = () => {
+      if (window.globalPresets) {
+        console.log('✅ Presets loaded, initializing visualizer...');
+        initializeVisualizerSystem();
+      } else {
+        console.log('⏳ Waiting for presets to load...');
+        setTimeout(waitForPresets, 100);
+      }
+    };
+    
+    // Initialize the module system after presets are loaded
+    const initializeVisualizerSystem = async () => {
+      try {
+        await initializeVisualizer();
+        console.log('✅ Module-based visualizer system ready');
+        
+        // Dispatch event to notify other systems that visualizer is ready
+        window.dispatchEvent(new CustomEvent('visualizerReady', {
+          detail: { visualizer: window.LocalVisualizer }
+        }));
+        
+      } catch (error) {
+        console.error('❌ Failed to initialize module system:', error);
+        
+        // Dispatch error event
+        window.dispatchEvent(new CustomEvent('visualizerError', {
+          detail: { error: error.message }
+        }));
+      }
+    };
+    
+    // Start waiting for presets
+    waitForPresets();
+  </script>
+  
+  <!-- News Ticker Script -->
+  <script src="web/ticker.js"></script>
+  <script>
+    // Initialize news ticker when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('🔍 DOM loaded, initializing news ticker...');
+      
+      // Wait a bit for everything to settle
+      setTimeout(() => {
+        // Initialize news ticker
+        if (typeof initNewsTicker === 'function') {
+          console.log('🎯 Creating news ticker...');
+          window.newsTicker = initNewsTicker({
+            target: '#news-ticker',
+            endpoint: 'http://localhost:3005/api/news',
+            speed: 60,
+            gap: 48,
+            pauseOnHover: true,
+            direction: 'ltr',
+            maxHeadlines: 50
+          });
+          
+          // Ensure ticker is visible
+          const tickerElement = document.getElementById('news-ticker');
+          if (tickerElement) {
+            tickerElement.style.display = 'block';
+            tickerElement.style.visibility = 'visible';
+            tickerElement.style.opacity = '1';
+            console.log('✅ News ticker element made visible');
+          } else {
+            console.error('❌ News ticker element not found');
+          }
+          
+          console.log('✅ News ticker initialized successfully');
+        } else {
+          console.warn('⚠️ News ticker function not available');
+        }
+      }, 1000); // Wait 1 second for everything to load
+    });
+    
+    // Function to toggle news ticker visibility
+    window.toggleNewsTicker = function() {
+      const tickerElement = document.getElementById('news-ticker');
+      if (tickerElement) {
+        const isVisible = tickerElement.style.display !== 'none';
+        tickerElement.style.display = isVisible ? 'none' : 'block';
+        return !isVisible;
+      }
+      return false;
+    };
+    
+    // Function to show/hide ticker based on media toolbar state
+    window.updateNewsTickerVisibility = function(mediaToolbarVisible) {
+      const tickerElement = document.getElementById('news-ticker');
+      if (tickerElement) {
+        // Hide ticker when media toolbar is visible
+        tickerElement.style.display = mediaToolbarVisible ? 'none' : 'block';
+      }
+    };
+    
+    // Debug function to test ticker visibility
+    window.testNewsTicker = function() {
+      const tickerElement = document.getElementById('news-ticker');
+      if (tickerElement) {
+        console.log('🔍 News ticker element found:', tickerElement);
+        console.log('📊 Computed styles:', {
+          display: getComputedStyle(tickerElement).display,
+          visibility: getComputedStyle(tickerElement).visibility,
+          opacity: getComputedStyle(tickerElement).opacity,
+          zIndex: getComputedStyle(tickerElement).zIndex,
+          position: getComputedStyle(tickerElement).position,
+          bottom: getComputedStyle(tickerElement).bottom
+        });
+        
+        // Force show the ticker
+        tickerElement.style.display = 'block';
+        tickerElement.style.visibility = 'visible';
+        tickerElement.style.opacity = '1';
+        tickerElement.style.zIndex = '9999';
+        
+        console.log('✅ Ticker forced to be visible');
+      } else {
+        console.error('❌ News ticker element not found');
+      }
+    };
+  </script>
+</body>
+</html>
