@@ -744,6 +744,47 @@ const themePresets = {
   }
         ],
         bg: "images/default2.png"
+    },
+      "New": {
+        name: "New",
+        ideas: [],
+        bg: "images/blank1.png"
+      },
+      "Season": {
+        name: "Season",
+        ideas: [
+          {
+            "title": "📝 Example",
+            "description": "Click to edit",
+            "x": 400,
+            "y": 300,
+            "vx": 0,
+            "vy": 0,
+            "color": "hsl(200, 100%, 70%)",
+            "textColor": "white",
+            "radius": 80,
+            "font": "Arial",
+            "glow": true,
+            "fontSize": 16,
+            "rotation": 0
+          },
+          {
+            "title": "💡 Template",
+            "description": "Start here",
+            "x": 600,
+            "y": 400,
+            "vx": 1.5,
+            "vy": -1.2,
+            "color": "hsl(120, 100%, 70%)",
+            "textColor": "white",
+            "radius": 70,
+            "font": "Arial",
+            "glow": true,
+            "fontSize": 14,
+            "rotation": 0
+          }
+        ],
+        bg: "images/blank2.png"
       }
     }
   },
@@ -1961,7 +2002,7 @@ const themePresets = {
             "createdTime": "12:00:00"
           }
         ],
-        bg: "images/argyle2.png"
+        bg: "images/default21.png"
       },
       "eleven": {
         name: "XI💚",
@@ -2378,7 +2419,7 @@ const themePresets = {
     "image": "images/a15.png"
   }
 ],
-        bg: "images/argyle6.png"
+        bg: "images/default6.png"
       },
       "analysis": {
         name: "Analysis🧐",
@@ -3079,7 +3120,7 @@ const themePresets = {
     "image": "images/l11.png"
   }
         ],
-        bg: "images/argyle1.png"
+        bg: "images/default20.png"
       },
       "training": {
         name: "Training",
@@ -3472,7 +3513,7 @@ const themePresets = {
     "rotation": 0
   }
         ],
-        bg: "images/argyle2.png"
+        bg: "images/default21.png"
       }
     }
   },
