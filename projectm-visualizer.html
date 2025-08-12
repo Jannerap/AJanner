@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProjectM Visualizer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        .controls {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+        }
+        .controls button {
+            background: #9C27B0;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin: 2px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .controls button:hover {
+            background: #7B1FA2;
+        }
+        .preset-info {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div class="controls">
+        <button onclick="toggleAudio()">🎵 Toggle Audio</button>
+        <button onclick="changePreset()">🎭 Next Preset</button>
+        <button onclick="toggleFullscreen()">⛶ Fullscreen</button>
+        <button onclick="resetVisualizer()">🔄 Reset</button>
+    </div>
+    
+    <div class="preset-info">
+        <div>Preset: <span id="presetName">Geiss</span></div>
+        <div>FPS: <span id="fps">60</span></div>
+        <div>Audio: <span id="audioStatus">Inactive</span></div>
+    </div>
+
+    <script>
+        // WebGL Music Visualizer
+        class MusicVisualizer {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.gl = this.canvas.getContext('webgl2') || this.canvas.getContext('webgl');
+                this.audioContext = null;
+                this.analyser = null;
+                this.dataArray = null;
+                this.animationId = null;
+                this.presetIndex = 0;
+                this.time = 0;
+                
+                this.presets = [
+                    { name: 'Geiss', type: 'geiss' },
+                    { name: 'Waveform', type: 'waveform' },
+                    { name: 'Spectrum', type: 'spectrum' },
+                    { name: 'Particles', type: 'particles' },
+                    { name: 'Spiral', type: 'spiral' },
+                    { name: 'Matrix', type: 'matrix' }
+                ];
+                
+                this.init();
+            }
+            
+            init() {
+                if (!this.gl) {
+                    console.error('WebGL not supported');
+                    return;
+                }
+                
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                
+                // Initialize WebGL
+                this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+                this.gl.enable(this.gl.DEPTH_TEST);
+                
+                this.startAnimation();
+            }
+            
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            }
+            
+            startAnimation() {
+                const animate = () => {
+                    this.time += 0.016; // ~60fps
+                    this.render();
+                    this.animationId = requestAnimationFrame(animate);
+                };
+                animate();
+            }
+            
+            render() {
+                this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+                
+                const preset = this.presets[this.presetIndex];
+                this.renderPreset(preset);
+                
+                // Update FPS display
+                document.getElementById('fps').textContent = Math.round(1000 / 16);
+            }
+            
+            renderPreset(preset) {
+                const gl = this.gl;
+                const width = this.canvas.width;
+                const height = this.canvas.height;
+                
+                switch(preset.type) {
+                    case 'geiss':
+                        this.renderGeiss(width, height);
+                        break;
+                    case 'waveform':
+                        this.renderWaveform(width, height);
+                        break;
+                    case 'spectrum':
+                        this.renderSpectrum(width, height);
+                        break;
+                    case 'particles':
+                        this.renderParticles(width, height);
+                        break;
+                    case 'spiral':
+                        this.renderSpiral(width, height);
+                        break;
+                    case 'matrix':
+                        this.renderMatrix(width, height);
+                        break;
+                }
+            }
+            
+            renderGeiss(width, height) {
+                const gl = this.gl;
+                const centerX = width / 2;
+                const centerY = height / 2;
+                
+                // Create a simple geometric pattern
+                gl.beginPath();
+                for (let i = 0; i < 360; i += 10) {
+                    const angle = (i + this.time * 50) * Math.PI / 180;
+                    const radius = 100 + Math.sin(this.time * 2 + i * 0.1) * 50;
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+                    
+                    if (i === 0) {
+                        gl.moveTo(x, y);
+                    } else {
+                        gl.lineTo(x, y);
+                    }
+                }
+                gl.closePath();
+                
+                // Create gradient effect
+                const gradient = gl.createLinearGradient(0, 0, width, height);
+                gradient.addColorStop(0, `hsl(${(this.time * 50) % 360}, 70%, 50%)`);
+                gradient.addColorStop(1, `hsl(${(this.time * 50 + 180) % 360}, 70%, 50%)`);
+                
+                gl.strokeStyle = gradient;
+                gl.lineWidth = 3;
+                gl.stroke();
+            }
+            
+            renderWaveform(width, height) {
+                const gl = this.gl;
+                const centerY = height / 2;
+                
+                // Use real waveform data if available, otherwise use simulated data
+                const waveform = this.waveform || new Array(width).fill(0).map((_, i) => 
+                    Math.sin((i / width) * 10 + this.time * 2) * 0.5
+                );
+                
+                gl.beginPath();
+                gl.moveTo(0, centerY);
+                
+                for (let x = 0; x < width; x += 2) {
+                    const amplitude = waveform[x] * 200;
+                    const y = centerY + amplitude;
+                    gl.lineTo(x, y);
+                }
+                
+                // Color based on audio intensity
+                const avgAmplitude = waveform.reduce((sum, val) => sum + Math.abs(val), 0) / waveform.length;
+                const hue = (this.time * 100) % 360;
+                const saturation = 80 + (avgAmplitude * 20);
+                
+                gl.strokeStyle = `hsl(${hue}, ${saturation}%, 60%)`;
+                gl.lineWidth = 2;
+                gl.stroke();
+            }
+            
+            renderSpectrum(width, height) {
+                const gl = this.gl;
+                const barWidth = width / 64;
+                
+                // Use real audio data if available, otherwise use simulated data
+                const frequencies = this.frequencies || new Array(64).fill(0).map((_, i) => 
+                    Math.sin(this.time * 2 + i * 0.2) * 0.5 + 0.5
+                );
+                
+                for (let i = 0; i < 64; i++) {
+                    const frequencyValue = frequencies[i] || 0;
+                    const barHeight = frequencyValue * 300 + 50;
+                    const x = i * barWidth;
+                    const y = height - barHeight;
+                    
+                    // Color based on frequency and intensity
+                    const hue = (i * 5 + this.time * 50) % 360;
+                    const saturation = 70 + (frequencyValue * 30);
+                    const lightness = 50 + (frequencyValue * 20);
+                    
+                    gl.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                    gl.fillRect(x, y, barWidth - 1, barHeight);
+                }
+            }
+            
+            renderParticles(width, height) {
+                const gl = this.gl;
+                const particleCount = 100;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const x = (Math.sin(this.time + i * 0.1) + 1) * width / 2;
+                    const y = (Math.cos(this.time + i * 0.2) + 1) * height / 2;
+                    const size = Math.sin(this.time + i * 0.3) * 5 + 5;
+                    
+                    gl.fillStyle = `hsl(${(i * 3.6 + this.time * 30) % 360}, 80%, 60%)`;
+                    gl.beginPath();
+                    gl.arc(x, y, size, 0, Math.PI * 2);
+                    gl.fill();
+                }
+            }
+            
+            renderSpiral(width, height) {
+                const gl = this.gl;
+                const centerX = width / 2;
+                const centerY = height / 2;
+                
+                gl.beginPath();
+                for (let i = 0; i < 1000; i++) {
+                    const angle = i * 0.1 + this.time * 2;
+                    const radius = i * 0.5;
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+                    
+                    if (i === 0) {
+                        gl.moveTo(x, y);
+                    } else {
+                        gl.lineTo(x, y);
+                    }
+                }
+                
+                gl.strokeStyle = `hsl(${(this.time * 50) % 360}, 80%, 60%)`;
+                gl.lineWidth = 1;
+                gl.stroke();
+            }
+            
+            renderMatrix(width, height) {
+                const gl = this.gl;
+                const fontSize = 20;
+                const columns = Math.floor(width / fontSize);
+                
+                for (let i = 0; i < columns; i++) {
+                    const x = i * fontSize;
+                    const y = (Math.sin(this.time + i * 0.5) + 1) * height / 2;
+                    
+                    gl.fillStyle = `hsl(120, 80%, ${50 + Math.sin(this.time + i) * 20}%)`;
+                    gl.font = `${fontSize}px monospace`;
+                    gl.fillText('01', x, y);
+                }
+            }
+            
+            changePreset() {
+                this.presetIndex = (this.presetIndex + 1) % this.presets.length;
+                const preset = this.presets[this.presetIndex];
+                document.getElementById('presetName').textContent = preset.name;
+            }
+            
+            resetVisualizer() {
+                this.time = 0;
+                this.presetIndex = 0;
+                document.getElementById('presetName').textContent = this.presets[0].name;
+            }
+            
+            setAudioData(audioData) {
+                // Store audio data for visualization
+                this.audioData = audioData;
+                if (audioData && audioData.frequencies) {
+                    this.frequencies = audioData.frequencies;
+                }
+                if (audioData && audioData.waveform) {
+                    this.waveform = audioData.waveform;
+                }
+            }
+            
+            destroy() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+            }
+        }
+        
+        // Initialize visualizer
+        let visualizer = new MusicVisualizer();
+        
+        // Control functions
+        function changePreset() {
+            visualizer.changePreset();
+        }
+        
+        function resetVisualizer() {
+            visualizer.resetVisualizer();
+        }
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        function toggleAudio() {
+            // Placeholder for audio integration
+            const status = document.getElementById('audioStatus');
+            if (status.textContent === 'Inactive') {
+                status.textContent = 'Active';
+                status.style.color = '#4CAF50';
+            } else {
+                status.textContent = 'Inactive';
+                status.style.color = '#FF9800';
+            }
+        }
+        
+        // Handle window messages for external control
+        window.addEventListener('message', function(event) {
+            if (event.data.command === 'changePreset') {
+                visualizer.changePreset();
+            } else if (event.data.command === 'reset') {
+                visualizer.resetVisualizer();
+            } else if (event.data.command === 'setAudioData') {
+                // Receive audio data from parent window
+                visualizer.setAudioData(event.data.audioData);
+            }
+        });
+        
+        // Expose functions to parent window
+        window.parent.postMessage({ 
+            type: 'visualizerReady', 
+            commands: ['changePreset', 'reset', 'setAudioData'] 
+        }, '*');
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (visualizer) {
+                visualizer.destroy();
+            }
+        });
+    </script>
+</body>
+</html>
