@@ -2181,12 +2181,12 @@ function openAnalysisIframe(type) {
   if (container && iframe) {
     // Set the iframe source based on type
     if (type === 'suggestions') {
-      iframe.src = 'https://ajanner.github.io/Sifi/';
+      iframe.src = 'https://jannerap.github.io/Trailers/';
       
       // Start cooldown for suggestions
       startSuggestionsCooldown();
     } else if (type === 'ideas') {
-      iframe.src = 'https://ajanner.github.io/Sifi/Comedy/';
+      iframe.src = 'https://jannerap.github.io/Trailers/Comedy/';
       
       // Start cooldown for ideas button
       startIdeasCooldown();
