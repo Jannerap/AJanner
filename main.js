@@ -2678,6 +2678,7 @@ function closePanel() {
 
 // ===== BUBBLE AUDIO FUNCTIONS =====
 let currentBubbleAudio = null;
+let currentBubbleAudioOwner = null;
 
 function handleAudioUpload(event) {
   if (!selectedIdea) return;
@@ -2708,6 +2709,7 @@ function playSelectedBubbleAudio() {
     if (currentBubbleAudio) {
       currentBubbleAudio.pause();
       currentBubbleAudio = null;
+      currentBubbleAudioOwner = null;
     }
     const audio = new Audio(selectedIdea.audio.url);
     audio.volume = 1.0;
@@ -2715,6 +2717,7 @@ function playSelectedBubbleAudio() {
       const btn = document.getElementById('playBubbleAudioBtn');
       if (btn) btn.textContent = '▶︎';
       currentBubbleAudio = null;
+      currentBubbleAudioOwner = null;
     };
     const btn = document.getElementById('playBubbleAudioBtn');
     if (btn && btn.textContent === '⏸') {
@@ -2724,6 +2727,9 @@ function playSelectedBubbleAudio() {
     }
     audio.play().then(() => {
       currentBubbleAudio = audio;
+      currentBubbleAudioOwner = selectedIdea;
+      // flag owner as pulsing
+      selectedIdea.pulseWithAudio = true;
       if (btn) btn.textContent = '⏸';
       logger.info('🎧 Playing bubble audio');
     }).catch(err => {
@@ -2734,12 +2740,27 @@ function playSelectedBubbleAudio() {
   }
 }
 
+function stopSelectedBubbleAudio() {
+  if (currentBubbleAudio) {
+    try { currentBubbleAudio.pause(); } catch (e) {}
+    currentBubbleAudio = null;
+  }
+  if (currentBubbleAudioOwner) {
+    currentBubbleAudioOwner.pulseWithAudio = false;
+    currentBubbleAudioOwner = null;
+  }
+  const btn = document.getElementById('playBubbleAudioBtn');
+  if (btn) btn.textContent = '▶︎';
+  logger.info('🎧 Bubble audio stopped');
+}
+
 function clearSelectedBubbleAudio() {
   if (!selectedIdea) return;
   try {
     if (currentBubbleAudio) {
       currentBubbleAudio.pause();
       currentBubbleAudio = null;
+      currentBubbleAudioOwner = null;
     }
     if (selectedIdea.audio && selectedIdea.audio.url && selectedIdea.audio.isObjectUrl) {
       try { URL.revokeObjectURL(selectedIdea.audio.url); } catch (e) {}
@@ -3838,6 +3859,34 @@ function draw() {
       const heightRatio = a.heightRatio || 1.0;
       drawShape(ctx, shape, 0, 0, a.radius, heightRatio, 0);
       
+      // Music pulse overlay (non-intrusive glow/outline)
+      try {
+        if (a.pulseWithAudio === true && currentBubbleAudioOwner === a) {
+          const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 180 + i * 0.45);
+          ctx.save();
+          ctx.globalAlpha = 0.18 + 0.32 * pulse;
+          ctx.lineWidth = 2 + 2 * pulse;
+          ctx.strokeStyle = a.color || 'white';
+          ctx.beginPath();
+          if (a.shape === 'goal') {
+            // Pulse rectangle outline for goals
+            const goalWidth = a.radius * 0.5;
+            const goalHeight = a.radius;
+            let finalGoalWidth = goalWidth;
+            let finalGoalHeight = goalHeight;
+            if (a.rotation === 89 || a.rotation === 271 || a.rotation === 90 || a.rotation === 270) {
+              finalGoalWidth = goalHeight;
+              finalGoalHeight = goalWidth;
+            }
+            ctx.rect(-finalGoalWidth / 2, -finalGoalHeight / 2, finalGoalWidth, finalGoalHeight);
+          } else {
+            ctx.arc(0, 0, a.radius, 0, Math.PI * 2);
+          }
+          ctx.stroke();
+          ctx.restore();
+        }
+      } catch (e) {}
+
       // Draw capture border for striker in capture mode
       if (a.shape === 'striker' && strikerCaptureMode && a === selectedIdea) {
         ctx.save();
@@ -3895,8 +3944,7 @@ function draw() {
         ctx.stroke();
         ctx.restore();
       }
-      // Remove clipping that was creating invisible barriers
-      // ctx.clip(); // This was preventing collisions with Goals
+      // Remove circular clipping around goals to avoid circular barrier behavior
 
     if (a.image) {
       const src = a.image;
