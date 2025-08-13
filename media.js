@@ -184,6 +184,56 @@ function loadYouTubeVideo() {
   }
 }
 
+// ===== YOUTUBE IFRAME API SUPPORT =====
+let youTubeApiReady = null;
+let ytPlayer = null;
+let unembeddableVideoIds = new Set();
+
+function ensureYouTubeAPI() {
+  if (youTubeApiReady) return youTubeApiReady;
+  youTubeApiReady = new Promise((resolve) => {
+    if (window.YT && window.YT.Player) {
+      resolve();
+      return;
+    }
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+    window.onYouTubeIframeAPIReady = function() {
+      resolve();
+    };
+  });
+  return youTubeApiReady;
+}
+
+function initYouTubePlayer(videoId) {
+  const iframeEl = document.getElementById('videoIframe');
+  if (!iframeEl) return;
+  ytPlayer = new YT.Player('videoIframe', {
+    videoId: videoId,
+    playerVars: { autoplay: 1, controls: 1, rel: 0, modestbranding: 1 },
+    events: {
+      onReady: function() {
+        try { ytPlayer.playVideo(); } catch (e) {}
+      },
+      onError: function(e) {
+        // 101/150: embedding disabled by owner
+        if (e && (e.data === 101 || e.data === 150)) {
+          unembeddableVideoIds.add(videoId);
+          logger.warn('📺 Embedding disabled by owner for video', videoId, 'VIDEO');
+          // Try next video if available, otherwise offer to open on YouTube
+          if (typeof window.videoNext === 'function') {
+            window.videoNext();
+          } else {
+            const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+            window.open(watchUrl, '_blank');
+          }
+        }
+      }
+    }
+  });
+}
+
 // ===== MUSIC FUNCTIONS =====
 
 function toggleMusicPanel() {
@@ -2837,11 +2887,24 @@ function videoPlayVideo(index) {
       videoId: videoId
     });
     
-    // Use the working approach from the example
-    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&loop=1&playlist=${videoId}&enablejsapi=1&origin=${window.location.origin}`;
-    iframe.src = embedUrl;
-    videoIsPlaying = true;
-            logger.info('🎵 Video Playing video:', index + 1, 'of', videoPlaylist.length, 'Video ID:', videoId);
+    // If video previously flagged unembeddable, open on YouTube instead
+    if (unembeddableVideoIds && unembeddableVideoIds.has(videoId)) {
+      const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+      window.open(watchUrl, '_blank');
+      logger.warn('📺 Opening video on YouTube due to embed restrictions', videoId, 'VIDEO');
+      return;
+    }
+    // Prefer IFrame API; fallback to standard embed
+    ensureYouTubeAPI().then(() => {
+      try {
+        initYouTubePlayer(videoId);
+      } catch (e) {
+        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&loop=1&playlist=${videoId}&enablejsapi=1&origin=${window.location.origin}`;
+        iframe.src = embedUrl;
+      }
+      videoIsPlaying = true;
+      logger.info('🎵 Video Playing video:', index + 1, 'of', videoPlaylist.length, 'Video ID:', videoId);
+    });
     
     // Update the play button icon after a short delay to allow iframe to load
     setTimeout(() => {
