@@ -1,0 +1,13 @@
+# Primary feeds
+feed https://feeds.bbci.co.uk/news/rss.xml
+feed https://www.reuters.com/rssFeed/topNews
+
+# Sites to auto-discover/scrape
+site https://www.bloomberg.com
+url  https://techcrunch.com
+
+# Sub-list
+list lists/tech.txt
+
+# Manual pin
+headline "Breaking: Release v5.0 is live" https://example.com/blog/v1

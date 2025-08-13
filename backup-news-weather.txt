@@ -1,0 +1,11 @@
+# Weather News Sources
+# Manual Weather Headlines (Priority)
+headline "Tuesday: A sunny and very warm day and turning hot in eastern counties. Some English Channel coastal areas and parts of Cornwall may turn misty and grey later. Winds easing. Maximum temperature 32 °C." https://weather.metoffice.gov.uk/forecast/gbvn9cv4h#?date=2025-08-12
+headline "Outlook for Wednesday to Friday:Very warm and mostly sunny on Wednesday with isolated showers or thunderstorms. Somewhat cloudier and fresher on Thursday with isolated showers possible. Dry and warm on Friday with sunny spells." https://weather.metoffice.gov.uk/forecast/gbvn9cv4h#?date=2025-08-12
+headline "Weekend: Partly cloudy. Very warm. High 26°C. Winds E at 5 to 10 mph." https://weather.com/en-GB/weather/weekend/l/7ef5c7b6ae2bec77a523daaf8a98d3d877c0ac10f009950bef3cf9d014600053
+
+# Weather Feeds
+feed https://www.bbc.co.uk/weather/rss/forecast/2649808.xml
+site https://www.accuweather.com/en/gb/plymouth/pl1-1/weather-forecast/328328
+site https://weather.com/en-GB/weather/tenday/l/Plymouth+England?canonicalCityId=d01fdfebc69b4957147bb34938eaedcc
+headline "Weather Updates" https://www.accuweather.com/en/gb/plymouth/pl1-1/weather-forecast/330353

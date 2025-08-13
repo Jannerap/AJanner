@@ -233,12 +233,19 @@ class NewsTicker {
             tweets: 'news-tweets.txt'
         };
         const file = map[this.currentService] || 'news.txt';
+        const backupFile = `backup-${file}`;
         try {
-            // Try project root
-            let res = await fetch(`/${file}`);
+            // Try backup first (project root then relative)
+            let res = await fetch(`/${backupFile}`);
             if (!res.ok) {
-                // Try relative path if running from a subdirectory
-                res = await fetch(file);
+                res = await fetch(backupFile);
+            }
+            // If backup not available, try primary (project root then relative)
+            if (!res.ok) {
+                res = await fetch(`/${file}`);
+                if (!res.ok) {
+                    res = await fetch(file);
+                }
             }
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const text = await res.text();
@@ -250,7 +257,7 @@ class NewsTicker {
                 url: '#',
                 ts: now
             }));
-            console.info(`Loaded ${this.headlines.length} fallback headlines from ${file}`);
+            console.info(`Loaded ${this.headlines.length} fallback headlines from ${res.url.includes('backup-') ? backupFile : file}`);
         } catch (e) {
             console.warn('Fallback .txt load failed:', e.message);
         }
