@@ -128,6 +128,22 @@ let visualizerInterval = null;
 let isMusicPlaying = false;
 let currentVisualizerColors = [];
 
+// ===== IDEA ID ASSIGNMENT FOR ANIMATION MAPPING =====
+let ideaUidCounter = 1;
+function ensureIdeaUids() {
+  try {
+    if (!Array.isArray(ideas)) return;
+    for (let i = 0; i < ideas.length; i++) {
+      const idea = ideas[i];
+      if (idea && !idea._uid) {
+        idea._uid = ideaUidCounter++;
+      }
+    }
+  } catch (e) {
+    // non-fatal
+  }
+}
+
 // ===== VISUALIZER READY CHECK =====
 function waitForVisualizer(callback) {
     if (typeof window.LocalVisualizer !== 'undefined') {
@@ -3643,6 +3659,20 @@ function recordState(type) {
   }
   
   if (type === 'start') {
+    // If toolbar is hidden, show it minimized; if minimized, expand to full for marking In
+    const bar = document.getElementById('mediaToolbar');
+    if (bar) {
+      if (bar.style.display === 'none' || getComputedStyle(bar).display === 'none') {
+        bar.style.display = 'flex';
+        if (!bar.classList.contains('minimized')) bar.classList.add('minimized');
+        isMediaToolbarMinimized = true;
+      }
+      // Expand to maximize for editing when marking In
+      if (bar.classList.contains('minimized')) {
+        bar.classList.remove('minimized');
+        isMediaToolbarMinimized = false;
+      }
+    }
     // Auto-pause if speed is not 0
     if (typeof speedMultiplier !== 'undefined' && speedMultiplier !== 0) {
       if (typeof togglePauseButton === 'function') {
@@ -3807,6 +3837,7 @@ function recordState(type) {
 
 function deepCopyIdeas() {
   // Deep copy the ideas array (equivalent to the previous system)
+  ensureIdeaUids();
   return ideas.map(idea => ({ ...idea }));
 }
 
@@ -4043,11 +4074,26 @@ function interpolateBubblePositions(currentTime) {
     // Cache ideas array length for better performance
     const ideasLength = ideas.length;
     
-    // Update the ideas array with interpolated positions
+    // Build uid->position maps for robust matching
+    const startMap = Object.create(null);
+    const endMap = Object.create(null);
+    for (let i = 0; i < startPositions.length; i++) {
+      const p = startPositions[i];
+      if (p && p._uid != null) startMap[p._uid] = p;
+    }
+    for (let i = 0; i < endPositions.length; i++) {
+      const p = endPositions[i];
+      if (p && p._uid != null) endMap[p._uid] = p;
+    }
+
+    // Ensure current ideas have uids
+    ensureIdeaUids();
+
+    // Update the ideas array with interpolated positions using uid mapping
     for (let index = 0; index < ideasLength; index++) {
       const idea = ideas[index];
-      const startPos = startPositions[index];
-      const endPos = endPositions[index];
+      const startPos = idea && idea._uid != null ? startMap[idea._uid] : startPositions[index];
+      const endPos = idea && idea._uid != null ? endMap[idea._uid] : endPositions[index];
       
       if (startPos && endPos) {
         // Interpolate position with optimized math
@@ -4732,11 +4778,11 @@ function initializeMediaSystem() {
         // Set media toolbar to minimized by default
         const mediaToolbar = document.getElementById('mediaToolbar');
         if (mediaToolbar) {
-          // Start fully hidden by default
+          // Start fully hidden AND minimized by default
           mediaToolbar.style.display = 'none';
-          mediaToolbar.classList.remove('minimized');
-          isMediaToolbarMinimized = false;
-          logger.info('📺 Media toolbar set to hidden by default');
+          mediaToolbar.classList.add('minimized');
+          isMediaToolbarMinimized = true;
+          logger.info('📺 Media toolbar set to hidden + minimized by default');
         }
         logger.success('🎛️ Media system initialized after DOM load', null, 'SYSTEM');
       }, 100);
@@ -4749,11 +4795,11 @@ function initializeMediaSystem() {
       // Set media toolbar to minimized by default
       const mediaToolbar = document.getElementById('mediaToolbar');
       if (mediaToolbar) {
-        // Start fully hidden by default
+        // Start fully hidden AND minimized by default
         mediaToolbar.style.display = 'none';
-        mediaToolbar.classList.remove('minimized');
-        isMediaToolbarMinimized = false;
-        logger.info('📺 Media toolbar set to hidden by default');
+        mediaToolbar.classList.add('minimized');
+        isMediaToolbarMinimized = true;
+        logger.info('📺 Media toolbar set to hidden + minimized by default');
       }
       logger.success('🎛️ Media system initialized immediately', null, 'SYSTEM');
     }, 100);

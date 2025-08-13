@@ -2620,6 +2620,17 @@ function showPanel() {
     document.getElementById('uploadImage').title = "Upload custom image";
   }
   
+  // Hook up audio upload UI
+  const uploadAudio = document.getElementById('uploadAudio');
+  if (uploadAudio) {
+    uploadAudio.onchange = handleAudioUpload;
+    if (selectedIdea.audio && selectedIdea.audio.url) {
+      uploadAudio.title = 'Audio attached';
+    } else {
+      uploadAudio.title = 'Attach audio to this bubble';
+    }
+  }
+  
   document.getElementById('panel').style.display = "block";
   resetPanelFade();
 }
@@ -2662,6 +2673,85 @@ function closePanel() {
   if (panelFadeTimeout) {
     clearTimeout(panelFadeTimeout);
     panelFadeTimeout = null;
+  }
+}
+
+// ===== BUBBLE AUDIO FUNCTIONS =====
+let currentBubbleAudio = null;
+
+function handleAudioUpload(event) {
+  if (!selectedIdea) return;
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  try {
+    if (selectedIdea.audio && selectedIdea.audio.url && selectedIdea.audio.isObjectUrl) {
+      try { URL.revokeObjectURL(selectedIdea.audio.url); } catch (e) {}
+    }
+    const objectUrl = URL.createObjectURL(file);
+    selectedIdea.audio = { url: objectUrl, name: file.name, isObjectUrl: true };
+    const btn = document.getElementById('playBubbleAudioBtn');
+    if (btn) btn.textContent = '▶︎';
+    logger.info('🎧 Audio attached to bubble:', file.name);
+  } catch (e) {
+    logger.error('❌ Failed to attach audio:', e && e.message ? e.message : e);
+  } finally {
+    if (event.target) event.target.value = '';
+  }
+}
+
+function playSelectedBubbleAudio() {
+  if (!selectedIdea || !selectedIdea.audio || !selectedIdea.audio.url) {
+    logger.warn('🎧 No audio attached to the selected bubble');
+    return;
+  }
+  try {
+    if (currentBubbleAudio) {
+      currentBubbleAudio.pause();
+      currentBubbleAudio = null;
+    }
+    const audio = new Audio(selectedIdea.audio.url);
+    audio.volume = 1.0;
+    audio.onended = () => {
+      const btn = document.getElementById('playBubbleAudioBtn');
+      if (btn) btn.textContent = '▶︎';
+      currentBubbleAudio = null;
+    };
+    const btn = document.getElementById('playBubbleAudioBtn');
+    if (btn && btn.textContent === '⏸') {
+      audio.pause();
+      btn.textContent = '▶︎';
+      return;
+    }
+    audio.play().then(() => {
+      currentBubbleAudio = audio;
+      if (btn) btn.textContent = '⏸';
+      logger.info('🎧 Playing bubble audio');
+    }).catch(err => {
+      logger.error('❌ Error playing bubble audio:', err && err.message ? err.message : err);
+    });
+  } catch (e) {
+    logger.error('❌ playSelectedBubbleAudio failed:', e && e.message ? e.message : e);
+  }
+}
+
+function clearSelectedBubbleAudio() {
+  if (!selectedIdea) return;
+  try {
+    if (currentBubbleAudio) {
+      currentBubbleAudio.pause();
+      currentBubbleAudio = null;
+    }
+    if (selectedIdea.audio && selectedIdea.audio.url && selectedIdea.audio.isObjectUrl) {
+      try { URL.revokeObjectURL(selectedIdea.audio.url); } catch (e) {}
+    }
+    selectedIdea.audio = null;
+    const btn = document.getElementById('playBubbleAudioBtn');
+    if (btn) btn.textContent = '▶︎';
+    const uploadAudio = document.getElementById('uploadAudio');
+    if (uploadAudio) uploadAudio.title = 'Attach audio to this bubble';
+    logger.info('🎧 Bubble audio cleared');
+  } catch (e) {
+    logger.error('❌ clearSelectedBubbleAudio failed:', e && e.message ? e.message : e);
   }
 }
 
@@ -3422,9 +3512,25 @@ function draw() {
           const distanceSquared = distanceX * distanceX + distanceY * distanceY;
           
           if (distanceSquared < ballRadius * ballRadius) {
-            // Check cooldown - only score if not in cooldown
+            // Determine which side was hit (left/right/top/bottom)
+            const distToLeft = Math.abs(ballCenterX - goalLeft);
+            const distToRight = Math.abs(goalRight - ballCenterX);
+            const distToTop = Math.abs(ballCenterY - goalTop);
+            const distToBottom = Math.abs(goalBottom - ballCenterY);
+            let hitSide = 'left';
+            let minSideDist = distToLeft;
+            if (distToRight < minSideDist) { minSideDist = distToRight; hitSide = 'right'; }
+            if (distToTop < minSideDist) { minSideDist = distToTop; hitSide = 'top'; }
+            if (distToBottom < minSideDist) { minSideDist = distToBottom; hitSide = 'bottom'; }
+
+            // Initialize goal active side if missing (vertical -> left, horizontal -> top)
+            if (!goal.activeSide) {
+              goal.activeSide = (finalGoalHeight >= finalGoalWidth) ? 'left' : 'top';
+            }
+
+            // Check cooldown and active scoring side
             const now = Date.now();
-            if (now > goal.goalCooldown) {
+            if (now > goal.goalCooldown && hitSide === goal.activeSide) {
               // GOAL SCORED!
               goal.goals += 1;
               goal.flashUntil = now + 500; // Flash for 500ms
@@ -3433,12 +3539,20 @@ function draw() {
               logger.info(`⚽ GOAL! Ball hit Goal. Total goals: ${goal.goals}`);
             }
             
-            // Ball bounces off goal maintaining velocity (regardless of cooldown)
-            // Reverse ball direction based on collision side
-            if (Math.abs(distanceX) > Math.abs(distanceY)) {
-              a.vx *= -1; // Hit side of goal
-            } else {
-              a.vy *= -1; // Hit top/bottom of goal
+            // Reflect and separate to prevent sticking
+            const epsilon = 1;
+            if (hitSide === 'left') {
+              a.x = goalLeft - (ballRadius + epsilon);
+              a.vx = Math.abs(a.vx) * -1; // ensure moving left->right flips
+            } else if (hitSide === 'right') {
+              a.x = goalRight + (ballRadius + epsilon);
+              a.vx = Math.abs(a.vx);
+            } else if (hitSide === 'top') {
+              a.y = goalTop - (ballRadius + epsilon);
+              a.vy = Math.abs(a.vy) * -1;
+            } else { // bottom
+              a.y = goalBottom + (ballRadius + epsilon);
+              a.vy = Math.abs(a.vy);
             }
             
             // Ensure ball maintains good velocity after goal
@@ -3447,8 +3561,14 @@ function draw() {
               // Give ball a good velocity if it was too slow
               const normalizedVx = a.vx / currentSpeed;
               const normalizedVy = a.vy / currentSpeed;
-              a.vx = normalizedVx * 2.0;
-              a.vy = normalizedVy * 2.0;
+              if (isFinite(normalizedVx) && isFinite(normalizedVy)) {
+                a.vx = normalizedVx * 2.0;
+                a.vy = normalizedVy * 2.0;
+              } else {
+                // fallback nudge away from goal center
+                a.vx = (hitSide === 'left' ? -2 : hitSide === 'right' ? 2 : 0);
+                a.vy = (hitSide === 'top' ? -2 : hitSide === 'bottom' ? 2 : 0);
+              }
             }
           }
         }
@@ -3491,9 +3611,24 @@ function draw() {
           const distanceSquared = distanceX * distanceX + distanceY * distanceY;
           
           if (distanceSquared < puckRadius * puckRadius) {
-            // Check cooldown - only score if not in cooldown
+            // Determine hit side
+            const distToLeft = Math.abs(puckCenterX - goalLeft);
+            const distToRight = Math.abs(goalRight - puckCenterX);
+            const distToTop = Math.abs(puckCenterY - goalTop);
+            const distToBottom = Math.abs(goalBottom - puckCenterY);
+            let hitSide = 'left';
+            let minSideDist = distToLeft;
+            if (distToRight < minSideDist) { minSideDist = distToRight; hitSide = 'right'; }
+            if (distToTop < minSideDist) { minSideDist = distToTop; hitSide = 'top'; }
+            if (distToBottom < minSideDist) { minSideDist = distToBottom; hitSide = 'bottom'; }
+
+            if (!goal.activeSide) {
+              goal.activeSide = (finalGoalHeight >= finalGoalWidth) ? 'left' : 'top';
+            }
+
+            // Check cooldown and scoring side
             const now = Date.now();
-            if (now > goal.goalCooldown) {
+            if (now > goal.goalCooldown && hitSide === goal.activeSide) {
               // GOAL SCORED!
               goal.goals += 1;
               goal.flashUntil = now + 500; // Flash for 500ms
@@ -3502,12 +3637,20 @@ function draw() {
               logger.info(`🏒 GOAL! Puck hit Goal. Total goals: ${goal.goals}`);
             }
             
-            // Puck bounces off goal maintaining velocity (regardless of cooldown)
-            // Reverse puck direction based on collision side
-            if (Math.abs(distanceX) > Math.abs(distanceY)) {
-              a.vx *= -1; // Hit side of goal
+            // Reflect and separate
+            const epsilon = 1;
+            if (hitSide === 'left') {
+              a.x = goalLeft - (puckRadius + epsilon);
+              a.vx = Math.abs(a.vx) * -1;
+            } else if (hitSide === 'right') {
+              a.x = goalRight + (puckRadius + epsilon);
+              a.vx = Math.abs(a.vx);
+            } else if (hitSide === 'top') {
+              a.y = goalTop - (puckRadius + epsilon);
+              a.vy = Math.abs(a.vy) * -1;
             } else {
-              a.vy *= -1; // Hit top/bottom of goal
+              a.y = goalBottom + (puckRadius + epsilon);
+              a.vy = Math.abs(a.vy);
             }
             
             // Ensure puck maintains good velocity after goal
@@ -3516,8 +3659,13 @@ function draw() {
               // Give puck a good velocity if it was too slow
               const normalizedVx = a.vx / currentSpeed;
               const normalizedVy = a.vy / currentSpeed;
-              a.vx = normalizedVx * 2.0;
-              a.vy = normalizedVy * 2.0;
+              if (isFinite(normalizedVx) && isFinite(normalizedVy)) {
+                a.vx = normalizedVx * 2.0;
+                a.vy = normalizedVy * 2.0;
+              } else {
+                a.vx = (hitSide === 'left' ? -2 : hitSide === 'right' ? 2 : 0);
+                a.vy = (hitSide === 'top' ? -2 : hitSide === 'bottom' ? 2 : 0);
+              }
             }
           }
         }
@@ -4302,6 +4450,55 @@ function setupEventListeners() {
 
   canvas.addEventListener("mouseup", () => {
     isDragging = false;
+    // When user releases a dragged bubble while a timeline exists (in/out set), record an auto keyframe
+    try {
+      if (typeof window.AnimationState !== 'undefined' && window.AnimationState.data) {
+        const anim = window.AnimationState.data;
+        const hasInOut = typeof anim.inPoint === 'number' && typeof anim.outPoint === 'number' && anim.outPoint > anim.inPoint;
+        if (hasInOut) {
+          // Ensure we have base keyframes
+          if (!anim.keyframes || anim.keyframes.length < 2) {
+            const durationSeconds = (anim.duration || 10000) / 1000;
+            const basePositions = typeof window.captureBubblePositions === 'function' ? window.captureBubblePositions() : [];
+            anim.keyframes = [
+              { time: 0, positions: basePositions },
+              { time: durationSeconds, positions: basePositions }
+            ];
+          }
+          // Determine current timeline time (from media slider if available)
+          const slider = document.getElementById('mediaPlaybackSlider');
+          const durationSeconds = (anim.duration || 10000) / 1000;
+          let currentTime = 0;
+          if (slider) {
+            const progress = Math.max(0, Math.min(1, parseFloat(slider.value) || 0));
+            currentTime = progress * durationSeconds;
+          }
+          // Clamp to (inPoint, outPoint)
+          const epsilon = 0.01;
+          currentTime = Math.max(anim.inPoint + epsilon, Math.min(anim.outPoint - epsilon, currentTime));
+          // Capture positions and insert/update keyframe at this time
+          if (typeof window.captureBubblePositions === 'function') {
+            const positions = window.captureBubblePositions();
+            // Find existing keyframe at this time (within small tolerance)
+            const existingIdx = anim.keyframes.findIndex(kf => Math.abs(kf.time - currentTime) < 0.001);
+            if (existingIdx !== -1) {
+              anim.keyframes[existingIdx].positions = positions;
+              anim.keyframes[existingIdx].time = currentTime;
+            } else {
+              anim.keyframes.push({ time: currentTime, positions });
+            }
+            // Keep sorted
+            anim.keyframes.sort((a, b) => a.time - b.time);
+            // Reflect marker
+            if (typeof window.addTimelineMarker === 'function') {
+              window.addTimelineMarker('keyframe', currentTime);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // Non-fatal if animation system isn't present
+    }
     draggedIdea = null;
   });
 
