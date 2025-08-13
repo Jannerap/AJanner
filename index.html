@@ -349,11 +349,11 @@
 
   <!-- Analysis Panel -->
   <div id="analysisPanel" class="analysis-panel" style="display: none;">
-    <h3 style="margin: 5px 0; color: gold;">📊 Analysis</h3>
+    <h3 style="margin: 5px 0; color: gold;">♾️Analysis💽</h3>
     <div style="display: flex; flex-direction: column; gap: 8px; margin: 15px 0;">
-      <button onclick="openAnalysisIframe('suggestions')" style="background: linear-gradient(45deg, #4CAF50, #45a049); border: none; color: white; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left;">🍿 Suggestions:<br>Current: Anime (All)</button>
-      <button onclick="openAnalysisIframe('ideas')" style="background: linear-gradient(45deg, #2196F3, #1976D2); border: none; color: white; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left;">🧠 Ideas:<br>Current: Comedy (All)</button>
-      <button onclick="toggleProjectMPanel()" style="background: linear-gradient(45deg, #9C27B0, #7B1FA2); border: none; color: white; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left;">🎨 Music Visualization<br><span style="font-size: 11px; opacity: 0.8;">Butterchurn & MilkDrop</span></button>
+      <button onclick="openAnalysisIframe('suggestions')" style="background: linear-gradient(45deg, #4CAF50, #45a049); border: none; color: white; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left;">🍿 Suggestions:<br>Anime (All)</button>
+      <button onclick="openAnalysisIframe('ideas')" style="background: linear-gradient(45deg, #2196F3, #1976D2); border: none; color: white; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left;">🎬 Ideas:<br>FilmTV (All)</button>
+      <button onclick="toggleProjectMPanel()" style="background: linear-gradient(45deg, #9C27B0, #7B1FA2); border: none; color: white; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left;">🎨 Music Visualization<br><span style="font-size: 11px; opacity: 0.8;">Butterchurn</span></button>
       <button onclick="openAnalysisIframe('v6')" style="background: linear-gradient(45deg, #9C27B0, #7B1FA2); border: none; color: white; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left;">🎯 V6</button>
       <button onclick="openAnalysisIframe('credits')" style="background: linear-gradient(45deg, #607D8B, #455A64); border: none; color: white; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: left;">👥 Credits</button>
     </div>
@@ -513,16 +513,16 @@
     </label><br>
     
     <div style="margin-left: 10px; display: flex; gap: 10px; align-items: center;">
-      <label style="flex: 1;">⬇️ Text Size
+      <label style="flex: 1;">⬇️ Text Size 💬
         <input id="fontSizeSlider" title="Text Size" max="48" min="8" oninput="selectedIdea.fontSize = parseInt(this.value)" type="range" value="14"/>
       </label>
-      <label style="flex: 1;">⬇️ Ratio
+      <label style="flex: 1;">⬇️ Ratio ↔
         <input id="heightRatioSlider" title="Ratio" max="1.7" min="0.3" step="0.1" oninput="updateBubbleRatio(this.value)" type="range" value="1.0"/>
       </label>
     </div>
     
     <div style="margin: 10px 0;">
-      <label style="margin-left: 10px;">⬆️ Rotation | ⬇️ Shape
+      <label style="margin-left: 10px;">⬇️ Select 💭 Shape 💠
         <select id="shapeSelector" style="background-color: rgba(0, 0, 0, 0.6); color: gold; border: 2px solid darkgreen; font-family: 'Monaco', serif; padding: 6px; border-radius: 6px; width: 100%; margin-top: 5px;">
           <option value="circle">Circle</option>
           <option value="square">Square</option>
@@ -548,7 +548,7 @@
     <input id="rotationSlider" title="Rotate Bubble" max="360" min="0" oninput="selectedIdea.rotation = parseInt(this.value)" type="range" value="0"/>
     
     <div style="margin-bottom: 10px;">
-      <label style="margin-left: 10px;">⬆️ Rotation | ⬇️ Select Image 👾
+      <label style="margin-left: 10px;">⬆️ Rotation 🔄 | ⬇️ Select Image 👾
         <select id="imageSelector" style="background-color: rgba(0, 0, 0, 0.6); color: gold; border: 2px solid darkgreen; font-family: 'Monaco', serif; padding: 6px; border-radius: 6px; width: 100%; margin-top: 5px;">
           <option value="">None</option>
           <option value="images/a1.png">a1.png</option>

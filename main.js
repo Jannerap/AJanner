@@ -2180,7 +2180,7 @@ function openAnalysisIframe(type) {
       // Start cooldown for suggestions
       startSuggestionsCooldown();
     } else if (type === 'ideas') {
-      iframe.src = 'https://jannerap.github.io/Trailers/Comedy/';
+      iframe.src = 'https://jannerap.github.io/Trailers/All/';
       
       // Start cooldown for ideas button
       startIdeasCooldown();
@@ -2346,7 +2346,7 @@ function endIdeasCooldown() {
     ideasButton.style.background = 'linear-gradient(45deg, #2196F3, #1976D2)';
     ideasButton.style.color = 'white';
     ideasButton.disabled = false;
-    ideasButton.innerHTML = '🧠 Ideas:<br>Current: Comedy (All)';
+    ideasButton.innerHTML = '🧠 Ideas:<br>Current: FilmTV (All)';
     
     // Flash effect to indicate cooldown ended
     setTimeout(() => {
