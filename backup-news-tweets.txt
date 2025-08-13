@@ -1,3 +1,2 @@
 # Tweets News Sources
-# Local Tweets from Tweets.json file
-tweets-file Tweets.json
+# Local Tweets from Tweets

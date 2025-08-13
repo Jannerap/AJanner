@@ -1,8 +1,8 @@
 # Sports News Sources
-# Plymouth Argyle News (Auto-scraped from website)
+# Plymouth Argyle News
 plymouth-argyle https://www.pafc.co.uk/news
 
-# Plymouth Herald Football News (Auto-scraped from website)
+# Plymouth Herald Football News
 plymouth-herald-sports https://www.plymouthherald.co.uk/sport/football/
 
 # General Sports Feeds
