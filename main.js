@@ -2251,7 +2251,7 @@ function startSuggestionsCooldown() {
     
     // Update button text with countdown
     const countdownInterval = setInterval(() => {
-      suggestionsButton.textContent = `Suggestions (${timeLeft}s)`;
+      suggestionsButton.textContent = `🎞️Suggestions (${timeLeft}s)`;
       timeLeft--;
       
       if (timeLeft < 0) {
@@ -2280,7 +2280,7 @@ function endSuggestionsCooldown() {
     suggestionsButton.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
     suggestionsButton.style.color = 'white';
     suggestionsButton.disabled = false;
-    suggestionsButton.innerHTML = '🍿 Suggestions:<br>Current: Anime (All)';
+    suggestionsButton.innerHTML = '🍿Suggestions:<br>Anime (All)';
     
     // Add brief visual indication that cooldown ended
     suggestionsButton.style.boxShadow = '0 0 10px #4CAF50';
@@ -2314,12 +2314,12 @@ function startIdeasCooldown() {
     
     // Show countdown timer
     let countdown = 20;
-    ideasButton.innerHTML = `🧠 Ideas:<br>Cooldown: ${countdown}s`;
+    ideasButton.innerHTML = `🎬 Ideas:<br>Cooldown: ${countdown}s`;
     
     const countdownInterval = setInterval(() => {
       countdown--;
       if (countdown > 0) {
-        ideasButton.innerHTML = `🧠 Ideas:<br>Cooldown: ${countdown}s`;
+        ideasButton.innerHTML = `🎬 Ideas:<br>Cooldown: ${countdown}s`;
       } else {
         clearInterval(countdownInterval);
       }
@@ -2346,7 +2346,7 @@ function endIdeasCooldown() {
     ideasButton.style.background = 'linear-gradient(45deg, #2196F3, #1976D2)';
     ideasButton.style.color = 'white';
     ideasButton.disabled = false;
-    ideasButton.innerHTML = '🧠 Ideas:<br>Current: FilmTV (All)';
+    ideasButton.innerHTML = '🎞️ Ideas:<br>FilmTV (All)';
     
     // Flash effect to indicate cooldown ended
     setTimeout(() => {
