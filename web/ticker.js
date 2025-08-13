@@ -182,6 +182,13 @@ class NewsTicker {
             
             // Try to load from localStorage as fallback
             this.loadFromCache();
+            // If cache empty, try local .txt fallback files per service
+            if (!this.headlines || this.headlines.length === 0) {
+                await this.loadFallbackFromTxt();
+            }
+            if (this.headlines && this.headlines.length > 0) {
+                this.renderHeadlines();
+            }
         }
     }
 
@@ -208,6 +215,33 @@ class NewsTicker {
             }));
         } catch (error) {
             console.warn('Failed to save headlines to cache:', error);
+        }
+    }
+
+    async loadFallbackFromTxt() {
+        const map = {
+            sports: 'news-sports.txt',
+            local: 'news-local.txt',
+            news: 'news.txt',
+            weather: 'news-weather.txt',
+            tweets: 'news-tweets.txt'
+        };
+        const file = map[this.currentService] || 'news.txt';
+        try {
+            const res = await fetch(`/${file}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const text = await res.text();
+            const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+            const now = Date.now();
+            this.headlines = lines.slice(0, this.options.maxHeadlines).map(line => ({
+                source: this.currentService.toUpperCase(),
+                title: line,
+                url: '#',
+                ts: now
+            }));
+            console.info(`Loaded ${this.headlines.length} fallback headlines from ${file}`);
+        } catch (e) {
+            console.warn('Fallback .txt load failed:', e.message);
         }
     }
 
