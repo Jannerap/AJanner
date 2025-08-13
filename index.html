@@ -197,9 +197,6 @@
 
   <!-- Media Toolbar -->
   <div id="mediaToolbar">
-    <label>🫟 Background:
-      <input accept="image/*" id="bgLoader" type="file"/>
-    </label>
     <label>📀 Video:
       <input accept="video/*" id="videoLoader" type="file"/>
     </label>
@@ -285,6 +282,16 @@
     </div>
     <div id="videoPlaylistItems">
       <!-- Playlist items will be loaded here -->
+    </div>
+    <div style="margin-top: 10px; padding: 10px; background: rgba(0, 0, 0, 0.3); border-radius: 5px;">
+      <label style="display: block; margin-bottom: 5px; color: gold; font-size: 12px;">🫟 Background Image:</label>
+      <input accept="image/*" id="bgLoader" type="file"/>
+      <div style="text-align: right; margin-top: 10px;">
+        <button onclick="closePlaylist()" title="Close" style="background: rgba(255,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px;">✕ Close</button>
+      </div>
+    </div>
+    <div style="margin-top: 6px; padding: 8px; background: rgba(0, 0, 0, 0.25); border-radius: 5px;">
+      <button onclick="toggleVideoBackground()" style="background: linear-gradient(45deg, #607D8B, #455A64); border: none; color: white; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">🖼️ Use Video As Background</button>
     </div>
   </div>
 

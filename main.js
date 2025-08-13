@@ -1156,25 +1156,9 @@ function startExistingDrawingsFlash() {
         const path = drawingPaths[i];
         const pathColor = path.color || drawingColor;
         const pathWidth = path.width || drawingWidth;
-        
-        // Save context state to isolate opacity effect
         ctx.save();
-        
-        ctx.beginPath();
-        ctx.moveTo(path[0].x, path[0].y);
-        
-        for (let j = 1; j < path.length; j++) {
-          ctx.lineTo(path[j].x, path[j].y);
-        }
-        
-        ctx.strokeStyle = pathColor;
-        ctx.lineWidth = pathWidth;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
         ctx.globalAlpha = flashOpacity; // Apply opacity only to this stroke
-        ctx.stroke();
-        
-        // Restore context state (removes opacity effect)
+        strokeSmoothPath(path, pathColor, pathWidth, flashOpacity);
         ctx.restore();
       }
     }
@@ -1182,19 +1166,7 @@ function startExistingDrawingsFlash() {
     // Redraw the current drawing line on top (if actively drawing)
     if (isDrawing && drawingPath.length > 1) {
       ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(drawingPath[0].x, drawingPath[0].y);
-      
-      for (let i = 1; i < drawingPath.length; i++) {
-        ctx.lineTo(drawingPath[i].x, drawingPath[i].y);
-      }
-      
-      ctx.strokeStyle = drawingColor;
-      ctx.lineWidth = drawingWidth;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.globalAlpha = 1; // Current drawing should always be solid
-      ctx.stroke();
+      strokeSmoothPath(drawingPath, drawingColor, drawingWidth, 1);
       
       ctx.restore();
     }
@@ -1211,6 +1183,21 @@ function stopExistingDrawingsFlash() {
     flashAnimationId = null;
     logger.info('⚡ Existing drawings flash animation stopped');
   }
+}
+
+// Convenience aliases for flashing the current drawn line arrays (distinct from bubble flashing)
+function toggleDrawingsFlash() {
+  toggleDrawingFlash();
+}
+
+function startDrawingsFlash() {
+  if (!existingDrawingsFlash) existingDrawingsFlash = true;
+  startExistingDrawingsFlash();
+}
+
+function stopDrawingsFlash() {
+  if (existingDrawingsFlash) existingDrawingsFlash = false;
+  stopExistingDrawingsFlash();
 }
 
 function redrawAllDrawings() {
@@ -1648,24 +1635,12 @@ function smoothLastLine() {
     }
   }
   
-  // Redraw all drawing paths including the smoothed one
+  // Redraw all drawing paths including the smoothed one with anti-jagged stroke
   for (let i = 0; i < drawingPaths.length; i++) {
     const path = drawingPaths[i];
     const pathColor = path.color || drawingColor;
     const pathWidth = path.width || drawingWidth;
-    
-    ctx.beginPath();
-    ctx.moveTo(path[0].x, path[0].y);
-    
-    for (let j = 1; j < path.length; j++) {
-      ctx.lineTo(path[j].x, path[j].y);
-    }
-    
-    ctx.strokeStyle = pathColor;
-    ctx.lineWidth = pathWidth;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.stroke();
+    strokeSmoothPath(path, pathColor, pathWidth, 1);
   }
   
   logger.info('✅ Last line smoothed and immediately visible');
@@ -1702,26 +1677,45 @@ function smoothPath(path) {
 function drawPath(path) {
   if (path.length < 2) return;
   
-  ctx.beginPath();
-  ctx.moveTo(path[0].x, path[0].y);
-  
-  for (let i = 1; i < path.length; i++) {
-    ctx.lineTo(path[i].x, path[i].y);
-  }
-  
-  // Use path's stored color and width, or fall back to current
+  // Use a smoother stroke to reduce jagged edges
   const pathColor = path.color || drawingColor;
   const pathWidth = path.width || drawingWidth;
+  strokeSmoothPath(path, pathColor, pathWidth, 1);
+}
+
+// Smoothly stroke a polyline using quadratic curves and safe canvas settings
+function strokeSmoothPath(points, color, width, alpha) {
+  if (!points || points.length < 2) return;
   
-  ctx.strokeStyle = pathColor;
-  ctx.lineWidth = pathWidth;
-  ctx.lineCap = 'round';
+  const pLen = points.length;
+  const path2D = new Path2D();
+  
+  // Build a smooth path using midpoint quadratic curves
+  path2D.moveTo(points[0].x, points[0].y);
+  for (let i = 0; i < pLen - 1; i++) {
+    const current = points[i];
+    const next = points[i + 1];
+    const midX = (current.x + next.x) / 2;
+    const midY = (current.y + next.y) / 2;
+    path2D.quadraticCurveTo(current.x, current.y, midX, midY);
+  }
+  // Ensure we finish at the last point
+  path2D.lineTo(points[pLen - 1].x, points[pLen - 1].y);
+  
+  ctx.save();
+  // Eliminate any unintended glow/shadow artifacts
+  ctx.shadowBlur = 0;
+  ctx.shadowColor = 'transparent';
+  // Improve joins and avoid spikes
   ctx.lineJoin = 'round';
-  
-  // No flash effect applied to current drawing line
-  
-  ctx.stroke();
-  ctx.globalAlpha = 1;
+  ctx.lineCap = 'round';
+  ctx.miterLimit = 2;
+  // Apply style
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.globalAlpha = alpha != null ? alpha : 1;
+  ctx.stroke(path2D);
+  ctx.restore();
 }
 
 function changeDrawingColor() {
@@ -4853,8 +4847,8 @@ function setupEventListeners() {
       case 'f':
       case 'F':
         if (isDrawingMode) {
-          // DISABLED: toggleExistingDrawingsFlash();
-          logger.warn('⚠️ Flash function temporarily disabled to prevent bubble interference');
+          // Toggle flashing of current drawn lines (not bubbles)
+          toggleDrawingFlash();
           e.preventDefault(); // Prevent browser default behavior
         }
         break;

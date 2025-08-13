@@ -341,7 +341,7 @@ async function loadMusicList() {
   const canPlayMp3 = audio.canPlayType('audio/mpeg');
   const canPlayOpus = audio.canPlayType('audio/opus');
   
-  musicFiles.forEach(track => {
+  musicFiles.forEach((track, index) => {
     // Track processing logging removed for performance
     const musicItem = document.createElement('div');
     musicItem.className = 'music-item';
@@ -353,6 +353,9 @@ async function loadMusicList() {
       musicItem.textContent = displayName;
       musicItem.style.borderLeft = '3px solid #9C27B0';
       musicItem.title = `Radio Stream: ${track.url}`;
+      // Mark item metadata for reliable matching
+      musicItem.dataset.type = 'radio';
+      musicItem.dataset.radioUrl = track.url;
       // Radio item created
     } else {
       // Local file
@@ -366,12 +369,16 @@ async function loadMusicList() {
         musicItem.style.borderLeft = '3px solid #ff6b6b';
         musicItem.title = 'OPUS format - may not work in all browsers';
       }
+      // Mark item metadata for reliable matching
+      musicItem.dataset.type = 'file';
+      musicItem.dataset.url = track.url;
       // Music item created
     }
     
     musicItem.onclick = (event) => {
       if (track.url.startsWith('http://') || track.url.startsWith('https://')) {
-        playRadioStream(track.url);
+        // Use the playlist-aware version so highlighting follows DOM order
+        playRadioStreamFromPlaylist(track.url, index);
       } else {
         playMusic(track.url, event);
       }
@@ -897,119 +904,53 @@ function playRadioStreamFromPlaylist(radioUrl, index) {
 }
 
 function nextMusicTrack() {
-  // Check if we have uploaded radio URLs - if so, cycle through only those
-  if (window.uploadedMusicPlaylist && window.uploadedMusicPlaylist.length > 0) {
-    // Cycle through uploaded radio URLs only
-    window.currentMusicPlaylistIndex = window.currentMusicPlaylistIndex || 0;
-    window.currentMusicPlaylistIndex = (window.currentMusicPlaylistIndex + 1) % window.uploadedMusicPlaylist.length;
-    
-    const radioTrack = window.uploadedMusicPlaylist[window.currentMusicPlaylistIndex];
-    
-    
-    if (radioTrack.url) {
-      playRadioStreamFromPlaylist(radioTrack.url, window.currentMusicPlaylistIndex);
-    }
-    
-    // Update highlighting after track change
-    setTimeout(() => {
-      highlightCurrentTrack();
-      updateNowPlayingInfo();
-    }, 100);
-  } else if (musicPlaylist.length > 0) {
-    // Go to next track in regular playlist
-    const nextIndex = (currentMusicIndex + 1) % musicPlaylist.length;
+  // Always navigate in the order currently displayed in the music panel
+  const musicItems = document.querySelectorAll('.music-item');
+  if (musicItems.length === 0) {
+    logger.audio('No music tracks or radio stations available');
+    return;
+  }
 
-    playMusicFromPlaylist(nextIndex);
-    
-    // Update highlighting after track change
-    setTimeout(() => {
-      highlightCurrentTrack();
-      updateNowPlayingInfo();
-    }, 100);
-  } else {
-    // Check if there are music items in the DOM but not in the playlists
-    const musicItems = document.querySelectorAll('.music-item');
-    if (musicItems.length > 0) {
-      logger.debug('Found music items in DOM but no playlist arrays populated. Using DOM navigation.', null, 'AUDIO');
-      
-      // Find currently playing item
-      let currentIndex = -1;
-      const playingItem = document.querySelector('.music-item.playing');
-      if (playingItem) {
-        for (let i = 0; i < musicItems.length; i++) {
-          if (musicItems[i] === playingItem) {
-            currentIndex = i;
-            break;
-          }
-        }
+  // Determine current index by the highlighted DOM element
+  let currentIndex = -1;
+  const playingItem = document.querySelector('.music-item.playing');
+  if (playingItem) {
+    for (let i = 0; i < musicItems.length; i++) {
+      if (musicItems[i] === playingItem) {
+        currentIndex = i;
+        break;
       }
-      
-      // Go to next item (or first if none playing)
-      const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % musicItems.length : 0;
-      logger.debug(`Clicking next DOM item at index: ${nextIndex}`, null, 'AUDIO');
-      musicItems[nextIndex].click();
-    } else {
-      logger.audio('No music tracks or radio stations available');
     }
   }
+
+  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % musicItems.length : 0;
+  logger.debug(`Clicking next DOM item at index: ${nextIndex}`, null, 'AUDIO');
+  musicItems[nextIndex].click();
 }
 
 function previousMusicTrack() {
-  // Check if we have uploaded radio URLs - if so, cycle through only those
-  if (window.uploadedMusicPlaylist && window.uploadedMusicPlaylist.length > 0) {
-    // Cycle through uploaded radio URLs only
-    window.currentMusicPlaylistIndex = window.currentMusicPlaylistIndex || 0;
-    window.currentMusicPlaylistIndex = (window.currentMusicPlaylistIndex - 1 + window.uploadedMusicPlaylist.length) % window.uploadedMusicPlaylist.length;
-    
-    const radioTrack = window.uploadedMusicPlaylist[window.currentMusicPlaylistIndex];
-    
-    
-    if (radioTrack.url) {
-      playRadioStreamFromPlaylist(radioTrack.url, window.currentMusicPlaylistIndex);
-    }
-    
-    // Update highlighting after track change
-    setTimeout(() => {
-      highlightCurrentTrack();
-      updateNowPlayingInfo();
-    }, 100);
-  } else if (musicPlaylist.length > 0) {
-    // Go to previous track in regular playlist
-    const prevIndex = (currentMusicIndex - 1 + musicPlaylist.length) % musicPlaylist.length;
+  // Always navigate in the order currently displayed in the music panel
+  const musicItems = document.querySelectorAll('.music-item');
+  if (musicItems.length === 0) {
+    logger.audio('No music tracks or radio stations available');
+    return;
+  }
 
-    playMusicFromPlaylist(prevIndex);
-    
-    // Update highlighting after track change
-    setTimeout(() => {
-      highlightCurrentTrack();
-      updateNowPlayingInfo();
-    }, 100);
-  } else {
-    // Check if there are music items in the DOM but not in the playlists
-    const musicItems = document.querySelectorAll('.music-item');
-    if (musicItems.length > 0) {
-      logger.debug('Found music items in DOM but no playlist arrays populated. Using DOM navigation.', null, 'AUDIO');
-      
-      // Find currently playing item
-      let currentIndex = -1;
-      const playingItem = document.querySelector('.music-item.playing');
-      if (playingItem) {
-        for (let i = 0; i < musicItems.length; i++) {
-          if (musicItems[i] === playingItem) {
-            currentIndex = i;
-            break;
-          }
-        }
+  // Determine current index by the highlighted DOM element
+  let currentIndex = -1;
+  const playingItem = document.querySelector('.music-item.playing');
+  if (playingItem) {
+    for (let i = 0; i < musicItems.length; i++) {
+      if (musicItems[i] === playingItem) {
+        currentIndex = i;
+        break;
       }
-      
-      // Go to previous item (or last if none playing)
-      const prevIndex = currentIndex >= 0 ? (currentIndex - 1 + musicItems.length) % musicItems.length : musicItems.length - 1;
-      logger.debug(`Clicking previous DOM item at index: ${prevIndex}`, null, 'AUDIO');
-      musicItems[prevIndex].click();
-    } else {
-      logger.audio('No music tracks or radio stations available');
     }
   }
+
+  const prevIndex = currentIndex >= 0 ? (currentIndex - 1 + musicItems.length) % musicItems.length : musicItems.length - 1;
+  logger.debug(`Clicking previous DOM item at index: ${prevIndex}`, null, 'AUDIO');
+  musicItems[prevIndex].click();
 }
 
 async function handleMusicRightClick() {
@@ -1587,14 +1528,7 @@ function enhanceVideo(videoElement) {
       case 'ArrowDown':
         videoElement.volume = Math.max(0, videoElement.volume - 0.1);
         break;
-      case 'KeyF':
-        e.preventDefault();
-        if (document.fullscreenElement) {
-          document.exitFullscreen();
-        } else {
-          videoElement.requestFullscreen();
-        }
-        break;
+      // Removed KeyF: reserved for drawing flash in main.js
       // M key shortcut removed - conflicts with music panel shortcut
     }
   };
@@ -2467,6 +2401,83 @@ function initVideoPlayer() {
         restorePlaylist();
       }
     });
+  }
+}
+
+// ===== VIDEO AS BACKGROUND TOGGLE =====
+let videoBackgroundMode = false;
+let savedVideoPlayerStyle = null;
+
+function toggleVideoBackground() {
+  const player = document.getElementById('videoPlayer');
+  const iframe = document.getElementById('videoIframe');
+  const bgVideo = document.getElementById('bgVideo');
+  const ytFrame = document.getElementById('ytFrame');
+  if (!player || !iframe) {
+    logger.warn('🎬 Video player/iframe not found', null, 'VIDEO');
+    return;
+  }
+
+  if (!videoBackgroundMode) {
+    // Enter background mode: place the video iframe behind the canvas
+    savedVideoPlayerStyle = {
+      display: player.style.display,
+      pointerEvents: player.style.pointerEvents,
+      zIndex: player.style.zIndex,
+      visibility: player.style.visibility,
+      position: player.style.position,
+      top: player.style.top,
+      left: player.style.left,
+      width: player.style.width,
+      height: player.style.height,
+      transform: player.style.transform
+    };
+
+    // Ensure other background elements are hidden to avoid stacking
+    if (bgVideo) { bgVideo.style.display = 'none'; }
+    if (ytFrame) { ytFrame.style.display = 'none'; ytFrame.src = ''; }
+
+    // Expand and move the player behind everything
+    player.style.display = 'block';
+    player.style.pointerEvents = 'none';
+    player.style.zIndex = '-2';
+    player.style.visibility = 'visible';
+    player.style.position = 'fixed';
+    player.style.top = '0';
+    player.style.left = '0';
+    player.style.width = '100vw';
+    player.style.height = '100vh';
+    player.style.transform = 'none';
+
+    // Ensure iframe fills container
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+
+    videoBackgroundMode = true;
+    logger.success('🎬 Video set as background (iframe behind canvas)', null, 'VIDEO');
+  } else {
+    // Exit background mode: restore previous player positioning
+    if (savedVideoPlayerStyle) {
+      player.style.display = savedVideoPlayerStyle.display || '';
+      player.style.pointerEvents = savedVideoPlayerStyle.pointerEvents || '';
+      player.style.zIndex = savedVideoPlayerStyle.zIndex || '';
+      player.style.visibility = savedVideoPlayerStyle.visibility || '';
+      player.style.position = savedVideoPlayerStyle.position || '';
+      player.style.top = savedVideoPlayerStyle.top || '';
+      player.style.left = savedVideoPlayerStyle.left || '';
+      player.style.width = savedVideoPlayerStyle.width || '';
+      player.style.height = savedVideoPlayerStyle.height || '';
+      player.style.transform = savedVideoPlayerStyle.transform || '';
+    }
+
+    // Allow interactions with the floating player again
+    player.style.pointerEvents = 'auto';
+    if (player.style.zIndex === '' || player.style.zIndex === '-2') {
+      player.style.zIndex = '9998';
+    }
+
+    videoBackgroundMode = false;
+    logger.success('🎬 Video background mode disabled', null, 'VIDEO');
   }
 }
 
@@ -4946,45 +4957,39 @@ function highlightCurrentTrack() {
       item.style.background = 'rgba(0, 0, 0, 0.6)';
   });
   
-  // Highlight the current track based on currentMusicIndex
+  // Try metadata-based highlighting first
+  if (window.currentAudio && !window.currentAudio.paused) {
+    const currentSrc = window.currentAudio.src;
+    for (const item of musicItems) {
+      // Radio items have dataset.radioUrl
+      if (item.dataset && item.dataset.type === 'radio' && item.dataset.radioUrl) {
+        if (currentSrc.includes(item.dataset.radioUrl)) {
+          item.classList.add('playing');
+          item.style.background = '#35CF3A';
+          return;
+        }
+      }
+      // File items have dataset.url
+      if (item.dataset && item.dataset.type === 'file' && item.dataset.url) {
+        // Some browsers expand relative paths; use endsWith for robustness
+        const srcLower = currentSrc.toLowerCase();
+        const urlLower = item.dataset.url.toLowerCase();
+        if (srcLower.endsWith(urlLower)) {
+          item.classList.add('playing');
+          item.style.background = '#35CF3A';
+          return;
+        }
+      }
+    }
+  }
+  
+  // Fallback to index-based highlighting if metadata match not found
   if (musicPlaylist.length > 0 && currentMusicIndex >= 0 && currentMusicIndex < musicItems.length) {
     const currentItem = musicItems[currentMusicIndex];
     if (currentItem) {
       currentItem.classList.add('playing');
       currentItem.style.background = '#35CF3A';
-
     }
-  }
-  
-  // Also check for radio streams that might be playing but not in playlist
-  if (window.currentAudio && !window.currentAudio.paused) {
-    musicItems.forEach((item, index) => {
-      const itemOnclick = item.getAttribute('onclick') || '';
-      
-      // For radio streams not in playlist
-      if (itemOnclick.includes('playRadioStream') && window.currentAudio.src) {
-        const currentSrc = window.currentAudio.src;
-        if (itemOnclick.includes(currentSrc)) {
-          item.classList.add('playing');
-          item.style.background = '#35CF3A';
-
-        }
-      }
-      
-      // For radio stations loaded via input panel
-      if (window.currentRadioUrl && window.currentAudio.src) {
-        const currentSrc = window.currentAudio.src;
-        if (currentSrc === window.currentRadioUrl || currentSrc.includes(window.currentRadioUrl)) {
-          // Create a temporary radio item display if not already in list
-          const radioText = item.textContent || '';
-          if (radioText.includes('📻') || radioText.includes('Radio') || itemOnclick.includes('playRadioStream')) {
-          item.classList.add('playing');
-          item.style.background = '#35CF3A';
-
-          }
-        }
-      }
-    });
   }
 }
 
