@@ -3487,10 +3487,7 @@ async function toggleVideoPlayer() {
         videoCurrentIndex = 0;
         videoTitles = []; // Clear cached titles for new playlist
         
-        // Update display without auto-playing
-        if (typeof updateVideoPlaylistDisplaySilent === 'function') {
-          updateVideoPlaylistDisplaySilent();
-        }
+        // Defer playlist UI update to a single call later to avoid duplicates
         
         // Auto-play first video on first open
         if (videoPlayerFirstOpen && videoPlaylist.length > 0) {
@@ -3515,10 +3512,7 @@ async function toggleVideoPlayer() {
             videoCurrentIndex = 0;
             videoTitles = []; // Clear cached titles for new playlist
             
-            // Update display without auto-playing
-            if (typeof updateVideoPlaylistDisplaySilent === 'function') {
-              updateVideoPlaylistDisplaySilent();
-            }
+            // Defer playlist UI update to a single call later to avoid duplicates
             
             // Auto-play first video on first open
             if (videoPlayerFirstOpen && videoPlaylist.length > 0) {
@@ -3540,8 +3534,9 @@ async function toggleVideoPlayer() {
       logger.info('🎥 Video player toggled (no reinitialization needed)');
     }
       
+    // Perform a single playlist UI update after state is set to prevent first-load duplication
     if (needsInitialization && typeof updateVideoPlaylistDisplay === 'function') {
-        updateVideoPlaylistDisplay();
+      updateVideoPlaylistDisplay();
     }
     
     // Start with playlist hidden and update button text

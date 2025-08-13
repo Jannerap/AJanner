@@ -4493,7 +4493,13 @@ function setupEventListeners() {
     // EXCEPT for ESC key which should always work to close panels
     const panel = document.getElementById('panel');
     if (panel && panel.style.display === 'block' && e.key !== 'Escape') {
-      return; // Allow normal text input in panel, but let ESC through
+      // Allow 'B' to toggle the bubble panel when not typing in inputs/textareas
+      const targetTag = e.target && e.target.tagName ? e.target.tagName.toUpperCase() : '';
+      const isTypingTarget = targetTag === 'INPUT' || targetTag === 'TEXTAREA' || (e.target && e.target.isContentEditable);
+      const isBKey = e.key === 'b' || e.key === 'B';
+      if (!(isBKey && !isTypingTarget)) {
+        return; // Allow normal text input in panel, but let ESC and non-typing 'B' through
+      }
     }
     
     // Handle general shortcuts that work without selected bubble
