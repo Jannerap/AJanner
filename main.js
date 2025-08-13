@@ -3859,28 +3859,46 @@ function draw() {
       const heightRatio = a.heightRatio || 1.0;
       drawShape(ctx, shape, 0, 0, a.radius, heightRatio, 0);
       
-      // Music pulse overlay (non-intrusive glow/outline)
+      // Bubble-scoped audio pulse overlay (owner only)
       try {
         if (a.pulseWithAudio === true && currentBubbleAudioOwner === a) {
           const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 180 + i * 0.45);
+          const inflate = 1 + 0.15 * pulse; // enlarge pulse radius ~15%
           ctx.save();
-          ctx.globalAlpha = 0.18 + 0.32 * pulse;
-          ctx.lineWidth = 2 + 2 * pulse;
-          ctx.strokeStyle = a.color || 'white';
+          // Red tint fill overlay
+          ctx.globalAlpha = 0.18 + 0.25 * pulse;
+          ctx.fillStyle = 'red';
           ctx.beginPath();
           if (a.shape === 'goal') {
-            // Pulse rectangle outline for goals
             const goalWidth = a.radius * 0.5;
             const goalHeight = a.radius;
-            let finalGoalWidth = goalWidth;
-            let finalGoalHeight = goalHeight;
+            let w = goalWidth * inflate;
+            let h = goalHeight * inflate;
             if (a.rotation === 89 || a.rotation === 271 || a.rotation === 90 || a.rotation === 270) {
-              finalGoalWidth = goalHeight;
-              finalGoalHeight = goalWidth;
+              [w, h] = [h, w];
             }
-            ctx.rect(-finalGoalWidth / 2, -finalGoalHeight / 2, finalGoalWidth, finalGoalHeight);
+            ctx.rect(-w / 2, -h / 2, w, h);
           } else {
-            ctx.arc(0, 0, a.radius, 0, Math.PI * 2);
+            ctx.arc(0, 0, a.radius * inflate, 0, Math.PI * 2);
+          }
+          ctx.fill();
+          
+          // Red outline
+          ctx.globalAlpha = 0.25 + 0.35 * pulse;
+          ctx.lineWidth = 2 + 2.5 * pulse;
+          ctx.strokeStyle = 'red';
+          ctx.beginPath();
+          if (a.shape === 'goal') {
+            const goalWidth = a.radius * 0.5;
+            const goalHeight = a.radius;
+            let w = goalWidth * inflate;
+            let h = goalHeight * inflate;
+            if (a.rotation === 89 || a.rotation === 271 || a.rotation === 90 || a.rotation === 270) {
+              [w, h] = [h, w];
+            }
+            ctx.rect(-w / 2, -h / 2, w, h);
+          } else {
+            ctx.arc(0, 0, a.radius * inflate, 0, Math.PI * 2);
           }
           ctx.stroke();
           ctx.restore();

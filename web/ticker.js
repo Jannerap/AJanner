@@ -179,13 +179,19 @@ class NewsTicker {
             console.warn('Failed to fetch headlines, using cached data:', error.message);
             this.offlineMode = true;
             this.offlineBadge.style.display = 'block';
-            
-            // Try to load from localStorage as fallback
-            this.loadFromCache();
-            // If cache empty, try local .txt fallback files per service
+
+            // Clear current headlines to avoid reusing previous service data
+            this.headlines = [];
+
+            // Prefer service-specific local .txt fallback first
+            await this.loadFallbackFromTxt();
+
+            // If fallback failed/empty, then try localStorage cache as a last resort
             if (!this.headlines || this.headlines.length === 0) {
-                await this.loadFallbackFromTxt();
+                this.loadFromCache();
             }
+
+            // Render whatever we could recover
             if (this.headlines && this.headlines.length > 0) {
                 this.renderHeadlines();
             }
@@ -228,7 +234,12 @@ class NewsTicker {
         };
         const file = map[this.currentService] || 'news.txt';
         try {
-            const res = await fetch(`/${file}`);
+            // Try project root
+            let res = await fetch(`/${file}`);
+            if (!res.ok) {
+                // Try relative path if running from a subdirectory
+                res = await fetch(file);
+            }
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const text = await res.text();
             const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
