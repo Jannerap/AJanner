@@ -2280,7 +2280,7 @@ function endSuggestionsCooldown() {
     suggestionsButton.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
     suggestionsButton.style.color = 'white';
     suggestionsButton.disabled = false;
-    suggestionsButton.innerHTML = '🍿Suggestions:<br>Anime (All)';
+    suggestionsButton.innerHTML = 'Suggestions:<br>Anime (All)🍿';
     
     // Add brief visual indication that cooldown ended
     suggestionsButton.style.boxShadow = '0 0 10px #4CAF50';
