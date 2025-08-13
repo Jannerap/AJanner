@@ -4881,6 +4881,10 @@ function toggleSpeed() {
     speedSlider.classList.add('paused');
     logger.info('⏸️ Animation paused');
   }
+  // Keep toolbar icon in sync when spacebar toggles speed
+  if (typeof updatePauseButtonIcon === 'function') {
+    updatePauseButtonIcon();
+  }
 }
 
 function togglePauseButton() {
@@ -4899,9 +4903,12 @@ function togglePauseButton() {
     speedSlider.value = previousSpeed;
     speedSlider.classList.remove('paused');
     
-    // Toggle media toolbar visibility when unpausing
-    if (typeof toggleMediaToolbarVisibility === 'function') {
-      toggleMediaToolbarVisibility();
+    // Ensure media toolbar is hidden when running
+    if (typeof toggleMediaToolbar === 'function') {
+      const bar = document.getElementById('mediaToolbar');
+      if (bar && (bar.style.display === 'flex' || getComputedStyle(bar).display === 'flex')) {
+        toggleMediaToolbar();
+      }
     }
   } else {
     // If currently running, pause and remember current speed
@@ -4910,9 +4917,12 @@ function togglePauseButton() {
     speedSlider.value = 0;
     speedSlider.classList.add('paused');
     
-    // Toggle media toolbar visibility when pausing
-    if (typeof toggleMediaToolbarVisibility === 'function') {
-      toggleMediaToolbarVisibility();
+    // Ensure media toolbar is shown when paused
+    if (typeof toggleMediaToolbar === 'function') {
+      const bar = document.getElementById('mediaToolbar');
+      if (bar && (bar.style.display === 'none' || getComputedStyle(bar).display === 'none')) {
+        toggleMediaToolbar();
+      }
     }
   }
   

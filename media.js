@@ -3634,6 +3634,13 @@ function recordState(type) {
   const durationSelect = document.getElementById('mediaPlaybackDuration');
   const duration = parseInt(durationSelect.value);
   AnimationState.updateDuration(duration);
+  // Ensure timeline slider max reflects duration in seconds
+  const timelineSlider = document.getElementById('mediaPlaybackSlider');
+  if (timelineSlider) {
+    timelineSlider.min = 0;
+    timelineSlider.max = 1;
+    timelineSlider.step = ANIMATION_CONFIG.timelineStep;
+  }
   
   if (type === 'start') {
     // Auto-pause if speed is not 0
@@ -3673,6 +3680,11 @@ function recordState(type) {
     addTimelineMarker('in', 0);
     addTimelineMarker('out', duration / 1000);
     
+    // Reset slider to start when marking in
+    const timelineSliderEl = document.getElementById('mediaPlaybackSlider');
+    if (timelineSliderEl) timelineSliderEl.value = 0;
+    updateTimelineDisplay();
+    
     // Update time display
     updatePlaybackTimeDisplay(0, duration / 1000);
     
@@ -3683,41 +3695,59 @@ function recordState(type) {
     });
     
   } else if (type === 'end') {
-    if (!AnimationState.data.isRecording) {
-      alert('Please start recording first (mark in point)');
-      return;
-    }
-    
-    // Get current time from timeline slider
+    // Determine end time from slider (or default to full duration if missing)
     const timelineSlider = document.getElementById('mediaPlaybackSlider');
-    const progress = parseFloat(timelineSlider.value);
-    const endTime = progress * (duration / 1000);
-    
+    const sliderProgress = timelineSlider ? parseFloat(timelineSlider.value) : 1;
+    const endTime = Math.max(0, Math.min(1, isNaN(sliderProgress) ? 1 : sliderProgress)) * (duration / 1000);
+
+    const oldOut = AnimationState.data.outPoint;
     AnimationState.data.outPoint = endTime;
+    // Ending recording session if it was active
     AnimationState.data.isRecording = false;
-    logger.info('🏁 Out point adjusted to', endTime.toFixed(1), 's');
-    
-    // Update out marker position
+    logger.info('🏁 Out point set to', endTime.toFixed(1), 's');
+
+    // Update markers and slider display
     updateTimelineMarkers();
-    
+    if (timelineSlider) {
+      const newProgress = endTime / (duration / 1000);
+      timelineSlider.value = Math.max(0, Math.min(1, newProgress));
+    }
+
     // Capture current bubble positions for out point
     const endPositions = captureBubblePositions();
-    
-    // Update the out keyframe with current positions
-    const outKeyframeIndex = AnimationState.data.keyframes.findIndex(kf => kf.time === AnimationState.data.outPoint);
-    if (outKeyframeIndex !== -1) {
-      AnimationState.data.keyframes[outKeyframeIndex].positions = endPositions;
-    } else {
-      AnimationState.data.keyframes.push({
-        time: endTime,
-        positions: endPositions
-      });
+
+    // Ensure we have at least an in keyframe at 0
+    if (AnimationState.data.keyframes.length === 0) {
+      AnimationState.data.keyframes.push({ time: 0, positions: endPositions });
     }
-    
+
+    // Update or insert the out keyframe
+    let updated = false;
+    if (typeof oldOut === 'number') {
+      const oldIdx = AnimationState.data.keyframes.findIndex(kf => kf.time === oldOut);
+      if (oldIdx !== -1) {
+        AnimationState.data.keyframes[oldIdx].time = endTime;
+        AnimationState.data.keyframes[oldIdx].positions = endPositions;
+        updated = true;
+      }
+    }
+    if (!updated) {
+      // Try to find an existing keyframe at new end time to update
+      const exactIdx = AnimationState.data.keyframes.findIndex(kf => kf.time === endTime);
+      if (exactIdx !== -1) {
+        AnimationState.data.keyframes[exactIdx].positions = endPositions;
+      } else {
+        AnimationState.data.keyframes.push({ time: endTime, positions: endPositions });
+      }
+    }
+
+    // Keep keyframes ordered
+    AnimationState.data.keyframes.sort((a, b) => a.time - b.time);
+
     // Update time display
     updatePlaybackTimeDisplay(endTime, duration / 1000);
-    
-    logger.info('✅ Animation complete: Out point updated with current positions');
+
+    logger.info('✅ Out point updated with current positions (recording state not required)');
     
   } else if (type === 'keyframe') {
     // Pause any current playback
@@ -3733,15 +3763,27 @@ function recordState(type) {
     
     const maxTime = duration / 1000;
     
-    if (keyframeTime <= 0 || keyframeTime >= maxTime) {
-      alert('Keyframe must be between start and end of animation');
-      return;
+    // Auto-initialize in/out if not set
+    if (!AnimationState.data.isRecording && AnimationState.data.keyframes.length < 2) {
+      AnimationState.data.isRecording = true;
+      AnimationState.data.inPoint = 0;
+      AnimationState.data.outPoint = maxTime;
+      const currentPositions = captureBubblePositions();
+      AnimationState.data.keyframes = [
+        { time: 0, positions: currentPositions },
+        { time: maxTime, positions: currentPositions }
+      ];
+      updateTimelineMarkers();
+      logger.info('🎬 Auto-initialized in/out for keyframing');
     }
+    
+    // Clamp keyframe to be within in/out (exclusive)
+    const clampedTime = Math.max(AnimationState.data.inPoint + 0.01, Math.min(AnimationState.data.outPoint - 0.01, keyframeTime));
     
     // Capture current bubble positions for keyframe
     const keyframePositions = captureBubblePositions();
     const keyframe = {
-      time: keyframeTime,
+      time: clampedTime,
       positions: keyframePositions
     };
     
@@ -3754,10 +3796,12 @@ function recordState(type) {
       logger.info('🎬 Started new animation recording');
     }
     
+    // Insert keyframe in time-sorted order
     AnimationState.data.keyframes.push(keyframe);
-    addTimelineMarker('keyframe', keyframeTime);
+    AnimationState.data.keyframes.sort((a, b) => a.time - b.time);
+    addTimelineMarker('keyframe', clampedTime);
     
-    logger.info('📍 Keyframe added at:', keyframeTime.toFixed(1), 's with current positions');
+    logger.info('📍 Keyframe added at:', clampedTime.toFixed(1), 's with current positions');
   }
 }
 
@@ -3788,7 +3832,7 @@ function addTimelineMarker(type, time) {
   const marker = {
     type: type,
     time: time,
-    position: (time / (AnimationState.data.duration / 1000)) * 100 // Convert to percentage
+    position: Math.max(0, Math.min(100, (time / (AnimationState.data.duration / 1000)) * 100)) // Clamp 0-100%
   };
   
   // Remove existing marker of same type
@@ -3800,23 +3844,28 @@ function addTimelineMarker(type, time) {
 }
 
 function updateTimelineDisplay() {
-  const timeline = document.getElementById('mediaPlaybackSlider');
-  if (!timeline) return;
+  const overlay = document.getElementById('timelineMarkersOverlay');
+  const slider = document.getElementById('mediaPlaybackSlider');
+  if (!overlay || !slider) return;
   
   // Clear existing markers
-  const existingMarkers = timeline.parentNode.querySelectorAll('.timeline-marker');
-  existingMarkers.forEach(marker => marker.remove());
+  overlay.innerHTML = '';
   
-  // Add new markers
+  // Add new markers inside overlay, positioned over the slider track
   AnimationState.timelineMarkers.forEach(marker => {
     const markerElement = document.createElement('div');
     markerElement.className = 'timeline-marker';
+    markerElement.style.position = 'absolute';
+    markerElement.style.top = '50%';
+    markerElement.style.transform = 'translate(-50%, -50%)';
+    markerElement.style.width = '6px';
+    markerElement.style.height = '12px';
+    markerElement.style.borderRadius = '2px';
     markerElement.style.left = `${marker.position}%`;
     markerElement.style.backgroundColor = marker.type === 'in' ? '#4CAF50' : 
                                        marker.type === 'out' ? '#f44336' : '#FF9800';
     markerElement.title = `${marker.type} point at ${marker.time.toFixed(1)}s`;
-    
-    timeline.parentNode.appendChild(markerElement);
+    overlay.appendChild(markerElement);
   });
 }
 
@@ -3825,10 +3874,10 @@ function updateTimelineMarkers() {
   AnimationState.timelineMarkers = [];
   
   // Add in marker
-  addTimelineMarker('in', 0);
+  addTimelineMarker('in', AnimationState.data.inPoint || 0);
   
   // Add out marker
-  addTimelineMarker('out', AnimationState.data.outPoint);
+  addTimelineMarker('out', AnimationState.data.outPoint || (AnimationState.data.duration / 1000));
   
   // Add keyframe markers
   AnimationState.data.keyframes.forEach(keyframe => {
@@ -3845,6 +3894,8 @@ function updatePlaybackTimeDisplay(currentTime, totalTime) {
     const totalFormatted = formatTime(totalTime);
     timeDisplay.textContent = `${currentFormatted} / ${totalFormatted}`;
   }
+  // Also refresh marker positions to keep visuals in sync if needed
+  updateTimelineDisplay();
 }
 
 function startPlayback() {
@@ -3858,8 +3909,17 @@ function startPlayback() {
   // Check if we have at least 2 keyframes (in and out points)
   if (AnimationState.data.keyframes.length < 2) {
     logger.error('❌ Not enough keyframes for playback:', AnimationState.data.keyframes.length);
-    alert('Please set in point first to create animation (need at least 2 keyframes)');
-    return;
+    // Auto-create in/out at current positions if missing
+    const durationSeconds = AnimationState.data.duration / 1000;
+    AnimationState.data.inPoint = 0;
+    AnimationState.data.outPoint = durationSeconds;
+    const currentPositions = captureBubblePositions();
+    AnimationState.data.keyframes = [
+      { time: 0, positions: currentPositions },
+      { time: durationSeconds, positions: currentPositions }
+    ];
+    updateTimelineMarkers();
+    logger.info('✅ Auto-created in/out keyframes for playback');
   }
   
   logger.info('✅ Sufficient keyframes for playback:', AnimationState.data.keyframes.length);
@@ -3877,7 +3937,9 @@ function startPlayback() {
   
   logger.info('▶️ Starting animation playback:', AnimationState.playbackDuration, 'ms');
   
-  // Start the animation
+  // Start the animation and sync the slider
+  const timelineSlider = document.getElementById('mediaPlaybackSlider');
+  if (timelineSlider) timelineSlider.value = 0;
   animateBubbles(AnimationState.playbackDuration);
 }
 
@@ -3902,19 +3964,17 @@ function animateBubbles(duration) {
     const elapsed = currentTime - AnimationState.playbackStartTime;
     const progress = Math.min(elapsed / duration, 1);
     
-    // Calculate current playback time in seconds
+    // Calculate current playback time in seconds (absolute in animation timeline)
     AnimationState.currentPlaybackTime = inPoint + (progress * (outPoint - inPoint));
     
-    // Update timeline slider (only if it exists)
-    if (timelineSlider) {
-      timelineSlider.value = progress;
-    }
+    // Update timeline slider (only if it exists) with clamped progress
+    if (timelineSlider) timelineSlider.value = Math.max(0, Math.min(1, progress));
     
     // Update time display
     updatePlaybackTimeDisplay(AnimationState.currentPlaybackTime, durationSeconds);
     
-    // Interpolate bubble positions
-    interpolateBubblePositions(progress);
+    // Interpolate bubble positions at the absolute current time
+    interpolateBubblePositions(AnimationState.currentPlaybackTime);
     
     if (progress < 1) {
       requestAnimationFrame(animate);
@@ -3928,21 +3988,26 @@ function animateBubbles(duration) {
   animate();
 }
 
-function interpolateBubblePositions(progress) {
+function interpolateBubblePositions(currentTime) {
   if (AnimationState.data.keyframes.length < 2) {
     logger.error('❌ Not enough keyframes for interpolation:', AnimationState.data.keyframes.length);
     return;
   }
   
-  // Convert progress to time in seconds
-  const currentTime = progress * (AnimationState.data.duration / 1000);
+  // Clamp current time to animation duration
+  const maxTime = (AnimationState.data.duration / 1000);
+  if (currentTime < 0) currentTime = 0;
+  if (currentTime > maxTime) currentTime = maxTime;
   
   // Only log debug info every 30 frames to reduce performance impact
   if (typeof window.frameCounter !== 'undefined' && window.frameCounter % 30 === 0) {
-    logger.debug('🎬 Interpolating at progress:', progress, 'time:', currentTime.toFixed(1), 's');
+    logger.debug('🎬 Interpolating at time:', currentTime.toFixed(1), 's');
   }
   
-  // Find the two keyframes to interpolate between
+  // Ensure keyframes are sorted by time to support 3rd/4th points
+  AnimationState.data.keyframes.sort((a, b) => a.time - b.time);
+  
+  // Find the two keyframes to interpolate between for current time
   let startKeyframe = AnimationState.data.keyframes[0];
   let endKeyframe = AnimationState.data.keyframes[AnimationState.data.keyframes.length - 1];
   
@@ -3961,8 +4026,9 @@ function interpolateBubblePositions(progress) {
     }
   }
   
-  // Calculate interpolation factor
-  const segmentProgress = (currentTime - startKeyframe.time) / (endKeyframe.time - startKeyframe.time);
+  // Calculate interpolation factor (0..1) within segment
+  const denom = (endKeyframe.time - startKeyframe.time) || 0.000001;
+  const segmentProgress = (currentTime - startKeyframe.time) / denom;
   
   // Only log debug info every 30 frames
   if (typeof window.frameCounter !== 'undefined' && window.frameCounter % 30 === 0) {
@@ -4174,12 +4240,10 @@ function setupMediaEventListeners() {
     timelineSlider.addEventListener('input', (e) => {
       if (!AnimationState.data.isPlaying) {
         const progress = parseFloat(e.target.value);
-        logger.info('🎛️ Timeline slider moved to progress:', progress, 'SYSTEM');
-        
         if (AnimationState.data.keyframes.length >= 2) {
           const currentTime = progress * (AnimationState.data.duration / 1000);
           AnimationState.currentPlaybackTime = currentTime;
-          interpolateBubblePositions(progress);
+          interpolateBubblePositions(currentTime);
           updatePlaybackTimeDisplay(currentTime, AnimationState.data.duration / 1000);
         } else {
           logger.warn('❌ No keyframes available for timeline scrubbing', null, 'SYSTEM');
@@ -4668,9 +4732,11 @@ function initializeMediaSystem() {
         // Set media toolbar to minimized by default
         const mediaToolbar = document.getElementById('mediaToolbar');
         if (mediaToolbar) {
-          mediaToolbar.classList.add('minimized');
-          isMediaToolbarMinimized = true;
-          logger.info('📺 Media toolbar set to minimized by default');
+          // Start fully hidden by default
+          mediaToolbar.style.display = 'none';
+          mediaToolbar.classList.remove('minimized');
+          isMediaToolbarMinimized = false;
+          logger.info('📺 Media toolbar set to hidden by default');
         }
         logger.success('🎛️ Media system initialized after DOM load', null, 'SYSTEM');
       }, 100);
@@ -4683,9 +4749,11 @@ function initializeMediaSystem() {
       // Set media toolbar to minimized by default
       const mediaToolbar = document.getElementById('mediaToolbar');
       if (mediaToolbar) {
-        mediaToolbar.classList.add('minimized');
-        isMediaToolbarMinimized = true;
-        logger.info('📺 Media toolbar set to minimized by default');
+        // Start fully hidden by default
+        mediaToolbar.style.display = 'none';
+        mediaToolbar.classList.remove('minimized');
+        isMediaToolbarMinimized = false;
+        logger.info('📺 Media toolbar set to hidden by default');
       }
       logger.success('🎛️ Media system initialized immediately', null, 'SYSTEM');
     }, 100);

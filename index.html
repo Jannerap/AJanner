@@ -197,26 +197,24 @@
 
   <!-- Media Toolbar -->
   <div id="mediaToolbar">
-    <label>📀 Video:
-      <input accept="video/*" id="videoLoader" type="file"/>
-    </label>
-    <label>🎥 YouTube:
-      <input id="youtubeLink" placeholder="Paste Video URL" type="text"/>
-      <button onclick="loadYouTubeVideo()" class="toolbar-btn" data-icon="youtube">Load</button>
-    </label>
-    <div class="media-separator"></div>
-    <button onclick="recordState('start')" class="record-btn start-btn toolbar-btn" data-icon="record-in" title="Mark In Point">🎬 In</button>
-    
-    <button onclick="recordState('keyframe')" class="record-btn keyframe-btn toolbar-btn" data-icon="keyframe" title="Add Keyframe">📍 Key</button>
-    <button onclick="recordState('end')" class="record-btn end-btn toolbar-btn" data-icon="record-out" title="Mark Out Point">🏁 Out</button>
-    <button onclick="startPlayback()" class="play-btn toolbar-btn" data-icon="play" title="Play In to Out">▶️ Play</button>
-    <div class="timeline-control">
-      <span>Timeline:</span>
-      <input id="mediaPlaybackSlider" max="1" min="0" step="0.01" type="range" value="0"/>
-      <span id="playbackTimeDisplay" style="color: white; font-size: 12px; margin-left: 10px;">00:00 / 00:00</span>
+    <div class="controls-row" style="display:flex; gap:4px; width:100%; align-items:center;">
+      <div class="media-separator"></div>
+      <button onclick="recordState('start')" class="record-btn start-btn toolbar-btn" data-icon="record-in" title="Mark In Point">🎬 In</button>
+      <button onclick="recordState('keyframe')" class="record-btn keyframe-btn toolbar-btn" data-icon="keyframe" title="Add Keyframe">📍 Key</button>
+      <button onclick="recordState('end')" class="record-btn end-btn toolbar-btn" data-icon="record-out" title="Mark Out Point">🏁 Out</button>
+      <button onclick="startPlayback()" class="play-btn toolbar-btn" data-icon="play" title="Play In to Out">▶️ Play</button>
+      <button onclick="saveAnimation()" class="save-btn toolbar-btn" data-icon="save" title="Save Animation">💾 Save</button>
+      <button onclick="loadAnimation()" class="load-btn toolbar-btn" data-icon="load" title="Load Animation">📂 Load</button>
+      <button onclick="toggleMediaToolbarMinimize()" class="minimize-btn toolbar-btn" data-icon="hide" title="Hide/Show"></button>
     </div>
-    <div class="duration-control">
-      <span>Duration:</span>
+    <div class="timeline-row" style="display:flex; gap:8px; width:100%; align-items:center; margin-top:6px;">
+      <span>Timeline:</span>
+      <div id="timelineSliderWrap" style="position: relative; flex: 1 1 auto; display: flex; align-items: center;">
+        <input id="mediaPlaybackSlider" max="1" min="0" step="0.01" type="range" value="0" style="width: 100%;"/>
+        <div id="timelineMarkersOverlay" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 100%; height: 100%; pointer-events: none;"></div>
+      </div>
+      <span id="playbackTimeDisplay" style="color: white; font-size: 12px; margin-left: 10px;">00:00 / 00:00</span>
+      <span style="margin-left: 12px;">Duration:</span>
       <select id="mediaPlaybackDuration">
         <option value="5000">5s</option>
         <option selected="" value="10000">10s</option>
@@ -227,10 +225,6 @@
         <option value="50000">50s</option>
       </select>
     </div>
-    <button onclick="saveAnimation()" class="save-btn toolbar-btn" data-icon="save" title="Save Animation">💾 Save</button>
-    <button onclick="loadAnimation()" class="load-btn toolbar-btn" data-icon="load" title="Load Animation">📂 Load</button>
-    <button onclick="captureCanvas()" class="snapshot-btn toolbar-btn" data-icon="snapshot-media" title="Snapshot">📷 Snapshot</button>
-    <button onclick="toggleMediaToolbarMinimize()" class="minimize-btn toolbar-btn" data-icon="hide" title="Hide/Show"></button>
   </div>
 
   <!-- Video Elements -->
