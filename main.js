@@ -2724,7 +2724,7 @@ function handleAudioUpload(event) {
   }
 }
 
-function playSelectedBubbleAudio() {
+async function playSelectedBubbleAudio() {
   if (!selectedIdea || !selectedIdea.audio || !selectedIdea.audio.url) {
     logger.warn('🎧 No audio attached to the selected bubble');
     return;
@@ -2735,7 +2735,22 @@ function playSelectedBubbleAudio() {
       currentBubbleAudio = null;
       currentBubbleAudioOwner = null;
     }
-    const audio = new Audio(selectedIdea.audio.url);
+    // Prefer file from session_uploads if present
+    let urlToPlay = selectedIdea.audio.url;
+    try {
+      const baseName = selectedIdea.audio.name || selectedIdea.audio.originalName || '';
+      if (baseName) {
+        const candidate = `session_uploads/${baseName}`;
+        try {
+          const headRes = await fetch(candidate, { method: 'HEAD' });
+          if (headRes && headRes.ok) {
+            urlToPlay = candidate;
+          }
+        } catch (_) {}
+      }
+    } catch (_) {}
+
+    const audio = new Audio(urlToPlay);
     audio.volume = 1.0;
     audio.onended = () => {
       const btn = document.getElementById('playBubbleAudioBtn');
