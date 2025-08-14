@@ -1,7 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const axios = require('axios');
-const FeedParser = require('feedparser-promised');
+const RSSParser = require('rss-parser');
 const cheerio = require('cheerio');
 const crypto = require('crypto');
 
@@ -157,12 +157,13 @@ class NewsSourceParser {
 
     async fetchRSSFeed(url) {
         try {
-            const items = await FeedParser.parse(url);
-            return items.map(item => new Headline(
+            const parser = new RSSParser({ headers: { 'User-Agent': USER_AGENT } });
+            const feed = await parser.parseURL(url);
+            return (feed.items || []).map(item => new Headline(
                 item.title || 'Untitled',
                 item.link || url,
                 this.getDomain(url),
-                item.pubDate ? new Date(item.pubDate).getTime() : Date.now()
+                item.isoDate ? new Date(item.isoDate).getTime() : (item.pubDate ? new Date(item.pubDate).getTime() : Date.now())
             ));
         } catch (error) {
             console.warn(`Failed to fetch RSS feed ${url}:`, error.message);
