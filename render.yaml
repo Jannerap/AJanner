@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: ajanner-news-api
+    env: node
+    plan: free
+    buildCommand: ''
+    startCommand: node server/server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: PORT
+        value: 10000
+    autoDeploy: true
+    healthCheckPath: /api/health
+

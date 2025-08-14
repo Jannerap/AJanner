@@ -205,6 +205,9 @@ headline "Breaking: Release v1.0 is live" https://example.com/blog/v1</pre>
         </div>
     </div>
 
+    <script>
+      window.NEWS_API_ENDPOINT = window.NEWS_API_ENDPOINT || 'https://ajanner-news-api.onrender.com/api/news';
+    </script>
     <script src="ticker.js"></script>
     <script>
         let ticker = null;
@@ -220,7 +223,7 @@ headline "Breaking: Release v1.0 is live" https://example.com/blog/v1</pre>
             try {
                 ticker = initNewsTicker({
                     target: '#news-ticker',
-                    endpoint: '/api/news',
+                    endpoint: window.NEWS_API_ENDPOINT || '/api/news',
                     speed: 60,
                     gap: 48,
                     pauseOnHover: true,

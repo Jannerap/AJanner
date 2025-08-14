@@ -955,6 +955,8 @@
   
   <!-- Module-based visualization system - Load Second -->
   <script type="module">
+    // Allow overriding news API endpoint via window.NEWS_API_ENDPOINT
+    window.NEWS_API_ENDPOINT = window.NEWS_API_ENDPOINT || 'https://ajanner-news-api.onrender.com/api/news';
     import { initializeVisualizer } from './modules/index.js';
     
     // Wait for presets to be loaded
@@ -1007,7 +1009,7 @@
           console.log('🎯 Creating news ticker...');
           window.newsTicker = initNewsTicker({
             target: '#news-ticker',
-            endpoint: 'http://localhost:3005/api/news',
+            endpoint: window.NEWS_API_ENDPOINT || '/api/news',
             speed: 60,
             gap: 48,
             pauseOnHover: true,
