@@ -493,9 +493,10 @@
 
   <!-- Main Panel -->
   <div class="panel" id="panel">
-    <div style="position: relative; margin-bottom: 10px; padding-top: 5px; height: 30px; display: flex; align-items: center; gap: 0px;">
+    <div style="position: relative; margin-bottom: 10px; padding-top: 5px; height: 30px; display: flex; align-items: center; gap: 6px;">
       <div class="panel-close-btn" onclick="closePanel()" title="Close Panel" style="position: static;">ⓧ</div>
-      <button onclick="minimizePanel()" title="Minimize" style="background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px;">⌑</button>
+      <button onclick="minimizePanel()" title="Minimize" style="background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px;">Minimize</button>
+      <button onclick="resizePanelToggle()" title="Resize Panel" style="margin-left: auto; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px;">Resize</button>
       <input type="checkbox" id="disablePanelTimeout" title="Disable Panel Timeout" style="width: 12px; height: 12px; cursor: pointer;">
     </div>
     <input id="title" placeholder="Title"/>

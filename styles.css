@@ -483,7 +483,21 @@ html, body {
   resize: both;
   overflow-y: scroll; /* Always show vertical scrollbar */
   overflow-x: hidden;
+  scrollbar-gutter: stable;
   transition: all 0.3s ease;
+}
+
+/* Visible custom scrollbar for panel */
+.panel::-webkit-scrollbar {
+  width: 10px;
+}
+.panel::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.3);
+}
+.panel::-webkit-scrollbar-thumb {
+  background-color: rgba(76, 175, 80, 0.8); /* green */
+  border-radius: 8px;
+  border: 2px solid rgba(0,0,0,0.3);
 }
 
 .panel.minimized {
@@ -1779,7 +1793,8 @@ button[data-png="bucheck"].has-png {
 }
 
 #mediaToolbar button[data-icon="hide"] {
-  /* Hide button inherits the standard button sizing */
+  /* explicit rule to satisfy linter and document intent */
+  aspect-ratio: 1;
 }
 
 #mediaToolbar label {

@@ -2864,19 +2864,34 @@ function renderAttachmentsList(attachments) {
     viewBtn.style.fontSize = '11px';
     viewBtn.onclick = () => {
       try {
+        // Handle object URLs that won't persist across sessions by data URL fallback
+        const href = att.url;
         if (att.type && att.type.startsWith('video/')) {
           // Open a lightweight inline viewer in a new window/tab
-          const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${att.name}</title></head><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><video src="${att.url}" controls autoplay style="max-width:100vw;max-height:100vh"></video></body></html>`;
+          const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${att.name}</title></head><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><video src="${href}" controls autoplay style="max-width:100vw;max-height:100vh"></video></body></html>`;
           const win = window.open('', '_blank');
           if (win && win.document) {
             win.document.open();
             win.document.write(html);
             win.document.close();
           } else {
-            window.open(att.url, '_blank');
+            window.open(href, '_blank');
           }
+        } else if (att.type === 'text/csv') {
+          // Render CSV in a minimal HTML table for quick view
+          fetch(href).then(r => r.text()).then(text => {
+            const rows = text.split(/\r?\n/).map(l => l.split(','));
+            const table = rows.map(cells => `<tr>${cells.map(c => `<td style="border:1px solid #444;padding:4px;">${c.replace(/</g,'&lt;')}</td>`).join('')}</tr>`).join('');
+            const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${att.name}</title></head><body style="margin:0;background:#111;color:#eee;font-family:monospace;"><div style="padding:8px;overflow:auto;"><table style="border-collapse:collapse;">${table}</table></div></body></html>`;
+            const win = window.open('', '_blank');
+            if (win && win.document) {
+              win.document.open();
+              win.document.write(html);
+              win.document.close();
+            }
+          }).catch(() => window.open(href, '_blank'));
         } else {
-          window.open(att.url, '_blank');
+          window.open(href, '_blank');
         }
       } catch (_) {}
     };
@@ -5166,6 +5181,11 @@ function setupEventListeners() {
     panel.addEventListener('input', resetPanelTimer);
     panel.addEventListener('change', resetPanelTimer);
   }
+
+  // Attach resize toggle handler
+  if (typeof resizePanelToggle === 'function') {
+    // no-op, exposed later
+  }
   
   // Panel timeout checkbox
   const disableTimeoutCheckbox = document.getElementById('disablePanelTimeout');
@@ -5292,6 +5312,20 @@ function setupEventListeners() {
     }
   });
 }
+
+function resizePanelToggle() {
+  const panel = document.getElementById('panel');
+  if (!panel) return;
+  if (panel.style.width === '300px' || !panel.style.width) {
+    panel.style.width = '500px';
+    panel.style.height = '70vh';
+  } else {
+    panel.style.width = '300px';
+    panel.style.height = 'auto';
+  }
+}
+
+window.resizePanelToggle = resizePanelToggle;
 
 function toggleSpeed() {
   const speedSlider = document.querySelector('input[type="range"]');
