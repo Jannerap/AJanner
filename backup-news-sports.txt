@@ -4,7 +4,8 @@ plymouth-argyle https://www.pafc.co.uk/news
 
 # Plymouth Herald Football News
 plymouth-herald-sports https://www.plymouthherald.co.uk/sport/football/
-
+ESPN-ARGYLE https://www.espn.co.uk/football/team/_/id/307/plymouth-argyle
+NewsNowPA https://www.newsnow.co.uk/h/Sport/Football/League+One/Plymouth+Argyle
 # General Sports Feeds
 feed https://www.bbc.co.uk/sport/rss.xml
 feed https://www.skysports.com/rss/0,20514,11661,00.xml
