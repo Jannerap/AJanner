@@ -663,6 +663,12 @@
       <input accept=".png,.gif,.webp,.jpg,.jpeg,image/jpeg,.pdf,.doc,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.mp4,video/mp4,.csv,.xls,image/jpg,image/png,image/webp" id="uploadDocs" type="file" multiple style="flex: 1;">
       <div id="attachmentsList" style="display: flex; flex-direction: column; gap: 4px; width: 100%; max-height: 140px; overflow: auto;"></div>
     </div>
+    <div style="margin: 6px 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      <label style="color: gold; font-size: 12px;">🔗 URL:</label>
+      <input id="urlInput" type="text" placeholder="https://example.com" style="flex: 1; background-color: rgba(0, 0, 0, 0.6); color: gold; border: 2px solid darkgreen; font-family: 'Monaco', serif; padding: 6px; border-radius: 6px;"/>
+      <button onclick="addBubbleUrl()" title="Add URL" style="background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 4px 8px; cursor: pointer; font-size: 12px;">Add</button>
+      <div id="urlList" style="display: flex; flex-direction: column; gap: 4px; width: 100%; max-height: 140px; overflow: auto;"></div>
+    </div>
     
 
   </div>

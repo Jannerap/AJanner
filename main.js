@@ -2647,6 +2647,11 @@ function showPanel() {
   if (attachmentsList) {
     renderAttachmentsList(selectedIdea.attachments);
   }
+
+  // Hook up URLs UI
+  const urlList = document.getElementById('urlList');
+  if (!selectedIdea.urls) selectedIdea.urls = [];
+  if (urlList) renderUrlList(selectedIdea.urls);
   
   document.getElementById('panel').style.display = "block";
   resetPanelFade();
@@ -2931,6 +2936,123 @@ function renderAttachmentsList(attachments) {
     list.appendChild(row);
   });
 }
+
+function addBubbleUrl() {
+  if (!selectedIdea) return;
+  const input = document.getElementById('urlInput');
+  if (!input) return;
+  const val = (input.value || '').trim();
+  if (!val) return;
+  try {
+    const url = new URL(val);
+    if (!selectedIdea.urls) selectedIdea.urls = [];
+    selectedIdea.urls.push({ href: url.toString(), title: url.toString() });
+    input.value = '';
+    renderUrlList(selectedIdea.urls);
+  } catch (_) {
+    alert('Please enter a valid URL starting with http(s)://');
+  }
+}
+
+function renderUrlList(urls) {
+  const list = document.getElementById('urlList');
+  if (!list) return;
+  list.innerHTML = '';
+  urls.forEach((link, index) => {
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.alignItems = 'center';
+    row.style.gap = '6px';
+    row.style.fontSize = '12px';
+    row.style.color = '#ddd';
+
+    const name = document.createElement('span');
+    name.textContent = link.title || link.href;
+    name.style.flex = '1';
+    name.style.overflow = 'hidden';
+    name.style.whiteSpace = 'nowrap';
+    name.style.textOverflow = 'ellipsis';
+
+    const viewBtn = document.createElement('button');
+    viewBtn.textContent = 'View';
+    viewBtn.title = 'Open URL in overlay';
+    viewBtn.style.background = 'rgba(0,0,0,0.7)';
+    viewBtn.style.color = 'white';
+    viewBtn.style.border = 'none';
+    viewBtn.style.borderRadius = '3px';
+    viewBtn.style.padding = '2px 6px';
+    viewBtn.style.cursor = 'pointer';
+    viewBtn.style.fontSize = '11px';
+    viewBtn.onclick = () => openUrlOverlay(link.href);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = '✖';
+    removeBtn.title = 'Remove URL';
+    removeBtn.style.background = 'rgba(0,0,0,0.7)';
+    removeBtn.style.color = 'white';
+    removeBtn.style.border = 'none';
+    removeBtn.style.borderRadius = '3px';
+    removeBtn.style.padding = '2px 6px';
+    removeBtn.style.cursor = 'pointer';
+    removeBtn.style.fontSize = '11px';
+    removeBtn.onclick = () => {
+      try {
+        selectedIdea.urls.splice(index, 1);
+        renderUrlList(selectedIdea.urls);
+      } catch (_) {}
+    };
+
+    row.appendChild(name);
+    row.appendChild(viewBtn);
+    row.appendChild(removeBtn);
+    list.appendChild(row);
+  });
+}
+
+function openUrlOverlay(href) {
+  // Create a simple fullscreen iframe overlay with close
+  const overlay = document.createElement('div');
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.width = '100vw';
+  overlay.style.height = '100vh';
+  overlay.style.background = 'rgba(0,0,0,0.85)';
+  overlay.style.zIndex = '70002';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+
+  const frame = document.createElement('iframe');
+  frame.src = href;
+  frame.allow = 'autoplay; fullscreen';
+  frame.style.width = '90vw';
+  frame.style.height = '80vh';
+  frame.style.border = '2px solid darkgreen';
+  frame.style.borderRadius = '8px';
+  frame.style.background = '#000';
+
+  const close = document.createElement('button');
+  close.textContent = 'Close';
+  close.title = 'Close';
+  close.style.position = 'absolute';
+  close.style.top = '16px';
+  close.style.right = '16px';
+  close.style.background = 'rgba(0,0,0,0.7)';
+  close.style.color = 'white';
+  close.style.border = '2px solid #4CAF50';
+  close.style.borderRadius = '6px';
+  close.style.padding = '6px 10px';
+  close.style.cursor = 'pointer';
+  close.onclick = () => document.body.removeChild(overlay);
+
+  overlay.appendChild(frame);
+  overlay.appendChild(close);
+  document.body.appendChild(overlay);
+}
+
+// Expose add method for inline onclick
+window.addBubbleUrl = addBubbleUrl;
 
 function minimizePanel() {
   const panel = document.getElementById('panel');
@@ -3439,6 +3561,10 @@ async function saveIdeas() {
         out.push(item);
       }
       copy.attachments = out;
+    }
+    // Persist URLs list
+    if (Array.isArray(copy.urls)) {
+      copy.urls = copy.urls.map(u => ({ href: u.href, title: u.title || u.href }));
     }
     // Audio: keep url and a flag (do not embed to keep JSON smaller)
     if (copy.audio) {
@@ -5196,6 +5322,8 @@ function setupEventListeners() {
             isObjectUrl: !!att.isObjectUrl,
             originalName: att.originalName || att.name || ''
           })) : [],
+          // Restore URLs list if present
+          urls: Array.isArray(idea.urls) ? idea.urls.map(u => ({ href: u.href, title: u.title || u.href })) : [],
           // Restore audio stub if present
           audio: idea.audio ? {
             url: idea.audio.url || '',
