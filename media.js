@@ -244,6 +244,8 @@ function toggleMusicPanel() {
     
     // Highlight currently playing track if any
     highlightCurrentTrack();
+    // Sync DOM index so Next/Prev continue correctly after reopen
+    syncCurrentMusicDomIndex();
     
     // Update now playing info
     updateNowPlayingInfo();
@@ -448,6 +450,8 @@ async function loadMusicList() {
       } else {
         playMusic(track.url, event);
       }
+      // Update stored DOM index so next/prev navigate correctly
+      currentMusicDomIndex = index;
     };
     musicList.appendChild(musicItem);
   });
@@ -533,6 +537,11 @@ function playMusic(filename, event) {
 
   window.currentAudio = audio;
   updateNowPlayingInfo();
+  // Ensure DOM index reflects the clicked item
+  if (event && event.target) {
+    const items = document.querySelectorAll('.music-item');
+    currentMusicDomIndex = Array.prototype.indexOf.call(items, event.target.closest('.music-item'));
+  }
 
   // Enhance music playback with better controls and monitoring
   const cleanupEnhancement = enhanceMusicPlayback(audio);
@@ -613,6 +622,9 @@ let isMusicLooping = true;
 let isPlaylistStarted = false; // Track if playlist has been started
 let isMediaToolbarMinimized = false; // Track if media toolbar is minimized
 let isMediaToolbarVisible = false; // Track if media toolbar is visible
+// Shuffle and DOM index tracking
+let isMusicShuffle = false; // When true, Next selects a random item from the visible list
+let currentMusicDomIndex = -1; // Tracks the index within the visible music list
 
 function stopMusic() {
   // Toggle play/pause for currently playing audio
@@ -739,6 +751,8 @@ async function startMusicPlaylist() {
 function playMusicFromPlaylist(index) {
   if (index >= 0 && index < musicPlaylist.length) {
     currentMusicIndex = index;
+    // Also sync the DOM index for navigation
+    syncCurrentMusicDomIndex();
     const track = musicPlaylist[index];
     
     // Update visual indicators
@@ -897,6 +911,9 @@ function playRadioStreamFromPlaylist(radioUrl, index) {
         logger.debug(`Highlighted radio item ${i}:`, { itemText: item.textContent }, 'AUDIO');
       }
     });
+    // Sync current DOM index and logical index
+    currentMusicDomIndex = index;
+    currentMusicIndex = index;
     
     // Create new audio element for radio
     const audio = new Audio(radioUrl);
@@ -977,21 +994,32 @@ function nextMusicTrack() {
     return;
   }
 
-  // Determine current index by the highlighted DOM element
-  let currentIndex = -1;
-  const playingItem = document.querySelector('.music-item.playing');
-  if (playingItem) {
-    for (let i = 0; i < musicItems.length; i++) {
-      if (musicItems[i] === playingItem) {
-        currentIndex = i;
-        break;
-      }
+  // Determine current index by stored DOM index first, fallback to highlighted element
+  let currentIndex = (typeof currentMusicDomIndex === 'number' && currentMusicDomIndex >= 0) ? currentMusicDomIndex : -1;
+  if (currentIndex === -1) {
+    const playingItem = document.querySelector('.music-item.playing');
+    if (playingItem) {
+      currentIndex = Array.prototype.indexOf.call(musicItems, playingItem);
     }
   }
 
-  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % musicItems.length : 0;
+  // Shuffle support
+  let nextIndex;
+  if (isMusicShuffle) {
+    // Pick a random different index if more than 1 item
+    if (musicItems.length > 1) {
+      do {
+        nextIndex = Math.floor(Math.random() * musicItems.length);
+      } while (nextIndex === currentIndex);
+    } else {
+      nextIndex = 0;
+    }
+  } else {
+    nextIndex = currentIndex >= 0 ? (currentIndex + 1) % musicItems.length : 0;
+  }
   logger.debug(`Clicking next DOM item at index: ${nextIndex}`, null, 'AUDIO');
   musicItems[nextIndex].click();
+  currentMusicDomIndex = nextIndex;
 }
 
 function previousMusicTrack() {
@@ -1002,22 +1030,55 @@ function previousMusicTrack() {
     return;
   }
 
-  // Determine current index by the highlighted DOM element
-  let currentIndex = -1;
-  const playingItem = document.querySelector('.music-item.playing');
-  if (playingItem) {
-    for (let i = 0; i < musicItems.length; i++) {
-      if (musicItems[i] === playingItem) {
-        currentIndex = i;
-        break;
-      }
+  // Determine current index by stored DOM index first, fallback to highlighted element
+  let currentIndex = (typeof currentMusicDomIndex === 'number' && currentMusicDomIndex >= 0) ? currentMusicDomIndex : -1;
+  if (currentIndex === -1) {
+    const playingItem = document.querySelector('.music-item.playing');
+    if (playingItem) {
+      currentIndex = Array.prototype.indexOf.call(musicItems, playingItem);
     }
   }
 
   const prevIndex = currentIndex >= 0 ? (currentIndex - 1 + musicItems.length) % musicItems.length : musicItems.length - 1;
   logger.debug(`Clicking previous DOM item at index: ${prevIndex}`, null, 'AUDIO');
   musicItems[prevIndex].click();
+  currentMusicDomIndex = prevIndex;
 }
+
+function syncCurrentMusicDomIndex() {
+  const musicItems = document.querySelectorAll('.music-item');
+  const playingItem = document.querySelector('.music-item.playing');
+  if (playingItem) {
+    currentMusicDomIndex = Array.prototype.indexOf.call(musicItems, playingItem);
+    return;
+  }
+  // Try to match by currentAudio src
+  if (window.currentAudio && window.currentAudio.src) {
+    for (let i = 0; i < musicItems.length; i++) {
+      const item = musicItems[i];
+      if (item.dataset && item.dataset.type === 'file' && item.dataset.url) {
+        if (window.currentAudio.src.toLowerCase().endsWith(item.dataset.url.toLowerCase())) {
+          currentMusicDomIndex = i;
+          return;
+        }
+      }
+      if (item.dataset && item.dataset.type === 'radio' && item.dataset.radioUrl) {
+        if (window.currentAudio.src.indexOf(item.dataset.radioUrl) !== -1) {
+          currentMusicDomIndex = i;
+          return;
+        }
+      }
+    }
+  }
+  currentMusicDomIndex = -1;
+}
+
+function toggleMusicShuffle(enabled) {
+  isMusicShuffle = !!enabled;
+}
+
+// Expose shuffle to global for the inline onchange
+window.toggleMusicShuffle = toggleMusicShuffle;
 
 async function handleMusicRightClick() {
   if (!isPlaylistStarted) {

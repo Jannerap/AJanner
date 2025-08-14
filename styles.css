@@ -1,3 +1,26 @@
+/* Shuffle checkbox styling (music panel) */
+#musicShuffleToggle {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid darkgreen;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.5);
+  display: inline-block;
+  position: relative;
+}
+
+#musicShuffleToggle:checked {
+  background: rgba(53, 207, 58, 0.7);
+  border-color: #35CF3A;
+}
+
+#musicShuffleToggle:focus {
+  outline: none;
+  box-shadow: 0 0 6px rgba(53, 207, 58, 0.5);
+}
 /* ===== MINDS EYE - STYLES ===== */
 
 /* ===== BASE STYLES ===== */
@@ -73,8 +96,8 @@ html, body {
 
 /* Toolbar dropdown section - takes space of two buttons */
 #toolbarDropdowns {
-  flex: 2 1 0;
-  min-width: 0;
+  flex: 3 1 280px;
+  min-width: 200px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -97,11 +120,23 @@ html, body {
 
 /* Ensure dropdowns can shrink and match button width */
 #toolbarDropdowns select {
-  min-width: 0;
+  min-width: 140px;
   flex-shrink: 1;
   height: 40px;
-  padding: 8px 20px;
-  width: 200%;
+  padding: 4px 16px;
+  width: 100%;
+  box-sizing: border-box;
+  border: 2px solid darkgreen;
+  outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  text-align: center;
+  text-align-last: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: gold;
+  border-radius: 8px;
+  box-shadow: none;
 }
 
 /* Ensure slider fits underneath and doesn't interfere with layout */
@@ -115,13 +150,14 @@ html, body {
   height: 16px;
   margin: 0;
   padding: 0;
+  width: 100%;
 }
 
 /* Video and music button containers - match button sizing exactly */
 #toolbar > div[style*="flex-direction: column"] {
   flex: 1 1 0 !important;
-  min-width: 30px !important;
-  min-height: 30px !important;
+  min-width: 50px !important;
+  min-height: 50px !important;
   aspect-ratio: 1 !important;
 }
 
@@ -134,10 +170,6 @@ html, body {
 #toolbar > div[style*="flex-direction: column"] .toolbar-btn {
   width: 100% !important;
   height: 100% !important;
-  min-width: 60px !important;
-  max-width: none !important;
-  min-height: 50px !important;
-  max-height: none !important;
   aspect-ratio: 1 !important;
   flex: 1 1 0 !important;
 }
@@ -146,11 +178,42 @@ html, body {
 #toolbar button[data-icon="video"],
 #toolbar button[data-icon="music"] {
   aspect-ratio: 1 !important;
-  min-width: 30px !important;
+  width: 100% !important;
+  height: 100% !important;
+  flex: 1 1 0 !important;
+}
+
+/* Normalize the video/music wrapper containers to follow standard toolbar button sizing */
+#toolbar > div[style*="flex-direction: column"] {
+  width: auto !important;
+  height: auto !important;
   max-width: none !important;
-  min-height: 30px !important;
   max-height: none !important;
   flex: 1 1 0 !important;
+}
+
+/* Make the visualizers fill the wrapper square exactly */
+#toolbar #musicVisualizer,
+#toolbar #musicVisualizer2 {
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+}
+
+#toolbar #visualizerBars,
+#toolbar #visualizerBars2 {
+  height: 100% !important;
+  width: 100% !important;
+  padding: 2px !important;
+}
+
+#toolbar .viz-bar {
+  width: 3px !important;
+  min-width: 3px !important;
+  max-width: 3px !important;
 }
 
 /* Ensure all toolbar buttons maintain consistent sizing and aspect ratio */
@@ -171,8 +234,8 @@ html, body {
   
   #toolbar > div[style*="flex-direction: column"] {
     flex: 1 1 0 !important;
-    min-width: 35px !important;
-    min-height: 35px !important;
+    min-width: 70px !important;
+    min-height: 45px !important;
     aspect-ratio: 1 !important;
   }
   
@@ -203,8 +266,20 @@ html, body {
     min-width: 0;
     flex-shrink: 1;
     height: 36px;
-    padding: 6px 16px;
+    padding: 4px 14px;
     width: 200%;
+    box-sizing: border-box;
+    border: 2px solid darkgreen;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    text-align: center;
+    text-align-last: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: gold;
+    border-radius: 8px;
+    box-shadow: none;
   }
   
   #toolbarDropdowns label {
@@ -221,18 +296,18 @@ html, body {
   
   /* Ensure buttons inside video and music containers maintain square shape at 1200px */
   #toolbar > div[style*="flex-direction: column"] .toolbar-btn {
-    min-width: 35px !important;
+    min-width: 70px !important;
     max-width: none !important;
-    min-height: 35px !important;
+    min-height: 45px !important;
     max-height: none !important;
     aspect-ratio: 1 !important;
   }
   
   #toolbar button[data-icon="video"],
   #toolbar button[data-icon="music"] {
-    min-width: 35px !important;
+    min-width: 70px !important;
     max-width: none !important;
-    min-height: 35px !important;
+    min-height: 45px !important;
     max-height: none !important;
     aspect-ratio: 1 !important;
   }
@@ -259,8 +334,8 @@ html, body {
   
   #toolbar > div[style*="flex-direction: column"] {
     flex: 1 1 0 !important;
-    min-width: 25px !important;
-    min-height: 25px !important;
+    min-width: 50px !important;
+    min-height: 40px !important;
     aspect-ratio: 1 !important;
   }
   
@@ -293,6 +368,18 @@ html, body {
     height: 32px;
     padding: 4px 12px;
     width: 200%;
+    box-sizing: border-box;
+    border: 2px solid darkgreen;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    text-align: center;
+    text-align-last: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: gold;
+    border-radius: 8px;
+    box-shadow: none;
   }
   
   #toolbarDropdowns label {
@@ -309,18 +396,18 @@ html, body {
   
     /* Ensure buttons inside video and music containers maintain square shape at 900px */
   #toolbar > div[style*="flex-direction: column"] .toolbar-btn {
-    min-width: 25px !important;
+    min-width: 50px !important;
     max-width: none !important;
-    min-height: 25px !important;
+    min-height: 40px !important;
     max-height: none !important;
     aspect-ratio: 1 !important;
   }
   
   #toolbar button[data-icon="video"],
   #toolbar button[data-icon="music"] {
-    min-width: 25px !important;
+    min-width: 50px !important;
     max-width: none !important;
-    min-height: 25px !important;
+    min-height: 40px !important;
     max-height: none !important;
     aspect-ratio: 1 !important;
   }
@@ -1965,8 +2052,20 @@ button[data-png="bucheck"].has-png {
     min-width: 0;
     flex-shrink: 1;
     height: 28px;
-    padding: 2px 8px;
+    padding: 4px 10px;
     width: 200%;
+    box-sizing: border-box;
+    border: 2px solid darkgreen;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    text-align: center;
+    text-align-last: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: gold;
+    border-radius: 8px;
+    box-shadow: none;
   }
   
   #toolbarDropdowns label {
