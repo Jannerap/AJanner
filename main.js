@@ -2626,9 +2626,26 @@ function showPanel() {
     uploadAudio.onchange = handleAudioUpload;
     if (selectedIdea.audio && selectedIdea.audio.url) {
       uploadAudio.title = 'Audio attached';
+      const nameEl = document.getElementById('uploadAudioName');
+      if (nameEl) nameEl.textContent = selectedIdea.audio.name || 'Attached audio';
     } else {
       uploadAudio.title = 'Attach audio to this bubble';
+      const nameEl = document.getElementById('uploadAudioName');
+      if (nameEl) nameEl.textContent = 'No file selected.';
     }
+  }
+  
+  // Hook up attachments UI
+  const uploadDocs = document.getElementById('uploadDocs');
+  const attachmentsList = document.getElementById('attachmentsList');
+  if (uploadDocs) {
+    uploadDocs.onchange = handleDocsUpload;
+  }
+  if (!selectedIdea.attachments) {
+    selectedIdea.attachments = [];
+  }
+  if (attachmentsList) {
+    renderAttachmentsList(selectedIdea.attachments);
   }
   
   document.getElementById('panel').style.display = "block";
@@ -2692,6 +2709,8 @@ function handleAudioUpload(event) {
     selectedIdea.audio = { url: objectUrl, name: file.name, isObjectUrl: true };
     const btn = document.getElementById('playBubbleAudioBtn');
     if (btn) btn.textContent = '▶︎';
+    const nameEl = document.getElementById('uploadAudioName');
+    if (nameEl) nameEl.textContent = file.name;
     logger.info('🎧 Audio attached to bubble:', file.name);
   } catch (e) {
     logger.error('❌ Failed to attach audio:', e && e.message ? e.message : e);
@@ -2770,10 +2789,118 @@ function clearSelectedBubbleAudio() {
     if (btn) btn.textContent = '▶︎';
     const uploadAudio = document.getElementById('uploadAudio');
     if (uploadAudio) uploadAudio.title = 'Attach audio to this bubble';
+    const nameEl = document.getElementById('uploadAudioName');
+    if (nameEl) nameEl.textContent = 'No file selected.';
     logger.info('🎧 Bubble audio cleared');
   } catch (e) {
     logger.error('❌ clearSelectedBubbleAudio failed:', e && e.message ? e.message : e);
   }
+}
+
+function handleDocsUpload(event) {
+  if (!selectedIdea) return;
+  const files = Array.from(event.target.files || []);
+  if (files.length === 0) return;
+  if (!selectedIdea.attachments) selectedIdea.attachments = [];
+  files.forEach(file => {
+    try {
+      const objectUrl = URL.createObjectURL(file);
+      selectedIdea.attachments.push({
+        name: file.name,
+        type: file.type || guessMimeType(file.name),
+        url: objectUrl,
+        isObjectUrl: true
+      });
+    } catch (_) {}
+  });
+  const list = document.getElementById('attachmentsList');
+  if (list) renderAttachmentsList(selectedIdea.attachments);
+  if (event.target) event.target.value = '';
+}
+
+function guessMimeType(name) {
+  const lower = name.toLowerCase();
+  if (lower.endsWith('.png')) return 'image/png';
+  if (lower.endsWith('.pdf')) return 'application/pdf';
+  if (lower.endsWith('.doc')) return 'application/msword';
+  if (lower.endsWith('.docx')) return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  if (lower.endsWith('.mp4')) return 'video/mp4';
+  return 'application/octet-stream';
+}
+
+function renderAttachmentsList(attachments) {
+  const list = document.getElementById('attachmentsList');
+  if (!list) return;
+  list.innerHTML = '';
+  attachments.forEach((att, index) => {
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.alignItems = 'center';
+    row.style.gap = '6px';
+    row.style.fontSize = '12px';
+    row.style.color = '#ddd';
+
+    const name = document.createElement('span');
+    name.textContent = att.name;
+    name.style.flex = '1';
+    name.style.overflow = 'hidden';
+    name.style.whiteSpace = 'nowrap';
+    name.style.textOverflow = 'ellipsis';
+
+    const viewBtn = document.createElement('button');
+    viewBtn.textContent = 'View';
+    viewBtn.title = 'Open attachment';
+    viewBtn.style.background = 'rgba(0,0,0,0.7)';
+    viewBtn.style.color = 'white';
+    viewBtn.style.border = 'none';
+    viewBtn.style.borderRadius = '3px';
+    viewBtn.style.padding = '2px 6px';
+    viewBtn.style.cursor = 'pointer';
+    viewBtn.style.fontSize = '11px';
+    viewBtn.onclick = () => {
+      try {
+        if (att.type && att.type.startsWith('video/')) {
+          // Open a lightweight inline viewer in a new window/tab
+          const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${att.name}</title></head><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><video src="${att.url}" controls autoplay style="max-width:100vw;max-height:100vh"></video></body></html>`;
+          const win = window.open('', '_blank');
+          if (win && win.document) {
+            win.document.open();
+            win.document.write(html);
+            win.document.close();
+          } else {
+            window.open(att.url, '_blank');
+          }
+        } else {
+          window.open(att.url, '_blank');
+        }
+      } catch (_) {}
+    };
+
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = '✖';
+    removeBtn.title = 'Remove attachment';
+    removeBtn.style.background = 'rgba(0,0,0,0.7)';
+    removeBtn.style.color = 'white';
+    removeBtn.style.border = 'none';
+    removeBtn.style.borderRadius = '3px';
+    removeBtn.style.padding = '2px 6px';
+    removeBtn.style.cursor = 'pointer';
+    removeBtn.style.fontSize = '11px';
+    removeBtn.onclick = () => {
+      try {
+        const removed = selectedIdea.attachments.splice(index, 1)[0];
+        if (removed && removed.isObjectUrl && removed.url) {
+          try { URL.revokeObjectURL(removed.url); } catch (_) {}
+        }
+        renderAttachmentsList(selectedIdea.attachments);
+      } catch (_) {}
+    };
+
+    row.appendChild(name);
+    row.appendChild(viewBtn);
+    row.appendChild(removeBtn);
+    list.appendChild(row);
+  });
 }
 
 function minimizePanel() {
