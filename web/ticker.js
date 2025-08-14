@@ -249,14 +249,50 @@ class NewsTicker {
             }
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const text = await res.text();
-            const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-            const now = Date.now();
-            this.headlines = lines.slice(0, this.options.maxHeadlines).map(line => ({
-                source: this.currentService.toUpperCase(),
-                title: line,
-                url: '#',
-                ts: now
-            }));
+            const lines = text
+                .split('\n')
+                .map(l => l.trim())
+                .filter(l => l && !l.startsWith('#'));
+
+            // Special handling for tweets offline: support `tweets-file <path>` directive
+            if (this.currentService === 'tweets') {
+                const directive = lines.find(l => l.toLowerCase().startsWith('tweets-file'));
+                if (directive) {
+                    const parts = directive.split(/\s+/);
+                    const jsonPath = parts[1] || 'Tweets.json';
+                    try {
+                        let tweetsRes = await fetch(jsonPath.startsWith('/') ? jsonPath : `/${jsonPath}`);
+                        if (!tweetsRes.ok) {
+                            tweetsRes = await fetch(jsonPath);
+                        }
+                        if (!tweetsRes.ok) throw new Error(`HTTP ${tweetsRes.status}`);
+                        const tweets = await tweetsRes.json();
+                        const tweetArray = Array.isArray(tweets) ? tweets : (Array.isArray(tweets.tweets) ? tweets.tweets : []);
+                        const now = Date.now();
+                        this.headlines = tweetArray.slice(0, this.options.maxHeadlines).map(item => ({
+                            source: 'TWITTER',
+                            title: `${item.hashtag || ''} @${item.username || 'user'}: ${item.comment || ''}`.trim(),
+                            url: item.username ? `https://twitter.com/${item.username}` : '#',
+                            ts: now
+                        }));
+                        console.info(`Loaded ${this.headlines.length} tweets from ${jsonPath} (offline fallback)`);
+                    } catch (err) {
+                        console.warn('Failed to load tweets from directive, falling back to plain lines:', err.message);
+                    }
+                }
+            }
+
+            // If not tweets or directive failed, fall back to plain lines
+            if (!this.headlines || this.headlines.length === 0) {
+                const now = Date.now();
+                this.headlines = lines.slice(0, this.options.maxHeadlines).map(line => ({
+                    source: this.currentService.toUpperCase(),
+                    title: line,
+                    url: '#',
+                    ts: now
+                }));
+            }
+
             console.info(`Loaded ${this.headlines.length} fallback headlines from ${res.url.includes('backup-') ? backupFile : file}`);
         } catch (e) {
             console.warn('Fallback .txt load failed:', e.message);
