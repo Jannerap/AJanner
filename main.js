@@ -3386,21 +3386,52 @@ function clearUploadedImage() {
 
 // ===== SAVE/LOAD SYSTEM =====
 
-function saveIdeas() {
-  const dataToSave = ideas.map(idea => {
-    const copy = { ...idea };
-    // For attachments using object URLs, include a serializable stub and omit raw blob URL
-    if (Array.isArray(copy.attachments)) {
-      copy.attachments = copy.attachments.map(att => ({
-        name: att.name,
-        type: att.type,
-        // Persist object URL or relative URL (will be re-resolved on load)
-        url: att.url,
-        isObjectUrl: !!att.isObjectUrl,
-        originalName: att.originalName || att.name || ''
-      }));
+async function saveIdeas() {
+  // Helper to convert a resource URL (including blob:) to data URL
+  async function toDataUrl(resourceUrl) {
+    try {
+      const res = await fetch(resourceUrl);
+      if (!res.ok) throw new Error('fetch failed');
+      const blob = await res.blob();
+      return await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+    } catch (_) {
+      return null;
     }
-    // Audio: keep url and a flag
+  }
+
+  const dataToSave = await Promise.all(ideas.map(async (idea) => {
+    const copy = { ...idea };
+    // Persist attachments; embed images and CSV as data URLs for portability
+    if (Array.isArray(copy.attachments)) {
+      const out = [];
+      for (const att of copy.attachments) {
+        const item = {
+          name: att.name,
+          type: att.type,
+          url: att.url,
+          isObjectUrl: !!att.isObjectUrl,
+          originalName: att.originalName || att.name || ''
+        };
+        if (att && typeof att.type === 'string') {
+          if (att.type.startsWith('image/') || att.type === 'text/csv') {
+            const dataUrl = await toDataUrl(att.url);
+            if (dataUrl) {
+              item.dataUrl = dataUrl;
+              // Prefer embedded data URL to ensure post-load viewing
+              item.url = dataUrl;
+              item.isObjectUrl = false;
+            }
+          }
+        }
+        out.push(item);
+      }
+      copy.attachments = out;
+    }
+    // Audio: keep url and a flag (do not embed to keep JSON smaller)
     if (copy.audio) {
       copy.audio = {
         url: copy.audio.url,
@@ -3409,11 +3440,12 @@ function saveIdeas() {
       };
     }
     return copy;
-  });
-  const blob = new Blob([JSON.stringify(dataToSave, null, 2)], { type: "application/json" });
-  const a = document.createElement("a");
+  }));
+
+  const blob = new Blob([JSON.stringify(dataToSave, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = "ideas.json";
+  a.download = 'ideas.json';
   a.click();
   logger.info('💾 Ideas saved to file:', dataToSave.length, 'ideas exported');
 }
@@ -5163,10 +5195,23 @@ function setupEventListeners() {
           } : null
         }));
 
-        // After loading, try to resolve attachments and audio from a session folder
-        resolveAllExternalAssets(ideas).then(() => {
+        // After loading, prefer embedded data URLs if present; else try session folder
+        (async () => {
+          try {
+            for (const idea of ideas) {
+              if (Array.isArray(idea.attachments)) {
+                for (const att of idea.attachments) {
+                  if (att.dataUrl && att.dataUrl.startsWith('data:')) {
+                    att.url = att.dataUrl;
+                    att.isObjectUrl = false;
+                  }
+                }
+              }
+            }
+          } catch (_) {}
+          await resolveAllExternalAssets(ideas);
           logger.info(`📋 Loaded ${loaded.length} ideas from JSON file:`, file.name);
-        });
+        })();
         movementDelayActive = true;
         setTimeout(() => {
           movementDelayActive = false;
