@@ -468,7 +468,7 @@ html, body {
 /* ===== PANEL STYLES ===== */
 .panel {
   position: fixed;
-  top: 130px;
+  top: 150px; /* lowered by 20px */
   left: 15px;
   transform: none;
   width: 300px;
@@ -479,6 +479,7 @@ html, body {
   color: white;
   padding: 0 20px 20px 20px;
   border-radius: 0px 16px 16px 0px; /* Left side sharp, right side rounded for left-alignment */
+  border: 2px solid #4CAF50; /* green border to match other panels */
   z-index: 59999; /* Below music panel (60000), above toolbar (10001) */
   display: none;
   resize: both;
@@ -1061,7 +1062,7 @@ button[data-png="bucheck"].has-png {
 /* ===== MUSIC PANEL STYLES ===== */
 .music-panel {
   position: fixed;
-  top: 130px;
+  top: 150px; /* lowered by 20px */
   left: 20px;
   width: 300px; /* Match video playlist width */
   background: rgba(34, 34, 34, 0.95);
@@ -1561,7 +1562,7 @@ button[data-png="bucheck"].has-png {
 
 #videoPlaylist {
   position: fixed;
-  top: 130px;
+  top: 150px; /* lowered by 20px */
   right: 15px;
   width: 300px;
   max-height: 70vh;

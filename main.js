@@ -3044,27 +3044,28 @@ function openUrlOverlay(href) {
   close.style.borderRadius = '6px';
   close.style.padding = '6px 10px';
   close.style.cursor = 'pointer';
-  close.onclick = () => document.body.removeChild(overlay);
+  // Cleanup helper
+  const cleanup = () => {
+    try { document.removeEventListener('keydown', escHandler); } catch (_) {}
+    if (overlay && overlay.parentNode) {
+      try { document.body.removeChild(overlay); } catch (_) {}
+    }
+  };
+  const escHandler = (e) => {
+    if (e.key === 'Escape') cleanup();
+  };
+  close.onclick = cleanup;
 
-  // Blocked embedding helper UI
+  // Listen for ESC to close
+  document.addEventListener('keydown', escHandler);
+
+  // Blocked embedding helper UI (below iframe)
   const blockedWrap = document.createElement('div');
-  blockedWrap.style.position = 'absolute';
-  blockedWrap.style.top = '50%';
-  blockedWrap.style.left = '50%';
-  blockedWrap.style.transform = 'translate(-50%, -50%)';
-  blockedWrap.style.background = 'rgba(0,0,0,0.8)';
-  blockedWrap.style.border = '2px solid #4CAF50';
-  blockedWrap.style.borderRadius = '8px';
-  blockedWrap.style.padding = '14px 16px';
+  blockedWrap.style.marginTop = '12px';
   blockedWrap.style.display = 'none';
-  blockedWrap.style.color = '#fff';
   blockedWrap.style.textAlign = 'center';
-  blockedWrap.style.maxWidth = '80vw';
-  const msg = document.createElement('div');
-  msg.textContent = 'This site blocks embedding. Opening in a new tab will work.';
-  msg.style.marginBottom = '10px';
   const openBtn = document.createElement('button');
-  openBtn.textContent = 'Open in New Tab';
+  openBtn.textContent = 'Open Link in New Tab';
   openBtn.style.background = 'rgba(0,0,0,0.7)';
   openBtn.style.color = 'white';
   openBtn.style.border = '2px solid #4CAF50';
@@ -3072,7 +3073,6 @@ function openUrlOverlay(href) {
   openBtn.style.padding = '6px 10px';
   openBtn.style.cursor = 'pointer';
   openBtn.onclick = () => window.open(href, '_blank');
-  blockedWrap.appendChild(msg);
   blockedWrap.appendChild(openBtn);
 
   overlay.appendChild(frame);
@@ -5606,6 +5606,53 @@ async function resolveAllExternalAssets(ideasArr) {
   } catch (e) {
     logger.warn('⚠️ resolveAllExternalAssets encountered an issue:', e && e.message ? e.message : e);
   }
+}
+
+// Dynamically anchor key panels just below the toolbar bottom edge
+function updatePanelAnchors() {
+  try {
+    const toolbar = document.getElementById('toolbar');
+    if (!toolbar) return;
+    const rect = toolbar.getBoundingClientRect();
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+    // 20px gap below toolbar
+    const topPx = Math.max(0, Math.round(rect.bottom + scrollY + 20));
+    const topValue = topPx + 'px';
+
+    const bubblePanel = document.getElementById('panel');
+    if (bubblePanel) bubblePanel.style.top = topValue;
+
+    const musicPanel = document.getElementById('musicPanel');
+    if (musicPanel) musicPanel.style.top = topValue;
+
+    const videoPanel = document.getElementById('videoPlaylist');
+    if (videoPanel) videoPanel.style.top = topValue;
+  } catch (_) {
+    // no-op
+  }
+}
+
+// Observe toolbar layout changes to keep panels anchored
+function installToolbarAnchorObservers() {
+  const toolbar = document.getElementById('toolbar');
+  if (!toolbar) return;
+
+  // Initial position
+  updatePanelAnchors();
+
+  // On window resize and scroll
+  window.addEventListener('resize', updatePanelAnchors);
+  window.addEventListener('orientationchange', updatePanelAnchors);
+  window.addEventListener('scroll', updatePanelAnchors, { passive: true });
+
+  // On DOM mutations within the toolbar that change size
+  try {
+    const observer = new MutationObserver(() => {
+      // micro-debounce via rAF
+      requestAnimationFrame(updatePanelAnchors);
+    });
+    observer.observe(toolbar, { attributes: true, childList: true, subtree: true });
+  } catch (_) {}
 }
 
 function toggleSpeed() {
