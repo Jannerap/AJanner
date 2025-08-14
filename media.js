@@ -5667,64 +5667,25 @@ let isVisualizerRunning = false;
 
 function startButterchurn() {
     try {
-        // Ensure visualizer is initialized
-        const ensureInitializedAndStart = async () => {
-            try {
-                // Initialize via exported function if instance missing
-                if (typeof window.LocalVisualizer === 'undefined' && typeof window.initializeVisualizer === 'function') {
-                    await window.initializeVisualizer();
-                }
-                
-                if (typeof window.LocalVisualizer !== 'undefined') {
-                    // Ensure canvas/context exist
-                    if (!window.LocalVisualizer.canvas || !window.LocalVisualizer.ctx) {
-                        if (typeof window.LocalVisualizer.createCanvas === 'function') {
-                            window.LocalVisualizer.createCanvas();
-                        }
-                    }
-                    
-                    // Start if not running; otherwise stop
-                    if (window.LocalVisualizer.isRunning === false) {
-                        window.LocalVisualizer.start();
-                        isVisualizerRunning = true;
-                        logger.info('🎬 Local visualizer started');
-                    } else if (window.LocalVisualizer.isRunning === true) {
-                        window.LocalVisualizer.stop();
-                        isVisualizerRunning = false;
-                        logger.info('⏹️ Local visualizer stopped');
-                    } else {
-                        // Default to start
-                        window.LocalVisualizer.start();
-                        isVisualizerRunning = true;
-                        logger.info('🎬 Local visualizer started');
-                    }
-                    
-                    // Populate preset UI
-                    updatePresetSelect();
-                    updatePresetInfo();
-                    updateCurrentPreset();
-                } else {
-                    logger.warn('❗ LocalVisualizer not available after initialization attempt');
-                }
-            } catch (err) {
-                console.error('Failed to initialize/start visualizer:', err);
-                logger.error('Failed to initialize/start visualizer: ' + err.message);
-            }
-        };
-
-        if (typeof window.LocalVisualizer === 'undefined') {
-            logger.info('⏳ Waiting for visualizer to be ready...');
-            // Try to initialize immediately
-            ensureInitializedAndStart();
-            // Also listen for ready event as a fallback
-            window.addEventListener('visualizerReady', ensureInitializedAndStart, { once: true });
-        } else {
-            ensureInitializedAndStart();
+        // Prefer Butterchurn visualizer; initialize if needed
+        if (!butterchurnViz) {
+            initializeButterchurn();
         }
-        
+
+        // Start render loop and connect audio
+        isVisualizerRunning = true;
+        connectCurrentAudio();
+        startRenderLoop();
+
+        // Update preset UI
+        updatePresetSelect();
+        updatePresetInfo();
+        updateCurrentPreset();
+
+        logger.info('🎬 Butterchurn visualizer start requested');
     } catch (error) {
-        console.error('Failed to start local visualizer:', error);
-        logger.error('Failed to start local visualizer: ' + error.message);
+        console.error('Failed to start Butterchurn visualizer:', error);
+        logger.error('Failed to start Butterchurn visualizer: ' + error.message);
     }
 }
 
@@ -5804,6 +5765,10 @@ function createButterchurnVisualizer() {
         
         // Hide local effect button since Butterchurn is working
         hideLocalEffectButton();
+
+        // Start rendering immediately
+        isVisualizerRunning = true;
+        startRenderLoop();
         
     } catch (error) {
         console.error('Failed to create Butterchurn visualizer:', error);
@@ -6188,65 +6153,112 @@ function updatePresetSelect() {
     // Clear existing options
     presetSelect.innerHTML = '';
     
-    // Add local preset options
-    if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.presets) {
+    if (butterchurnPresets && butterchurnPresets.length) {
+        butterchurnPresets.forEach((preset, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = preset.name;
+            presetSelect.appendChild(option);
+        });
+        presetSelect.value = String(currentPresetIndex);
+    } else if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.presets) {
         window.LocalVisualizer.presets.forEach((preset, index) => {
             const option = document.createElement('option');
             option.value = index;
             option.textContent = preset.name;
             presetSelect.appendChild(option);
         });
-        
-        // Set current selection
         presetSelect.value = window.LocalVisualizer.currentPreset;
     }
 }
 
 function updatePresetInfo() {
-    if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.presets) {
-        const totalPresets = document.getElementById('totalPresets');
-        if (totalPresets) {
-            totalPresets.textContent = window.LocalVisualizer.presets.length;
-        }
+    const totalPresets = document.getElementById('totalPresets');
+    if (!totalPresets) return;
+    if (butterchurnPresets && butterchurnPresets.length) {
+        totalPresets.textContent = String(butterchurnPresets.length);
+    } else if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.presets) {
+        totalPresets.textContent = String(window.LocalVisualizer.presets.length);
+    } else {
+        totalPresets.textContent = '0';
     }
 }
 
 function updateCurrentPreset() {
-    if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.presets) {
-        const currentPreset = document.getElementById('currentPreset');
-        if (currentPreset) {
-            currentPreset.textContent = window.LocalVisualizer.presets[window.LocalVisualizer.currentPreset].name;
-        }
+    const currentPreset = document.getElementById('currentPreset');
+    if (!currentPreset) return;
+    if (butterchurnPresets && butterchurnPresets.length && typeof currentPresetIndex === 'number') {
+        currentPreset.textContent = butterchurnPresets[currentPresetIndex]?.name || 'None';
+    } else if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.presets) {
+        currentPreset.textContent = window.LocalVisualizer.presets[window.LocalVisualizer.currentPreset]?.name || 'None';
+    } else {
+        currentPreset.textContent = 'None';
     }
 }
 
 function nextPreset() {
-    if (typeof window.LocalVisualizer !== 'undefined') {
+    if (butterchurnViz && butterchurnPresets && butterchurnPresets.length) {
+        const blend = Number(document.getElementById('blendSec')?.value || 2);
+        currentPresetIndex = (currentPresetIndex + 1) % butterchurnPresets.length;
+        butterchurnViz.loadPreset(butterchurnPresets[currentPresetIndex].obj, blend);
+        updateCurrentPreset();
+        logger.info('⏭️ Next Butterchurn preset');
+    } else if (typeof window.LocalVisualizer !== 'undefined') {
         window.LocalVisualizer.next();
+        updateCurrentPreset();
         logger.info('⏭️ Next local preset');
     }
 }
 
 function previousPreset() {
-    if (typeof window.LocalVisualizer !== 'undefined') {
+    if (butterchurnViz && butterchurnPresets && butterchurnPresets.length) {
+        const blend = Number(document.getElementById('blendSec')?.value || 2);
+        currentPresetIndex = (currentPresetIndex - 1 + butterchurnPresets.length) % butterchurnPresets.length;
+        butterchurnViz.loadPreset(butterchurnPresets[currentPresetIndex].obj, blend);
+        updateCurrentPreset();
+        logger.info('⏮️ Previous Butterchurn preset');
+    } else if (typeof window.LocalVisualizer !== 'undefined') {
         window.LocalVisualizer.previous();
+        updateCurrentPreset();
         logger.info('⏮️ Previous local preset');
     }
 }
 
 function randomPreset() {
-    if (typeof window.LocalVisualizer !== 'undefined') {
+    if (butterchurnViz && butterchurnPresets && butterchurnPresets.length) {
+        const blend = Number(document.getElementById('blendSec')?.value || 2);
+        let n = currentPresetIndex;
+        if (butterchurnPresets.length > 1) {
+            while (n === currentPresetIndex) {
+                n = (Math.random() * butterchurnPresets.length) | 0;
+            }
+        }
+        currentPresetIndex = n;
+        butterchurnViz.loadPreset(butterchurnPresets[currentPresetIndex].obj, blend);
+        updateCurrentPreset();
+        logger.info('🎲 Random Butterchurn preset');
+    } else if (typeof window.LocalVisualizer !== 'undefined') {
         window.LocalVisualizer.random();
-        logger.info('🎲 Random preset');
+        updateCurrentPreset();
+        logger.info('🎲 Random local preset');
     }
 }
 
 function selectPreset(value) {
-    if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.presets) {
-        const index = parseInt(value);
+    const index = parseInt(value);
+    if (butterchurnViz && butterchurnPresets && butterchurnPresets.length) {
+        if (index >= 0 && index < butterchurnPresets.length) {
+            const blend = Number(document.getElementById('blendSec')?.value || 2);
+            currentPresetIndex = index;
+            butterchurnViz.loadPreset(butterchurnPresets[currentPresetIndex].obj, blend);
+            updateCurrentPreset();
+            logger.info(`🎯 Selected Butterchurn preset: ${butterchurnPresets[index].name}`);
+        }
+    } else if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.presets) {
         if (index >= 0 && index < window.LocalVisualizer.presets.length) {
             window.LocalVisualizer.currentPreset = index;
             window.LocalVisualizer.updatePresetInfo();
+            updateCurrentPreset();
             logger.info(`🎯 Selected preset: ${window.LocalVisualizer.presets[index].name}`);
         }
     }
