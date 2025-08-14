@@ -548,6 +548,7 @@ function playMusic(filename, event) {
 
   // Add event listeners to detect when music ends naturally
   audio.addEventListener('ended', () => {
+    if (audio !== window.currentAudio) return;
     isMusicPlaying = false;
     stopMusicVisualizer();
     
@@ -569,6 +570,7 @@ function playMusic(filename, event) {
   });
 
   audio.addEventListener('pause', () => {
+    if (audio !== window.currentAudio) return;
     isMusicPlaying = false;
     stopMusicVisualizer();
     // Update music button to show inactive state
@@ -579,6 +581,7 @@ function playMusic(filename, event) {
   });
 
   audio.addEventListener('play', () => {
+    if (audio !== window.currentAudio) return;
     isMusicPlaying = true;
     startMusicVisualizer();
     // Update music button to show active state
@@ -829,6 +832,7 @@ function playRadioStream(radioUrl) {
     
     // Add event listeners
     audio.addEventListener('ended', () => {
+      if (audio !== window.currentAudio) return;
       logger.audio('Radio stream ended');
       const musicButton = document.querySelector('[data-icon="music"]');
       if (musicButton && typeof PNGLoader !== 'undefined') {
@@ -837,6 +841,7 @@ function playRadioStream(radioUrl) {
     });
 
     audio.addEventListener('pause', () => {
+      if (audio !== window.currentAudio) return;
       logger.audio('Radio paused');
       const musicButton = document.querySelector('[data-icon="music"]');
       if (musicButton && typeof PNGLoader !== 'undefined') {
@@ -845,6 +850,7 @@ function playRadioStream(radioUrl) {
     });
 
     audio.addEventListener('play', () => {
+      if (audio !== window.currentAudio) return;
       logger.audio('Radio started playing');
       const musicButton = document.querySelector('[data-icon="music"]');
       if (musicButton && typeof PNGLoader !== 'undefined') {
@@ -921,6 +927,7 @@ function playRadioStreamFromPlaylist(radioUrl, index) {
     
     // Add event listeners
     audio.addEventListener('ended', () => {
+      if (audio !== window.currentAudio) return;
       logger.audio('Radio stream ended');
       const musicButton = document.querySelector('[data-icon="music"]');
       if (musicButton && typeof PNGLoader !== 'undefined') {
@@ -933,6 +940,7 @@ function playRadioStreamFromPlaylist(radioUrl, index) {
     });
 
     audio.addEventListener('pause', () => {
+      if (audio !== window.currentAudio) return;
       logger.audio('Radio paused');
       const musicButton = document.querySelector('[data-icon="music"]');
       if (musicButton && typeof PNGLoader !== 'undefined') {
@@ -945,6 +953,7 @@ function playRadioStreamFromPlaylist(radioUrl, index) {
     });
 
     audio.addEventListener('play', () => {
+      if (audio !== window.currentAudio) return;
       logger.audio('Radio started playing');
       const musicButton = document.querySelector('[data-icon="music"]');
       if (musicButton && typeof PNGLoader !== 'undefined') {
@@ -5233,20 +5242,30 @@ function highlightCurrentTrack() {
 
 // Get a unique identifier for the currently playing track/radio
 function getCurrentTrackId() {
-  // For radio from input panel
-  if (window.currentRadioUrl) {
-    return `radio_${window.currentRadioUrl}`;
-  }
-  
-  // For playlist tracks
-  if (musicPlaylist.length > 0 && currentMusicIndex >= 0) {
-    const currentTrack = musicPlaylist[currentMusicIndex];
-    return `track_${currentTrack.url}_${currentTrack.title}`;
-  }
-  
-  // For audio source
-  if (window.currentAudio && window.currentAudio.src) {
-    return `audio_${window.currentAudio.src}`;
+  try {
+    // For radio from input panel
+    if (window.currentRadioUrl) {
+      return `radio_${window.currentRadioUrl}`;
+    }
+    
+    // For playlist tracks (guard against race conditions)
+    if (Array.isArray(musicPlaylist)) {
+      const index = (typeof currentMusicIndex === 'number') ? currentMusicIndex : -1;
+      if (index >= 0 && index < musicPlaylist.length) {
+        const currentTrack = musicPlaylist[index];
+        if (currentTrack && currentTrack.url) {
+          const title = (typeof currentTrack.title === 'string') ? currentTrack.title : '';
+          return `track_${currentTrack.url}_${title}`;
+        }
+      }
+    }
+    
+    // For audio source
+    if (window.currentAudio && window.currentAudio.src) {
+      return `audio_${window.currentAudio.src}`;
+    }
+  } catch (e) {
+    // Non-fatal: fall through to default
   }
   
   return 'default';
@@ -5356,6 +5375,10 @@ function startMusicVisualizer() {
   
   // Generate unique colors for each track/radio URL
   const currentTrackId = getCurrentTrackId();
+  if (!currentTrackId) {
+    // Defensive: if something went wrong, bail gracefully
+    return;
+  }
   
   // Check if we need new colors (new track or first time)
   if (!window.lastTrackId || window.lastTrackId !== currentTrackId) {
