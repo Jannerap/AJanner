@@ -3064,6 +3064,10 @@ function openUrlOverlay(href) {
   blockedWrap.style.marginTop = '12px';
   blockedWrap.style.display = 'none';
   blockedWrap.style.textAlign = 'center';
+  blockedWrap.style.position = 'absolute';
+  blockedWrap.style.bottom = '5vh';
+  blockedWrap.style.left = '50%';
+  blockedWrap.style.transform = 'translateX(-50%)';
   const openBtn = document.createElement('button');
   openBtn.textContent = 'Open Link in New Tab';
   openBtn.style.background = 'rgba(0,0,0,0.7)';
@@ -5614,9 +5618,9 @@ function updatePanelAnchors() {
     const toolbar = document.getElementById('toolbar');
     if (!toolbar) return;
     const rect = toolbar.getBoundingClientRect();
-    const scrollY = window.scrollY || window.pageYOffset || 0;
+    // For fixed toolbar and fixed panels, use viewport coordinates only
     // 20px gap below toolbar
-    const topPx = Math.max(0, Math.round(rect.bottom + scrollY + 20));
+    const topPx = Math.max(0, Math.round(rect.bottom + 20));
     const topValue = topPx + 'px';
 
     const bubblePanel = document.getElementById('panel');
@@ -5644,6 +5648,9 @@ function installToolbarAnchorObservers() {
   window.addEventListener('resize', updatePanelAnchors);
   window.addEventListener('orientationchange', updatePanelAnchors);
   window.addEventListener('scroll', updatePanelAnchors, { passive: true });
+
+  // Also after load to ensure accurate measurements
+  window.addEventListener('load', updatePanelAnchors);
 
   // On DOM mutations within the toolbar that change size
   try {
