@@ -23,6 +23,8 @@ class LocalVisualizer {
     this.createCanvas();
     await this.loadLocalPresets();
     this.setupAudioReactivity();
+    // Update UI with initial preset info
+    this.updatePresetInfo();
     console.log('✅ Local visualizer initialized');
   }
 
@@ -455,14 +457,21 @@ class LocalVisualizer {
   // Update preset information
   updatePresetInfo() {
     const preset = this.presets[this.currentPreset];
-    if (preset) {
-      // Update UI elements if they exist
-      const presetName = document.getElementById('presetName');
-      const presetDescription = document.getElementById('presetDescription');
-      
-      if (presetName) presetName.textContent = preset.name;
-      if (presetDescription) presetDescription.textContent = preset.description;
-    }
+    // Update known UI elements in the ProjectM panel
+    const currentPresetEl = document.getElementById('currentPreset');
+    const totalPresetsEl = document.getElementById('totalPresets');
+    const presetStatusEl = document.getElementById('presetStatus');
+
+    if (currentPresetEl && preset) currentPresetEl.textContent = preset.name;
+    if (totalPresetsEl) totalPresetsEl.textContent = String(this.presets.length || 0);
+    if (presetStatusEl) presetStatusEl.textContent = 'Ready';
+
+    // Backward compatibility with any alternate UI labels if present
+    const presetName = document.getElementById('presetName');
+    const presetDescription = document.getElementById('presetDescription');
+    if (presetName && preset) presetName.textContent = preset.name;
+    if (presetDescription && preset) presetDescription.textContent = preset.description;
+  }
   }
 
   // Start the visualizer
