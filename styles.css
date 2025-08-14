@@ -481,7 +481,8 @@ html, body {
   z-index: 999;
   display: none;
   resize: both;
-  overflow: auto;
+  overflow-y: scroll; /* Always show vertical scrollbar */
+  overflow-x: hidden;
   transition: all 0.3s ease;
 }
 

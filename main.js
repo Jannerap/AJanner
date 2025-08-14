@@ -2809,6 +2809,7 @@ function handleDocsUpload(event) {
         name: file.name,
         type: file.type || guessMimeType(file.name),
         url: objectUrl,
+        originalName: file.name,
         isObjectUrl: true
       });
     } catch (_) {}
@@ -2821,10 +2822,14 @@ function handleDocsUpload(event) {
 function guessMimeType(name) {
   const lower = name.toLowerCase();
   if (lower.endsWith('.png')) return 'image/png';
+  if (lower.endsWith('.gif')) return 'image/gif';
+  if (lower.endsWith('.webp')) return 'image/webp';
   if (lower.endsWith('.pdf')) return 'application/pdf';
   if (lower.endsWith('.doc')) return 'application/msword';
   if (lower.endsWith('.docx')) return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
   if (lower.endsWith('.mp4')) return 'video/mp4';
+  if (lower.endsWith('.csv')) return 'text/csv';
+  if (lower.endsWith('.xls')) return 'application/vnd.ms-excel';
   return 'application/octet-stream';
 }
 
@@ -3367,7 +3372,28 @@ function clearUploadedImage() {
 // ===== SAVE/LOAD SYSTEM =====
 
 function saveIdeas() {
-  const dataToSave = ideas.map(idea => ({ ...idea }));
+  const dataToSave = ideas.map(idea => {
+    const copy = { ...idea };
+    // For attachments using object URLs, include a serializable stub and omit raw blob URL
+    if (Array.isArray(copy.attachments)) {
+      copy.attachments = copy.attachments.map(att => ({
+        name: att.name,
+        type: att.type,
+        // Persist object URL as-is so it still opens in-session; keep a flag
+        url: att.url,
+        isObjectUrl: !!att.isObjectUrl
+      }));
+    }
+    // Audio: keep url and a flag
+    if (copy.audio) {
+      copy.audio = {
+        url: copy.audio.url,
+        name: copy.audio.name,
+        isObjectUrl: !!copy.audio.isObjectUrl
+      };
+    }
+    return copy;
+  });
   const blob = new Blob([JSON.stringify(dataToSave, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -5104,7 +5130,20 @@ function setupEventListeners() {
           flashUntil: idea.flashUntil || 0,
           // Ball properties
           ballVelocityBoost: idea.ballVelocityBoost || 0,
-          ballVelocityDecay: idea.ballVelocityDecay || 0
+          ballVelocityDecay: idea.ballVelocityDecay || 0,
+          // Ensure attachments array exists and restore minimal metadata
+          attachments: Array.isArray(idea.attachments) ? idea.attachments.map(att => ({
+            name: att.name,
+            type: att.type,
+            url: att.url || '',
+            isObjectUrl: !!att.isObjectUrl
+          })) : [],
+          // Restore audio stub if present
+          audio: idea.audio ? {
+            url: idea.audio.url || '',
+            name: idea.audio.name || '',
+            isObjectUrl: !!idea.audio.isObjectUrl
+          } : null
         }));
 
         logger.info(`📋 Loaded ${loaded.length} ideas from JSON file:`, file.name);
