@@ -43,6 +43,8 @@ export function renderHolographicDisplay(canvas, ctx, audioData, time) {
 function createHolographicElements(width, height, time, overall) {
     const elements = [];
     const numElements = 3 + Math.floor(overall * 3);
+    const centerX = width / 2;
+    const centerY = height / 2;
     
     for (let i = 0; i < numElements; i++) {
         const element = {

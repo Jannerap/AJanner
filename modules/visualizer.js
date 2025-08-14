@@ -59,8 +59,21 @@ class LocalVisualizer {
       return;
     }
 
-    // Create canvas
+    // Prefer using existing canvas in container (e.g., #butterchurnCanvas) to preserve sizing
+    const existingCanvas = container.querySelector('#butterchurnCanvas') || container.querySelector('canvas');
+    if (existingCanvas) {
+      this.canvas = existingCanvas;
+      this.ctx = this.canvas.getContext('2d');
+      if (this.ctx) {
+        console.log('✅ Using existing visualization canvas');
+        return;
+      }
+      console.warn('⚠️ Existing canvas context unavailable, creating a new canvas');
+    }
+
+    // Create canvas only if none exists or context could not be obtained
     this.canvas = document.createElement('canvas');
+    // Set explicit size to ensure visibility even if parent has no height
     this.canvas.width = 800;
     this.canvas.height = 600;
     this.canvas.style.width = '100%';
@@ -75,8 +88,7 @@ class LocalVisualizer {
       return;
     }
 
-    // Clear container and add canvas
-    container.innerHTML = '';
+    // Append without clearing to avoid removing other UI
     container.appendChild(this.canvas);
 
     console.log('✅ Canvas created and setup complete');
@@ -88,7 +100,7 @@ class LocalVisualizer {
       console.log('🔍 Attempting to load custom presets...');
       
       // First try to get presets from global object
-      if (typeof window !== 'undefined' && window.globalPresets) {
+      if (typeof window !== 'undefined' && window.globalPresets && Array.isArray(window.globalPresets)) {
         this.presets = window.globalPresets;
         console.log(`✅ Loaded ${this.presets.length} presets from global object (including ${this.presets.filter(p => p.custom).length} custom)`);
         console.log('📋 Preset names:', this.presets.map(p => p.name));
@@ -98,10 +110,14 @@ class LocalVisualizer {
       // Fallback: Try to import and load custom presets
       console.log('📦 Global presets not found, trying dynamic import...');
       const customPresets = await import('../presets/index.js');
-      console.log('📦 Import result:', customPresets);
+      console.log('📦 Import result:', Object.keys(customPresets || {}));
       
-      if (customPresets && customPresets.presets) {
+      if (customPresets && Array.isArray(customPresets.presets)) {
         this.presets = customPresets.presets;
+        // Expose custom effects globally so attachEffects can wire them
+        if (customPresets.customEffects) {
+          window.customEffects = customPresets.customEffects;
+        }
         console.log(`✅ Loaded ${this.presets.length} presets from import (including ${customPresets.presets.filter(p => p.custom).length} custom)`);
         console.log('📋 Preset names:', this.presets.map(p => p.name));
       } else {

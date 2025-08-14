@@ -5667,39 +5667,59 @@ let isVisualizerRunning = false;
 
 function startButterchurn() {
     try {
-        // Check if local visualizer is available
-        if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.isRunning === false) {
-            window.LocalVisualizer.start();
-            isVisualizerRunning = true;
-            logger.info('🎬 Local visualizer started');
-            return;
-        }
-        
-        // If local visualizer is already running, stop it
-        if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.isRunning) {
-            window.LocalVisualizer.stop();
-            isVisualizerRunning = false;
-            logger.info('⏹️ Local visualizer stopped');
-            return;
-        }
-        
-        // Initialize local visualizer if not available
-        if (typeof window.LocalVisualizer !== 'undefined') {
-            // Module system handles initialization
-            window.LocalVisualizer.start();
-            isVisualizerRunning = true;
-            logger.info('🎬 Local visualizer started');
-        } else {
-            // Wait for visualizer to be ready
-            logger.info('⏳ Waiting for visualizer to be ready...');
-            window.addEventListener('visualizerReady', () => {
-                logger.info('🎬 Visualizer ready, starting now...');
-                if (typeof window.LocalVisualizer !== 'undefined') {
-                    window.LocalVisualizer.start();
-                    isVisualizerRunning = true;
-                    logger.info('🎬 Local visualizer started');
+        // Ensure visualizer is initialized
+        const ensureInitializedAndStart = async () => {
+            try {
+                // Initialize via exported function if instance missing
+                if (typeof window.LocalVisualizer === 'undefined' && typeof window.initializeVisualizer === 'function') {
+                    await window.initializeVisualizer();
                 }
-            }, { once: true });
+                
+                if (typeof window.LocalVisualizer !== 'undefined') {
+                    // Ensure canvas/context exist
+                    if (!window.LocalVisualizer.canvas || !window.LocalVisualizer.ctx) {
+                        if (typeof window.LocalVisualizer.createCanvas === 'function') {
+                            window.LocalVisualizer.createCanvas();
+                        }
+                    }
+                    
+                    // Start if not running; otherwise stop
+                    if (window.LocalVisualizer.isRunning === false) {
+                        window.LocalVisualizer.start();
+                        isVisualizerRunning = true;
+                        logger.info('🎬 Local visualizer started');
+                    } else if (window.LocalVisualizer.isRunning === true) {
+                        window.LocalVisualizer.stop();
+                        isVisualizerRunning = false;
+                        logger.info('⏹️ Local visualizer stopped');
+                    } else {
+                        // Default to start
+                        window.LocalVisualizer.start();
+                        isVisualizerRunning = true;
+                        logger.info('🎬 Local visualizer started');
+                    }
+                    
+                    // Populate preset UI
+                    updatePresetSelect();
+                    updatePresetInfo();
+                    updateCurrentPreset();
+                } else {
+                    logger.warn('❗ LocalVisualizer not available after initialization attempt');
+                }
+            } catch (err) {
+                console.error('Failed to initialize/start visualizer:', err);
+                logger.error('Failed to initialize/start visualizer: ' + err.message);
+            }
+        };
+
+        if (typeof window.LocalVisualizer === 'undefined') {
+            logger.info('⏳ Waiting for visualizer to be ready...');
+            // Try to initialize immediately
+            ensureInitializedAndStart();
+            // Also listen for ready event as a fallback
+            window.addEventListener('visualizerReady', ensureInitializedAndStart, { once: true });
+        } else {
+            ensureInitializedAndStart();
         }
         
     } catch (error) {

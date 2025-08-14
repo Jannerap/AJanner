@@ -30,11 +30,17 @@ export async function initializeVisualizer() {
     console.log('✅ Effects attached');
     
     // Initialize the visualizer
-    localVisualizer.init();
+    await localVisualizer.init();
     console.log('✅ Visualizer initialized');
     
     // Make it globally available
     window.LocalVisualizer = localVisualizer;
+    // Provide global presets and effects if available from presets module
+    if (window.globalPresets) {
+      localVisualizer.presets = window.globalPresets;
+      // Ensure UI shows correct counts
+      localVisualizer.updatePresetInfo();
+    }
     console.log('✅ Visualizer made globally available');
     
     console.log('✅ Visualizer system initialized successfully');
