@@ -45,6 +45,9 @@ app.get('/api/news', async (req, res) => {
             case 'tweets':
                 sourceFile = 'news-tweets.txt';
                 break;
+            case 'entertainment':
+                sourceFile = 'news-entertainment.txt';
+                break;
             default:
                 sourceFile = 'news.txt';
         }

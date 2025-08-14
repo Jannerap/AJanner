@@ -1,0 +1,8 @@
+# Entertainment News Sources
+# Use either feeds/sites or a local JSON file
+# Examples:
+# feed https://www.rollingstone.com/music/music-news/rss/
+# site https://www.bbc.co.uk/news/entertainment_and_arts
+# json-file Entertainment.json
+json-file Entertainment.json
+

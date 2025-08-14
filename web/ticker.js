@@ -112,7 +112,8 @@ class NewsTicker {
             { service: 'local', label: 'Local', emoji: '🏠' },
             { service: 'news', label: 'News', emoji: '📰' },
             { service: 'weather', label: 'Weather', emoji: '🌤️' },
-            { service: 'tweets', label: 'Tweets', emoji: '🐦' }
+            { service: 'tweets', label: 'Tweets', emoji: '🐦' },
+            { service: 'entertainment', label: 'Entertainment', emoji: '🎬' }
         ];
         
         this.currentServiceIndex = 0; // Start with Sports
@@ -230,7 +231,8 @@ class NewsTicker {
             local: 'news-local.txt',
             news: 'news.txt',
             weather: 'news-weather.txt',
-            tweets: 'news-tweets.txt'
+            tweets: 'news-tweets.txt',
+            entertainment: 'news-entertainment.txt'
         };
         const file = map[this.currentService] || 'news.txt';
         const backupFile = `backup-${file}`;
@@ -254,30 +256,83 @@ class NewsTicker {
                 .map(l => l.trim())
                 .filter(l => l && !l.startsWith('#'));
 
-            // Special handling for tweets offline: support `tweets-file <path>` directive
-            if (this.currentService === 'tweets') {
-                const directive = lines.find(l => l.toLowerCase().startsWith('tweets-file'));
-                if (directive) {
-                    const parts = directive.split(/\s+/);
-                    const jsonPath = parts[1] || 'Tweets.json';
+            // Special handling for JSON directives across all services
+            // Support: `json-file <path.json>` or service-specific e.g. `tweets-file <path>`
+            const serviceSpecificDirective = `${this.currentService}-file`;
+            const directive = lines.find(l => l.toLowerCase().startsWith(serviceSpecificDirective))
+                || lines.find(l => l.toLowerCase().startsWith('json-file'))
+                || null;
+            if (directive) {
+                const parts = directive.split(/\s+/);
+                const jsonPath = parts[1];
+                if (jsonPath) {
                     try {
-                        let tweetsRes = await fetch(jsonPath.startsWith('/') ? jsonPath : `/${jsonPath}`);
-                        if (!tweetsRes.ok) {
-                            tweetsRes = await fetch(jsonPath);
+                        let jsonRes = await fetch(jsonPath.startsWith('/') ? jsonPath : `/${jsonPath}`);
+                        if (!jsonRes.ok) {
+                            jsonRes = await fetch(jsonPath);
                         }
-                        if (!tweetsRes.ok) throw new Error(`HTTP ${tweetsRes.status}`);
-                        const tweets = await tweetsRes.json();
-                        const tweetArray = Array.isArray(tweets) ? tweets : (Array.isArray(tweets.tweets) ? tweets.tweets : []);
+                        if (!jsonRes.ok) throw new Error(`HTTP ${jsonRes.status}`);
+                        const data = await jsonRes.json();
+                        const items = Array.isArray(data) ? data : (Array.isArray(data.items) ? data.items : (Array.isArray(data.tweets) ? data.tweets : []));
                         const now = Date.now();
-                        this.headlines = tweetArray.slice(0, this.options.maxHeadlines).map(item => ({
-                            source: 'TWITTER',
-                            title: `${item.hashtag || ''} @${item.username || 'user'}: ${item.comment || ''}`.trim(),
-                            url: item.username ? `https://twitter.com/${item.username}` : '#',
-                            ts: now
-                        }));
-                        console.info(`Loaded ${this.headlines.length} tweets from ${jsonPath} (offline fallback)`);
+
+                        // Map different services' JSON structures to headlines
+                        const mapItemToHeadline = (item) => {
+                            switch (this.currentService) {
+                                case 'tweets':
+                                    return {
+                                        source: 'TWITTER',
+                                        title: `${item.hashtag || ''} @${item.username || 'user'}: ${item.comment || item.text || ''}`.trim(),
+                                        url: item.username ? `https://twitter.com/${item.username}` : (item.url || '#'),
+                                        ts: now
+                                    };
+                                case 'sports':
+                                case 'local':
+                                case 'news':
+                                case 'weather':
+                                case 'entertainment':
+                                default:
+                                    return {
+                                        source: (item.source || this.currentService).toString().toUpperCase(),
+                                        title: item.title || item.text || item.headline || '',
+                                        url: item.url || '#',
+                                        ts: item.ts || now
+                                    };
+                            }
+                        };
+
+                        this.headlines = items.slice(0, this.options.maxHeadlines).map(mapItemToHeadline);
+                        console.info(`Loaded ${this.headlines.length} items from ${jsonPath} (offline fallback)`);
                     } catch (err) {
-                        console.warn('Failed to load tweets from directive, falling back to plain lines:', err.message);
+                        console.warn('Failed to load JSON from directive, falling back to plain lines:', err.message);
+                    }
+                }
+            }
+
+            // If no directive or it failed, but a line points directly to a .json, try that
+            if (!this.headlines || this.headlines.length === 0) {
+                const jsonLine = lines.find(l => /\.json(\s|$)/i.test(l));
+                if (jsonLine) {
+                    const jsonPath = jsonLine.split(/\s+/)[0];
+                    try {
+                        let jsonRes = await fetch(jsonPath.startsWith('/') ? jsonPath : `/${jsonPath}`);
+                        if (!jsonRes.ok) {
+                            jsonRes = await fetch(jsonPath);
+                        }
+                        if (!jsonRes.ok) throw new Error(`HTTP ${jsonRes.status}`);
+                        const data = await jsonRes.json();
+                        const items = Array.isArray(data) ? data : (Array.isArray(data.items) ? data.items : (Array.isArray(data.tweets) ? data.tweets : []));
+                        const now = Date.now();
+                        const mapItemToHeadline = (item) => ({
+                            source: (item.source || this.currentService).toString().toUpperCase(),
+                            title: item.title || `${item.hashtag || ''} @${item.username || 'user'}: ${item.comment || item.text || ''}`.trim(),
+                            url: item.url || (item.username ? `https://twitter.com/${item.username}` : '#'),
+                            ts: item.ts || now
+                        });
+                        this.headlines = items.slice(0, this.options.maxHeadlines).map(mapItemToHeadline);
+                        console.info(`Loaded ${this.headlines.length} items from ${jsonPath} (offline fallback direct .json)`);
+                    } catch (err) {
+                        console.warn('Failed to load direct JSON line, will fall back to plain lines:', err.message);
                     }
                 }
             }

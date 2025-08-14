@@ -149,7 +149,9 @@ Argyle News Ticker v5.0 is an advanced, modular news aggregation and display sys
 - `news-local.txt`: Local Plymouth news sources
 - `news-weather.txt`: Weather information sources
 - `news-tweets.txt`: Twitter-like content sources
-- `Tweets.json`: Local tweet data storage
+- `Tweets.json`: Local tweet data storage (can be referenced by either `tweets-file Tweets.json` or `json-file Tweets.json`)
+- `news-entertainment.txt`: Entertainment sources (feeds/sites or `json-file Entertainment.json`)
+- `Entertainment.json`: Local entertainment headlines (array of `{ title, url, source, ts }`)
 
 ---
 

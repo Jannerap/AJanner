@@ -1,3 +1,5 @@
 # Tweets News Sources
 # Local Tweets from Tweets.json file
+# You can also use generic JSON directive:
+# json-file Tweets.json
 tweets-file Tweets.json

@@ -1,0 +1,4 @@
+# Backup Entertainment News Sources
+# Prefer local JSON during offline
+json-file Entertainment.json
+

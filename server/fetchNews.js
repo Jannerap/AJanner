@@ -98,6 +98,9 @@ class NewsSourceParser {
                 case 'url':
                     sources.push({ type: 'site', url });
                     break;
+                case 'json-file':
+                    sources.push({ type: 'json-file', url });
+                    break;
                 case 'headline':
                     if (parts.length >= 3) {
                         const title = parts.slice(1, -1).join(' ').replace(/^"|"$/g, '');
@@ -116,6 +119,9 @@ class NewsSourceParser {
                     break;
                 case 'tweets-file':
                     sources.push({ type: 'tweets-file', url });
+                    break;
+                case 'entertainment-file':
+                    sources.push({ type: 'json-file', url });
                     break;
                 case 'list':
                     const listPath = path.resolve(path.dirname(indexPath), url);
@@ -578,6 +584,23 @@ class NewsSourceParser {
                         break;
                     case 'headline':
                         headlines = [new Headline(source.title, source.url, 'manual')];
+                        break;
+                    case 'json-file':
+                        try {
+                            const fullPath = path.resolve(process.cwd(), source.url);
+                            const data = JSON.parse(await fs.readFile(fullPath, 'utf8'));
+                            const items = Array.isArray(data) ? data : (Array.isArray(data.items) ? data.items : (Array.isArray(data.tweets) ? data.tweets : []));
+                            const now = Date.now();
+                            headlines = items.map(item => new Headline(
+                                item.title || `${item.hashtag || ''} @${item.username || 'user'}: ${item.comment || item.text || ''}`.trim(),
+                                item.url || (item.username ? `https://twitter.com/${item.username}` : '#'),
+                                (item.source || 'json').toString(),
+                                item.ts || now
+                            ));
+                        } catch (e) {
+                            console.warn('Failed to load JSON file source', source.url, e.message);
+                            headlines = [];
+                        }
                         break;
                     case 'plymouth-argyle':
                         const rawHeadlines = await this.scrapePlymouthArgyleNews();
