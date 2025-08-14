@@ -3394,9 +3394,10 @@ function saveIdeas() {
       copy.attachments = copy.attachments.map(att => ({
         name: att.name,
         type: att.type,
-        // Persist object URL as-is so it still opens in-session; keep a flag
+        // Persist object URL or relative URL (will be re-resolved on load)
         url: att.url,
-        isObjectUrl: !!att.isObjectUrl
+        isObjectUrl: !!att.isObjectUrl,
+        originalName: att.originalName || att.name || ''
       }));
     }
     // Audio: keep url and a flag
@@ -5151,7 +5152,8 @@ function setupEventListeners() {
             name: att.name,
             type: att.type,
             url: att.url || '',
-            isObjectUrl: !!att.isObjectUrl
+            isObjectUrl: !!att.isObjectUrl,
+            originalName: att.originalName || att.name || ''
           })) : [],
           // Restore audio stub if present
           audio: idea.audio ? {
@@ -5161,7 +5163,10 @@ function setupEventListeners() {
           } : null
         }));
 
-        logger.info(`📋 Loaded ${loaded.length} ideas from JSON file:`, file.name);
+        // After loading, try to resolve attachments and audio from a session folder
+        resolveAllExternalAssets(ideas).then(() => {
+          logger.info(`📋 Loaded ${loaded.length} ideas from JSON file:`, file.name);
+        });
         movementDelayActive = true;
         setTimeout(() => {
           movementDelayActive = false;
@@ -5326,6 +5331,48 @@ function resizePanelToggle() {
 }
 
 window.resizePanelToggle = resizePanelToggle;
+
+// Attempt to re-resolve attachments/audio URLs from a local session folder
+async function resolveAllExternalAssets(ideasArr) {
+  try {
+    const sessionFolder = 'session_uploads/'; // configurable base folder under project root
+    for (const idea of ideasArr) {
+      // Resolve attachments
+      if (Array.isArray(idea.attachments)) {
+        for (const att of idea.attachments) {
+          if (att && att.url && att.isObjectUrl !== true) {
+            // If URL already usable (http(s) or data:), skip
+            if (/^(https?:|data:)/i.test(att.url)) continue;
+            // Try session folder by originalName first, fallback to url string
+            const candidate = sessionFolder + (att.originalName || att.name || att.url);
+            try {
+              const res = await fetch(candidate, { method: 'HEAD' });
+              if (res.ok) {
+                att.url = candidate;
+                att.isObjectUrl = false;
+              }
+            } catch (_) {}
+          }
+        }
+      }
+      // Resolve audio
+      if (idea.audio && idea.audio.url && idea.audio.isObjectUrl !== true) {
+        if (!/^(https?:|data:)/i.test(idea.audio.url)) {
+          const candidate = sessionFolder + (idea.audio.name || 'audio');
+          try {
+            const res = await fetch(candidate, { method: 'HEAD' });
+            if (res.ok) {
+              idea.audio.url = candidate;
+              idea.audio.isObjectUrl = false;
+            }
+          } catch (_) {}
+        }
+      }
+    }
+  } catch (e) {
+    logger.warn('⚠️ resolveAllExternalAssets encountered an issue:', e && e.message ? e.message : e);
+  }
+}
 
 function toggleSpeed() {
   const speedSlider = document.querySelector('input[type="range"]');
