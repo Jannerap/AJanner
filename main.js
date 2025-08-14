@@ -3046,9 +3046,61 @@ function openUrlOverlay(href) {
   close.style.cursor = 'pointer';
   close.onclick = () => document.body.removeChild(overlay);
 
+  // Blocked embedding helper UI
+  const blockedWrap = document.createElement('div');
+  blockedWrap.style.position = 'absolute';
+  blockedWrap.style.top = '50%';
+  blockedWrap.style.left = '50%';
+  blockedWrap.style.transform = 'translate(-50%, -50%)';
+  blockedWrap.style.background = 'rgba(0,0,0,0.8)';
+  blockedWrap.style.border = '2px solid #4CAF50';
+  blockedWrap.style.borderRadius = '8px';
+  blockedWrap.style.padding = '14px 16px';
+  blockedWrap.style.display = 'none';
+  blockedWrap.style.color = '#fff';
+  blockedWrap.style.textAlign = 'center';
+  blockedWrap.style.maxWidth = '80vw';
+  const msg = document.createElement('div');
+  msg.textContent = 'This site blocks embedding. Opening in a new tab will work.';
+  msg.style.marginBottom = '10px';
+  const openBtn = document.createElement('button');
+  openBtn.textContent = 'Open in New Tab';
+  openBtn.style.background = 'rgba(0,0,0,0.7)';
+  openBtn.style.color = 'white';
+  openBtn.style.border = '2px solid #4CAF50';
+  openBtn.style.borderRadius = '6px';
+  openBtn.style.padding = '6px 10px';
+  openBtn.style.cursor = 'pointer';
+  openBtn.onclick = () => window.open(href, '_blank');
+  blockedWrap.appendChild(msg);
+  blockedWrap.appendChild(openBtn);
+
   overlay.appendChild(frame);
   overlay.appendChild(close);
+  overlay.appendChild(blockedWrap);
   document.body.appendChild(overlay);
+
+  // Detect frame-ancestors/X-Frame-Options blocks and show fallback
+  let loaded = false;
+  frame.onload = () => {
+    loaded = true;
+    try {
+      // Some blocked pages still fire onload but deny DOM access
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      if (!doc || !doc.body) {
+        blockedWrap.style.display = 'block';
+      } else if ((doc.body.innerHTML || '').trim().length === 0) {
+        blockedWrap.style.display = 'block';
+      }
+    } catch (e) {
+      blockedWrap.style.display = 'block';
+    }
+  };
+  setTimeout(() => {
+    if (!loaded) {
+      blockedWrap.style.display = 'block';
+    }
+  }, 1500);
 }
 
 // Expose add method for inline onclick
