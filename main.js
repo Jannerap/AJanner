@@ -2890,6 +2890,15 @@ function renderAttachmentsList(attachments) {
               win.document.close();
             }
           }).catch(() => window.open(href, '_blank'));
+        } else if (
+          att.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+          att.type === 'application/msword' ||
+          (att.name && (att.name.toLowerCase().endsWith('.docx') || att.name.toLowerCase().endsWith('.doc')))
+        ) {
+          // Try to view .doc/.docx via Google Docs Viewer
+          const encoded = encodeURIComponent(href);
+          const viewerUrl = `https://docs.google.com/gview?embedded=1&url=${encoded}`;
+          window.open(viewerUrl, '_blank');
         } else {
           window.open(href, '_blank');
         }
