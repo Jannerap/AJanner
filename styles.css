@@ -2022,8 +2022,8 @@ button[data-png="bucheck"].has-png {
   color: gold;
   border: 2px solid darkgreen;
   font-family: 'Monaco', serif;
-  padding: 6px 10px;
-  border-radius: 6px;
+
+  border-radius: 3px;
   cursor: pointer;
   appearance: none;
   width: 100%;
