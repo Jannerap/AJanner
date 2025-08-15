@@ -234,9 +234,22 @@ class NewsTicker {
             console.log(`✅ Received ${headlines.length} headlines for ${this.currentService}`);
             
             // Sort headlines with Plymouth sources first, then by timestamp (most recent first)
-            this.headlines = headlines
+            // Filter out Plymouth Argyle-only sports items when viewing local service
+            const filtered = (this.currentService === 'local')
+                ? headlines.filter(h => {
+                    const s = (h.source || '').toLowerCase();
+                    const t = (h.title || '').toLowerCase();
+                    // Keep Plymouth Herald local news, but drop obvious sports/argyle-only
+                    const isSports = t.includes('argyle') || t.includes('sport') || t.includes('football');
+                    const isHerald = s.includes('plymouthherald');
+                    // allow Herald non-sports; drop sports; keep other local sources
+                    return !(isHerald && isSports);
+                })
+                : headlines;
+
+            this.headlines = filtered
                 .sort((a, b) => {
-                    // Priority 1: Plymouth sources first (for sports service)
+                    // Priority 1: Plymouth Sports sources first (sports only)
                     if (this.currentService === 'sports') {
                         const aIsPlymouth = (a.source || '').toLowerCase().includes('plymouth') || 
                                           (a.source || '').toLowerCase().includes('pafc');

@@ -56,8 +56,9 @@ app.get('/api/news', async (req, res) => {
         try {
             headlines = await parser.loadHeadlinesFromSource(sourceFile);
         } catch (error) {
-            console.warn(`Failed to load ${service} headlines, falling back to main news:`, error.message);
-            headlines = await parser.loadHeadlines();
+            console.warn(`Failed to load ${service} headlines; returning empty list to avoid cross-service cache bleed:`, error.message);
+            // Do NOT fall back to global cache; that mixes unrelated stories
+            headlines = [];
         }
         
         // Apply query filter if provided
