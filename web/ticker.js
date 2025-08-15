@@ -45,7 +45,31 @@ class NewsTicker {
             }
 
             this.setupTicker();
-            this.loadHeadlines();
+
+            // Load and apply user preferences before first fetch
+            this.loadPreferences();
+            this.applyPreferences();
+            this.syncSettingsControls && this.syncSettingsControls();
+
+            // Show initial loading state on first fetch
+            const serviceBtn = this.container.querySelector('#news-service-btn');
+            this.isLoading = true;
+            if (serviceBtn) {
+                serviceBtn.textContent = '↻';
+                serviceBtn.classList.add('loading');
+            }
+
+            // Perform initial load with spinner, then restore button state
+            await this.loadHeadlines().catch((err) => {
+                console.error('Initial headlines load failed:', err);
+            });
+            this.isLoading = false;
+            if (serviceBtn && this.serviceCycle && typeof this.currentServiceIndex === 'number') {
+                const currentService = this.serviceCycle[this.currentServiceIndex];
+                serviceBtn.textContent = currentService ? currentService.label : 'News';
+                serviceBtn.classList.remove('loading');
+            }
+
             this.startAnimation();
 
             // Set up periodic refresh
@@ -80,6 +104,38 @@ class NewsTicker {
                     <button class="news-service-button" id="news-service-btn">Sports</button>
                 </div>
                 <div class="news-ticker-offline" style="display: none;">📡 Offline</div>
+                <div class="news-settings-panel" id="news-settings-panel" style="display: none;">
+                    <div class="news-settings-header">
+                        <span>News Settings</span>
+                        <button class="news-settings-close" id="news-settings-close" title="Close">✕</button>
+                    </div>
+                    <div class="news-settings-body">
+                        <label class="news-settings-row">
+                            <span>Show Ticker</span>
+                            <input type="checkbox" id="news-settings-visible" checked />
+                        </label>
+                        <label class="news-settings-row">
+                            <span>Section</span>
+                            <select id="news-settings-service">
+                                <option value="sports">Sports</option>
+                                <option value="local">Local</option>
+                                <option value="news">News</option>
+                                <option value="weather">Weather</option>
+                                <option value="tweets">Tweets</option>
+                                <option value="entertainment">Entertainment</option>
+                            </select>
+                        </label>
+                        <label class="news-settings-row">
+                            <span>Headline Color</span>
+                            <input type="color" id="news-settings-color" value="#ffffff" />
+                        </label>
+                        <label class="news-settings-row">
+                            <span>Speed</span>
+                            <input type="range" id="news-settings-speed" min="20" max="200" step="2" />
+                            <span id="news-settings-speed-value" class="news-settings-value"></span>
+                        </label>
+                    </div>
+                </div>
             </div>
         `;
 
@@ -105,6 +161,8 @@ class NewsTicker {
 
         // Set up news service selector
         this.setupServiceSelector();
+        // Set up settings panel
+        this.setupSettingsPanel();
     }
 
     setupServiceSelector() {
@@ -150,13 +208,184 @@ class NewsTicker {
             }
         });
 
-        // Double click hides/shows the ticker content (but keeps button visible)
-        serviceBtn.addEventListener('dblclick', (e) => {
+        // Right-click opens settings panel
+        serviceBtn.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
             e.stopPropagation();
-            if (!this.isLoading) {
-                this.toggleTickerVisibility();
+            this.openSettingsPanel(e);
+        });
+    }
+
+    setupSettingsPanel() {
+        this.preferences = this.preferences || {
+            visible: true,
+            service: 'sports',
+            headlineColor: '#ffffff',
+            speed: this.options.speed
+        };
+
+        const panel = this.container.querySelector('#news-settings-panel');
+        const closeBtn = this.container.querySelector('#news-settings-close');
+        const visibleEl = this.container.querySelector('#news-settings-visible');
+        const serviceEl = this.container.querySelector('#news-settings-service');
+        const colorEl = this.container.querySelector('#news-settings-color');
+        const speedEl = this.container.querySelector('#news-settings-speed');
+        const speedVal = this.container.querySelector('#news-settings-speed-value');
+
+        // Initialize controls from preferences
+        if (visibleEl) visibleEl.checked = !!this.preferences.visible;
+        if (serviceEl) serviceEl.value = this.preferences.service || 'sports';
+        if (colorEl) colorEl.value = this.preferences.headlineColor || '#ffffff';
+        if (speedEl) {
+            speedEl.value = String(this.preferences.speed || this.options.speed);
+            if (speedVal) speedVal.textContent = `${speedEl.value}px/s`;
+        }
+
+        // Wire up events
+        if (closeBtn) closeBtn.addEventListener('click', () => this.closeSettingsPanel());
+        if (visibleEl) visibleEl.addEventListener('change', () => {
+            this.setTickerVisible(visibleEl.checked);
+            this.preferences.visible = visibleEl.checked;
+            this.savePreferences();
+        });
+        if (serviceEl) serviceEl.addEventListener('change', async () => {
+            const selected = serviceEl.value;
+            await this.switchToService(selected);
+            this.preferences.service = selected;
+            this.savePreferences();
+        });
+        if (colorEl) colorEl.addEventListener('input', () => {
+            this.setHeadlineColor(colorEl.value);
+            this.preferences.headlineColor = colorEl.value;
+            this.savePreferences();
+        });
+        if (speedEl) speedEl.addEventListener('input', () => {
+            const v = parseInt(speedEl.value, 10) || this.options.speed;
+            this.setSpeed(v);
+            if (speedVal) speedVal.textContent = `${v}px/s`;
+            this.preferences.speed = v;
+            this.savePreferences();
+        });
+
+        // Close panel when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!panel || panel.style.display === 'none') return;
+            if (!panel.contains(e.target) && e.target !== this.container.querySelector('#news-service-btn')) {
+                this.closeSettingsPanel();
             }
         });
+    }
+
+    openSettingsPanel(e) {
+        const panel = this.container.querySelector('#news-settings-panel');
+        if (!panel) return;
+        if (this.syncSettingsControls) this.syncSettingsControls();
+        panel.style.display = 'block';
+        // Position near click but clamped inside container
+        const rect = this.container.getBoundingClientRect();
+        const x = Math.min(Math.max(10, e.clientX - rect.left), rect.width - 260);
+        const y = Math.max(10, rect.height - 220); // show above ticker
+        panel.style.left = `${x}px`;
+        panel.style.right = 'auto';
+        panel.style.bottom = `50px`;
+    }
+
+    closeSettingsPanel() {
+        const panel = this.container.querySelector('#news-settings-panel');
+        if (panel) panel.style.display = 'none';
+    }
+
+    setTickerVisible(visible) {
+        const content = this.container.querySelector('.news-ticker-content');
+        const container = this.container.querySelector('.news-ticker-container');
+        const btn = this.container.querySelector('#news-service-btn');
+        if (!content || !container || !btn) return;
+        if (visible) {
+            content.classList.remove('hidden');
+            container.style.background = '';
+            container.style.border = '';
+            const currentService = this.serviceCycle[this.currentServiceIndex];
+            btn.textContent = currentService.label;
+            btn.style.border = '';
+        } else {
+            content.classList.add('hidden');
+            container.style.background = 'transparent';
+            container.style.border = 'none';
+            btn.textContent = '📤';
+            btn.style.border = '2px solid #8FE04A';
+        }
+    }
+
+    async switchToService(serviceKey) {
+        const idx = this.serviceCycle.findIndex(s => s.service === serviceKey);
+        if (idx === -1) return;
+        this.currentServiceIndex = idx;
+        this.currentService = serviceKey;
+        const serviceBtn = this.container.querySelector('#news-service-btn');
+        if (serviceBtn) serviceBtn.textContent = this.serviceCycle[idx].label;
+        this.isLoading = true;
+        if (serviceBtn) {
+            serviceBtn.textContent = '↻';
+            serviceBtn.classList.add('loading');
+        }
+        await this.loadHeadlines().catch(() => {});
+        this.isLoading = false;
+        if (serviceBtn) {
+            serviceBtn.textContent = this.serviceCycle[idx].label;
+            serviceBtn.classList.remove('loading');
+        }
+    }
+
+    loadPreferences() {
+        try {
+            const raw = localStorage.getItem('news-ticker-preferences');
+            if (raw) this.preferences = JSON.parse(raw);
+        } catch (_) {}
+        this.preferences = this.preferences || {};
+    }
+
+    savePreferences() {
+        try {
+            localStorage.setItem('news-ticker-preferences', JSON.stringify(this.preferences || {}));
+        } catch (_) {}
+    }
+
+    applyPreferences() {
+        if (!this.preferences) return;
+        if (typeof this.preferences.visible === 'boolean') this.setTickerVisible(this.preferences.visible);
+        if (typeof this.preferences.speed === 'number') this.setSpeed(this.preferences.speed);
+        if (typeof this.preferences.headlineColor === 'string') this.setHeadlineColor(this.preferences.headlineColor);
+        if (typeof this.preferences.service === 'string') {
+            const idx = this.serviceCycle ? this.serviceCycle.findIndex(s => s.service === this.preferences.service) : -1;
+            if (idx >= 0) {
+                this.currentServiceIndex = idx;
+                this.currentService = this.preferences.service;
+                const btn = this.container.querySelector('#news-service-btn');
+                if (btn) btn.textContent = this.serviceCycle[idx].label;
+            }
+        }
+    }
+
+    setHeadlineColor(color) {
+        const root = this.container;
+        if (root) root.style.setProperty('--news-headline-color', color);
+    }
+
+    syncSettingsControls() {
+        const visibleEl = this.container.querySelector('#news-settings-visible');
+        const serviceEl = this.container.querySelector('#news-settings-service');
+        const colorEl = this.container.querySelector('#news-settings-color');
+        const speedEl = this.container.querySelector('#news-settings-speed');
+        const speedVal = this.container.querySelector('#news-settings-speed-value');
+        const prefs = this.preferences || {};
+        if (visibleEl) visibleEl.checked = !!prefs.visible;
+        if (serviceEl) serviceEl.value = prefs.service || this.currentService || 'sports';
+        if (colorEl) colorEl.value = prefs.headlineColor || '#ffffff';
+        if (speedEl) {
+            const v = prefs.speed || this.options.speed;
+            speedEl.value = String(v);
+            if (speedVal) speedVal.textContent = `${v}px/s`;
+        }
     }
 
     cycleToNextService() {
