@@ -488,7 +488,6 @@ class LocalVisualizer {
     if (presetName && preset) presetName.textContent = preset.name;
     if (presetDescription && preset) presetDescription.textContent = preset.description;
   }
-  }
 
   // Start the visualizer
   start() {
