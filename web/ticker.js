@@ -104,38 +104,6 @@ class NewsTicker {
                     <button class="news-service-button" id="news-service-btn">Sports</button>
                 </div>
                 <div class="news-ticker-offline" style="display: none;">📡 Offline</div>
-                <div class="news-settings-panel" id="news-settings-panel" style="display: none;">
-                    <div class="news-settings-header">
-                        <span>News Settings</span>
-                        <button class="news-settings-close" id="news-settings-close" title="Close">✕</button>
-                    </div>
-                    <div class="news-settings-body">
-                        <label class="news-settings-row">
-                            <span>Show Ticker</span>
-                            <input type="checkbox" id="news-settings-visible" checked />
-                        </label>
-                        <label class="news-settings-row">
-                            <span>Section</span>
-                            <select id="news-settings-service">
-                                <option value="sports">Sports</option>
-                                <option value="local">Local</option>
-                                <option value="news">News</option>
-                                <option value="weather">Weather</option>
-                                <option value="tweets">Tweets</option>
-                                <option value="entertainment">Entertainment</option>
-                            </select>
-                        </label>
-                        <label class="news-settings-row">
-                            <span>Headline Color</span>
-                            <input type="color" id="news-settings-color" value="#ffffff" />
-                        </label>
-                        <label class="news-settings-row">
-                            <span>Speed</span>
-                            <input type="range" id="news-settings-speed" min="20" max="200" step="2" />
-                            <span id="news-settings-speed-value" class="news-settings-value"></span>
-                        </label>
-                    </div>
-                </div>
             </div>
         `;
 
@@ -161,7 +129,7 @@ class NewsTicker {
 
         // Set up news service selector
         this.setupServiceSelector();
-        // Set up settings panel
+        // Set up settings panel (appended to body to avoid clipping/z-index issues)
         this.setupSettingsPanel();
     }
 
@@ -224,13 +192,53 @@ class NewsTicker {
             speed: this.options.speed
         };
 
-        const panel = this.container.querySelector('#news-settings-panel');
-        const closeBtn = this.container.querySelector('#news-settings-close');
-        const visibleEl = this.container.querySelector('#news-settings-visible');
-        const serviceEl = this.container.querySelector('#news-settings-service');
-        const colorEl = this.container.querySelector('#news-settings-color');
-        const speedEl = this.container.querySelector('#news-settings-speed');
-        const speedVal = this.container.querySelector('#news-settings-speed-value');
+        // Build panel in document.body to ensure top-level stacking context
+        let panel = document.getElementById('news-settings-panel');
+        if (!panel) {
+            panel = document.createElement('div');
+            panel.id = 'news-settings-panel';
+            panel.className = 'news-settings-panel';
+            panel.style.display = 'none';
+            panel.innerHTML = `
+                <div class="news-settings-header">
+                    <span>News Settings</span>
+                    <button class="news-settings-close" id="news-settings-close" title="Close">✕</button>
+                </div>
+                <div class="news-settings-body">
+                    <label class="news-settings-row">
+                        <span>Show Ticker</span>
+                        <input type="checkbox" id="news-settings-visible" checked />
+                    </label>
+                    <label class="news-settings-row">
+                        <span>Section</span>
+                        <select id="news-settings-service">
+                            <option value="sports">Sports</option>
+                            <option value="local">Local</option>
+                            <option value="news">News</option>
+                            <option value="weather">Weather</option>
+                            <option value="tweets">Tweets</option>
+                            <option value="entertainment">Entertainment</option>
+                        </select>
+                    </label>
+                    <label class="news-settings-row">
+                        <span>Headline Color</span>
+                        <input type="color" id="news-settings-color" value="#ffffff" />
+                    </label>
+                    <label class="news-settings-row">
+                        <span>Speed</span>
+                        <input type="range" id="news-settings-speed" min="20" max="200" step="2" />
+                        <span id="news-settings-speed-value" class="news-settings-value"></span>
+                    </label>
+                </div>`;
+            document.body.appendChild(panel);
+        }
+
+        const closeBtn = panel.querySelector('#news-settings-close');
+        const visibleEl = panel.querySelector('#news-settings-visible');
+        const serviceEl = panel.querySelector('#news-settings-service');
+        const colorEl = panel.querySelector('#news-settings-color');
+        const speedEl = panel.querySelector('#news-settings-speed');
+        const speedVal = panel.querySelector('#news-settings-speed-value');
 
         // Initialize controls from preferences
         if (visibleEl) visibleEl.checked = !!this.preferences.visible;
@@ -270,29 +278,63 @@ class NewsTicker {
         // Close panel when clicking outside
         document.addEventListener('click', (e) => {
             if (!panel || panel.style.display === 'none') return;
-            if (!panel.contains(e.target) && e.target !== this.container.querySelector('#news-service-btn')) {
+            const btn = this.container.querySelector('#news-service-btn');
+            if (!panel.contains(e.target) && e.target !== btn) {
                 this.closeSettingsPanel();
             }
         });
     }
 
     openSettingsPanel(e) {
-        const panel = this.container.querySelector('#news-settings-panel');
+        const panel = document.getElementById('news-settings-panel');
         if (!panel) return;
         if (this.syncSettingsControls) this.syncSettingsControls();
         panel.style.display = 'block';
         // Position near click but clamped inside container
-        const rect = this.container.getBoundingClientRect();
-        const x = Math.min(Math.max(10, e.clientX - rect.left), rect.width - 260);
-        const y = Math.max(10, rect.height - 220); // show above ticker
+        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+        const x = Math.min(Math.max(10, e.clientX), vw - 270);
+        const y = Math.min(Math.max(10, e.clientY), vh - 220);
         panel.style.left = `${x}px`;
+        panel.style.top = `${y}px`;
         panel.style.right = 'auto';
-        panel.style.bottom = `50px`;
+        panel.style.bottom = 'auto';
+
+        // Start/Reset auto-close timer (30s)
+        this._startSettingsPanelTimer(30000);
+
+        // Attach activity listeners to reset timer on interaction
+        this._attachPanelActivityListeners(panel);
     }
 
     closeSettingsPanel() {
-        const panel = this.container.querySelector('#news-settings-panel');
+        const panel = document.getElementById('news-settings-panel');
         if (panel) panel.style.display = 'none';
+        // Clear any running auto-close timer
+        if (this._settingsPanelTimeout) {
+            clearTimeout(this._settingsPanelTimeout);
+            this._settingsPanelTimeout = null;
+        }
+    }
+
+    _startSettingsPanelTimer(durationMs) {
+        if (this._settingsPanelTimeout) clearTimeout(this._settingsPanelTimeout);
+        this._settingsPanelTimeout = setTimeout(() => {
+            this.closeSettingsPanel();
+        }, durationMs);
+    }
+
+    _resetSettingsPanelTimer() {
+        this._startSettingsPanelTimer(30000);
+    }
+
+    _attachPanelActivityListeners(panel) {
+        if (this._panelActivityListenersAttached) return;
+        const reset = () => this._resetSettingsPanelTimer();
+        ['mousemove', 'keydown', 'click', 'input', 'wheel', 'touchstart'].forEach(evt => {
+            panel.addEventListener(evt, reset, { passive: true });
+        });
+        this._panelActivityListenersAttached = true;
     }
 
     setTickerVisible(visible) {
