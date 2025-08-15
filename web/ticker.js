@@ -124,10 +124,22 @@ class NewsTicker {
         
         this.currentServiceIndex = 0; // Start with Sports
         this.currentService = 'sports';
+        this.isLoading = false; // Track loading state
 
         // Handle button click to cycle through services or show ticker if hidden
         serviceBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            
+            // Prevent action if currently loading
+            if (this.isLoading) {
+                console.log('Service switch blocked - currently loading');
+                // Add visual feedback that button is disabled
+                serviceBtn.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    serviceBtn.style.transform = '';
+                }, 150);
+                return;
+            }
             
             // If ticker is hidden (showing 📤), show it back
             if (this.container.querySelector('.news-ticker-content').classList.contains('hidden')) {
@@ -141,29 +153,62 @@ class NewsTicker {
         // Double click hides/shows the ticker content (but keeps button visible)
         serviceBtn.addEventListener('dblclick', (e) => {
             e.stopPropagation();
-            this.toggleTickerVisibility();
+            if (!this.isLoading) {
+                this.toggleTickerVisibility();
+            }
         });
     }
 
     cycleToNextService() {
+        // Prevent multiple rapid clicks
+        if (this.isLoading) {
+            console.log('Service switch already in progress');
+            return;
+        }
+        
+        // Set loading state
+        this.isLoading = true;
+        const serviceBtn = this.container.querySelector('#news-service-btn');
+        
+        // Update button to show loading state
+        serviceBtn.textContent = '⏳';
+        serviceBtn.classList.add('loading');
+        
         // Move to next service in cycle
         this.currentServiceIndex = (this.currentServiceIndex + 1) % this.serviceCycle.length;
         const nextService = this.serviceCycle[this.currentServiceIndex];
         
-        // Update button text and current service
-        const serviceBtn = this.container.querySelector('#news-service-btn');
-        serviceBtn.textContent = nextService.label;
+        // Update current service
         this.currentService = nextService.service;
         
         console.log('Cycled to service:', nextService.service);
         
         // Load headlines for the new service
-        this.loadHeadlines();
+        this.loadHeadlines().finally(() => {
+            // Restore button state after loading completes (success or error)
+            this.isLoading = false;
+            serviceBtn.textContent = nextService.label;
+            serviceBtn.classList.remove('loading');
+        }).catch((error) => {
+            // Additional error handling to ensure button state is restored
+            console.error('Error loading headlines:', error);
+            this.isLoading = false;
+            serviceBtn.textContent = nextService.label;
+            serviceBtn.classList.remove('loading');
+        });
     }
 
 
 
     async loadHeadlines() {
+        // Set loading state if this is a service switch
+        if (this.isLoading) {
+            const serviceBtn = this.container.querySelector('#news-service-btn');
+            if (serviceBtn) {
+                serviceBtn.classList.add('loading');
+            }
+        }
+        
         try {
             // Build endpoint based on selected service
             let endpoint = this.options.endpoint;

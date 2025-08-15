@@ -1,16 +1,16 @@
 {
   "sources": {
     "www.bloomberg.com": {
-      "etag": "\"9o5hh2fyrzlkxk\"",
-      "lastFetch": 1754962595722,
+      "etag": "\"zpk7xlchovl4af\"",
+      "lastFetch": 1755219834118,
       "rateLimit": 300000
     },
     "techcrunch.com": {
-      "lastFetch": 1754962595987,
+      "lastFetch": 1755219834353,
       "rateLimit": 300000
     },
     "arstechnica.com": {
-      "lastFetch": 1754962597960,
+      "lastFetch": 1755219836334,
       "rateLimit": 300000
     }
   },
