@@ -174,6 +174,12 @@ class NewsTicker {
         serviceBtn.textContent = '⏳';
         serviceBtn.classList.add('loading');
         
+        // Clear any existing headlines before switching
+        this.headlines = [];
+        if (this.tickerList) {
+            this.tickerList.innerHTML = '';
+        }
+        
         // Move to next service in cycle
         this.currentServiceIndex = (this.currentServiceIndex + 1) % this.serviceCycle.length;
         const nextService = this.serviceCycle[this.currentServiceIndex];
@@ -181,7 +187,7 @@ class NewsTicker {
         // Update current service
         this.currentService = nextService.service;
         
-        console.log('Cycled to service:', nextService.service);
+        console.log(`🔄 Switching to service: ${nextService.service}`);
         
         // Load headlines for the new service
         this.loadHeadlines().finally(() => {
@@ -210,22 +216,35 @@ class NewsTicker {
         }
         
         try {
+            // Clear existing headlines immediately when switching services
+            this.headlines = [];
+            
             // Build endpoint based on selected service
             let endpoint = this.options.endpoint;
             if (this.currentService && this.currentService !== 'news') {
                 endpoint = `${this.options.endpoint}?service=${this.currentService}`;
             }
 
+            console.log(`🔄 Loading headlines for service: ${this.currentService} from ${endpoint}`);
+
             const response = await fetch(endpoint);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
             const headlines = await response.json();
-            this.headlines = headlines.slice(0, this.options.maxHeadlines);
+            console.log(`✅ Received ${headlines.length} headlines for ${this.currentService}`);
+            
+            // Sort headlines by timestamp (most recent first) and take the limit
+            this.headlines = headlines
+                .sort((a, b) => (b.ts || 0) - (a.ts || 0))
+                .slice(0, this.options.maxHeadlines);
+            
             this.offlineMode = false;
             this.offlineBadge.style.display = 'none';
             
             this.renderHeadlines();
             this.lastUpdate = Date.now();
+            
+            console.log(`📰 Rendered ${this.headlines.length} headlines for ${this.currentService}`);
 
         } catch (error) {
             console.warn('Failed to fetch headlines, using cached data:', error.message);
@@ -252,13 +271,20 @@ class NewsTicker {
 
     loadFromCache() {
         try {
-            const cached = localStorage.getItem('news-ticker-cache');
+            const cacheKey = `news-ticker-cache-${this.currentService}`;
+            const cached = localStorage.getItem(cacheKey);
             if (cached) {
                 const data = JSON.parse(cached);
                 if (Date.now() - data.timestamp < 3600000) { // 1 hour old
+                    console.log(`📋 Loading ${data.headlines.length} cached headlines for ${this.currentService}`);
                     this.headlines = data.headlines;
                     this.renderHeadlines();
+                } else {
+                    console.log(`⏰ Cache expired for ${this.currentService}, clearing...`);
+                    localStorage.removeItem(cacheKey);
                 }
+            } else {
+                console.log(`📭 No cache found for ${this.currentService}`);
             }
         } catch (error) {
             console.warn('Failed to load cached headlines:', error);
@@ -267,7 +293,8 @@ class NewsTicker {
 
     saveToCache() {
         try {
-            localStorage.setItem('news-ticker-cache', JSON.stringify({
+            const cacheKey = `news-ticker-cache-${this.currentService}`;
+            localStorage.setItem(cacheKey, JSON.stringify({
                 headlines: this.headlines,
                 timestamp: Date.now()
             }));
@@ -406,10 +433,18 @@ class NewsTicker {
     }
 
     renderHeadlines() {
-        if (!this.tickerList || this.headlines.length === 0) return;
+        if (!this.tickerList || this.headlines.length === 0) {
+            console.log('⚠️ No headlines to render or ticker list not found');
+            return;
+        }
+
+        console.log(`🎨 Rendering ${this.headlines.length} headlines for ${this.currentService}`);
+
+        // Clear existing content completely
+        this.tickerList.innerHTML = '';
 
         // Create headline elements
-        const headlineElements = this.headlines.map(headline => {
+        const headlineElements = this.headlines.map((headline, index) => {
             const element = document.createElement('div');
             element.className = 'news-ticker-item';
             element.innerHTML = `
@@ -421,11 +456,15 @@ class NewsTicker {
                 <span class="news-time">${this.formatTimeAgo(headline.ts)}</span>
             `;
             
+            // Add data attributes for debugging
+            element.setAttribute('data-index', index);
+            element.setAttribute('data-service', this.currentService);
+            element.setAttribute('data-timestamp', headline.ts);
+            
             return element;
         });
 
-        // Clear and populate
-        this.tickerList.innerHTML = '';
+        // Populate with new headlines
         headlineElements.forEach(element => {
             this.tickerList.appendChild(element.cloneNode(true));
         });
@@ -435,11 +474,13 @@ class NewsTicker {
             this.tickerList.appendChild(element.cloneNode(true));
         });
 
-        // Save to cache
+        // Save to service-specific cache
         this.saveToCache();
 
         // Reset position for new content
         this.currentPosition = 0;
+        
+        console.log(`✅ Successfully rendered ${headlineElements.length * 2} headline elements for ${this.currentService}`);
     }
 
     sanitizeText(text) {
@@ -545,6 +586,12 @@ class NewsTicker {
     }
 
     refresh() {
+        console.log(`🔄 Force refreshing headlines for ${this.currentService}`);
+        // Clear existing headlines and force fresh load
+        this.headlines = [];
+        if (this.tickerList) {
+            this.tickerList.innerHTML = '';
+        }
         this.loadHeadlines();
     }
 }
