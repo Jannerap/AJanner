@@ -1,5 +1,5 @@
 # Plymouth Local News Sources
-# Plymouth Herald News (Auto-scraped from website)
+# Plymouth Herald News
 plymouth-herald https://www.plymouthherald.co.uk/news/
 
 # Local News Feeds
