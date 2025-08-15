@@ -1,0 +1,14 @@
+# Movie Playlist - YouTube Links
+# Each line should be a YouTube URL
+# The system will randomly select from these when using playRandomVideo()
+
+https://www.youtube.com/watch?v=dQw4w9WgXcQ
+https://www.youtube.com/watch?v=9bZkp7q19f0
+https://www.youtube.com/watch?v=kJQP7kiw5Fk
+https://www.youtube.com/watch?v=OPf0YbXqDm0
+https://www.youtube.com/watch?v=ZZ5LpwO-An4
+https://www.youtube.com/watch?v=Yykjpeu8NEo
+https://www.youtube.com/watch?v=hFZFjoX2cGg
+https://www.youtube.com/watch?v=9bZkp7q19f0
+https://www.youtube.com/watch?v=kJQP7kiw5Fk
+https://www.youtube.com/watch?v=OPf0YbXqDm0
