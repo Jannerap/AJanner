@@ -5552,17 +5552,23 @@ function toggleProjectMPanel() {
             // Show the panel
             panel.style.display = 'block';
             
-            // Initialize local visualizer if not already done
-            if (typeof window.LocalVisualizer !== 'undefined' && !window.LocalVisualizer.canvas) {
-                // Module system handles initialization
-                console.log('🎨 Module-based visualizer ready');
-            }
+            // Auto-load local presets when panel is opened
+            autoLoadLocalPresets();
             
-            logger.info('🎨 Local visualization panel opened');
+            logger.info('🎨 Music visualization panel opened');
         }
         
     } catch (error) {
         console.error('Failed to toggle ProjectM panel:', error);
+    }
+}
+
+// Auto-load local presets when panel is opened
+function autoLoadLocalPresets() {
+    // Check if presets are already loaded
+    if (butterchurnPresets.length === 0) {
+        console.log('🔄 Auto-loading local presets...');
+        loadLocalPresets();
     }
 }
 
@@ -5676,6 +5682,20 @@ let isVisualizerRunning = false;
 
 function startButterchurn() {
     try {
+        // Check if we have presets loaded
+        if (butterchurnPresets.length === 0) {
+            logger.warn('📋 No presets loaded. Click "Load Local Presets" first.');
+            const presetStatus = document.getElementById('presetStatus');
+            if (presetStatus) presetStatus.textContent = 'No presets loaded - click Load Local Presets';
+            return;
+        }
+        
+        // Stop any conflicting visualizers
+        if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.isRunning) {
+            window.LocalVisualizer.stop();
+            logger.info('🔄 Stopped LocalVisualizer to prevent conflicts');
+        }
+        
         // Prefer Butterchurn visualizer; initialize if needed
         if (!butterchurnViz) {
             initializeButterchurn();
@@ -5691,10 +5711,22 @@ function startButterchurn() {
         updatePresetInfo();
         updateCurrentPreset();
 
-        logger.info('🎬 Butterchurn visualizer start requested');
+        logger.info(`🎬 Butterchurn visualizer started with ${butterchurnPresets.length} presets`);
+        
+        // Update status
+        const presetStatus = document.getElementById('presetStatus');
+        if (presetStatus) presetStatus.textContent = `Running with ${butterchurnPresets.length} presets`;
+        
     } catch (error) {
         console.error('Failed to start Butterchurn visualizer:', error);
         logger.error('Failed to start Butterchurn visualizer: ' + error.message);
+        
+        // Try to fall back to local visualizer
+        if (typeof window.LocalVisualizer !== 'undefined') {
+            logger.info('🔄 Falling back to LocalVisualizer...');
+            window.LocalVisualizer.start();
+            isVisualizerRunning = true;
+        }
     }
 }
 
@@ -6457,3 +6489,117 @@ window.loadButterchurnPresetsDynamically = function() {
             });
     });
 };
+
+// ===== UNIFIED LOCAL PRESET LOADING SYSTEM =====
+async function loadLocalPresets() {
+    try {
+        console.log('🏠 Loading all available local presets...');
+        
+        // Update status
+        const presetStatus = document.getElementById('presetStatus');
+        if (presetStatus) presetStatus.textContent = 'Loading local presets...';
+        
+        // Stop any currently running visualizers to prevent conflicts
+        if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.isRunning) {
+            window.LocalVisualizer.stop();
+        }
+        if (butterchurnViz) {
+            butterchurnViz.disconnect();
+            butterchurnViz = null;
+        }
+        
+        // Clear existing presets
+        butterchurnPresets = [];
+        currentPresetIndex = 0;
+        
+        // Load all available preset files
+        const presetFiles = [
+            'presets/effects/aurora-borealis.js',
+            'presets/effects/fractal-universe.js',
+            'presets/effects/holographic-display.js',
+            'presets/effects/image-collage-visual.js',
+            'presets/effects/matrix-rain-visual.js',
+            'presets/effects/milklike-elephant.js',
+            'presets/effects/my-cool-effect.js',
+            'presets/effects/neon-pulse.js',
+            'presets/effects/neural-network.js',
+            'presets/effects/quantum-plasma-storm.js',
+            'presets/effects/rainbow-spiral-GL.js',
+            'presets/effects/solar-flare.js',
+            'presets/effects/spirograph-orbital.js'
+        ];
+        
+        console.log(`📁 Found ${presetFiles.length} preset files to load`);
+        
+        // Load each preset file
+        for (const presetFile of presetFiles) {
+            try {
+                const response = await fetch(presetFile);
+                if (response.ok) {
+                    const presetCode = await response.text();
+                    
+                    // Create a preset object
+                    const preset = {
+                        name: presetFile.split('/').pop().replace('.js', ''),
+                        file: presetFile,
+                        code: presetCode,
+                        type: 'local'
+                    };
+                    
+                    butterchurnPresets.push(preset);
+                    console.log(`✅ Loaded preset: ${preset.name}`);
+                } else {
+                    console.warn(`⚠️ Failed to load preset: ${presetFile} (${response.status})`);
+                }
+            } catch (error) {
+                console.warn(`⚠️ Error loading preset ${presetFile}:`, error.message);
+            }
+        }
+        
+        // Also check if LocalVisualizer has presets and merge them
+        if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.presets) {
+            console.log(`🔄 Merging ${window.LocalVisualizer.presets.length} LocalVisualizer presets`);
+            
+            window.LocalVisualizer.presets.forEach((preset, index) => {
+                const mergedPreset = {
+                    name: preset.name || `Local-${index + 1}`,
+                    source: 'LocalVisualizer',
+                    index: index,
+                    type: 'local-module'
+                };
+                butterchurnPresets.push(mergedPreset);
+            });
+        }
+        
+        console.log(`🎯 Total presets loaded: ${butterchurnPresets.length}`);
+        
+        // Update UI
+        updatePresetSelect();
+        updatePresetInfo();
+        
+        // Update status
+        if (presetStatus) {
+            presetStatus.textContent = `Loaded ${butterchurnPresets.length} local presets`;
+        }
+        
+        // Show success message
+        logger.success(`🏠 Successfully loaded ${butterchurnPresets.length} local presets`);
+        
+        // Auto-start visualizer if presets were loaded
+        if (butterchurnPresets.length > 0) {
+            startButterchurn();
+        }
+        
+    } catch (error) {
+        console.error('❌ Failed to load local presets:', error);
+        const presetStatus = document.getElementById('presetStatus');
+        if (presetStatus) {
+            presetStatus.textContent = 'Failed to load presets';
+        }
+        logger.error('Failed to load local presets: ' + error.message);
+    }
+}
+
+// Make functions globally available
+window.loadLocalPresets = loadLocalPresets;
+window.autoLoadLocalPresets = autoLoadLocalPresets;
