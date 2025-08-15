@@ -1,20 +1,20 @@
 [
   {
     "title": "New sci-fi series tops weekend streaming charts",
-    "url": "https://example.com/entertainment/sci-fi-series",
-    "source": "example.com",
+    "url": "https://www.ign.com/articles/alien-earth-review",
+    "source": "www.ign.com",
     "ts": 1733952000000
   },
   {
-    "title": "Award-winning actor announces surprise album",
-    "url": "https://example.com/entertainment/actor-album",
-    "source": "example.com",
+    "title": "Top TV Shows",
+    "url": "https://www.rottentomatoes.com/browse/movies_in_theaters/sort:popular",
+    "source": "rottentomatoes.com",
     "ts": 1733955600000
   },
   {
-    "title": "Critics rave about indie film debut",
-    "url": "https://example.com/entertainment/indie-film",
-    "source": "example.com",
+    "title": "Latest Film Releases",
+    "url": "https://www.rottentomatoes.com/browse/movies_in_theaters/sort:popular",
+    "source": "rottentomatoes.com",
     "ts": 1733959200000
   }
 ]
