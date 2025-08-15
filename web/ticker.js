@@ -171,7 +171,7 @@ class NewsTicker {
         const serviceBtn = this.container.querySelector('#news-service-btn');
         
         // Update button to show loading state
-        serviceBtn.textContent = '⚙️';
+        serviceBtn.textContent = '↻';
         serviceBtn.classList.add('loading');
         
         // Clear any existing headlines before switching
