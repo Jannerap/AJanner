@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs').promises;
 const { NewsSourceParser } = require('./fetchNews');
 
 const app = express();
@@ -59,6 +60,47 @@ app.get('/api/news', async (req, res) => {
             console.warn(`Failed to load ${service} headlines; returning empty list to avoid cross-service cache bleed:`, error.message);
             // Do NOT fall back to global cache; that mixes unrelated stories
             headlines = [];
+        }
+
+        // Always prepend front-section JSON items if available for this service
+        const serviceToFrontJson = {
+            news: ['news.json', 'News.json'],
+            local: ['local.json', 'Local.json'],
+            sports: ['sports.json', 'Sports.json'],
+            weather: ['weather.json', 'Weather.json']
+        };
+
+        async function loadFrontItems(candidates) {
+            for (const candidate of candidates || []) {
+                try {
+                    const fullPath = path.resolve(process.cwd(), candidate);
+                    const data = await fs.readFile(fullPath, 'utf8');
+                    const json = JSON.parse(data);
+                    const items = Array.isArray(json)
+                        ? json
+                        : (Array.isArray(json.items) ? json.items : (Array.isArray(json.tweets) ? json.tweets : []));
+                    const now = Date.now();
+                    return items.map(item => ({
+                        title: item.title || `${item.hashtag || ''} @${item.username || 'user'}: ${item.comment || item.text || ''}`.trim(),
+                        url: item.url || (item.username ? `https://twitter.com/${item.username}` : '#'),
+                        source: (item.source || service).toString(),
+                        ts: item.ts || now
+                    }));
+                } catch (e) {
+                    // Try next candidate
+                }
+            }
+            return [];
+        }
+
+        const frontItems = await loadFrontItems(serviceToFrontJson[service]);
+
+        if (frontItems.length > 0) {
+            // Deduplicate by title|url, keeping front items first
+            const key = h => `${(h.title || '').trim()}|${(h.url || '').trim()}`;
+            const seen = new Set(frontItems.map(key));
+            const rest = headlines.filter(h => !seen.has(key(h)));
+            headlines = [...frontItems, ...rest];
         }
         
         // Apply query filter if provided

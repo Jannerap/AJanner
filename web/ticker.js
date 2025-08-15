@@ -425,7 +425,48 @@ class NewsTicker {
                             }
                         };
 
-                        this.headlines = items.slice(0, this.options.maxHeadlines).map(mapItemToHeadline);
+                        // Prepend front-section JSON if available locally (news.json, weather.json, local.json, sports.json)
+                        const frontJsonCandidates = {
+                            news: ['news.json', 'News.json'],
+                            local: ['local.json', 'Local.json'],
+                            sports: ['sports.json', 'Sports.json'],
+                            weather: ['weather.json', 'Weather.json']
+                        };
+
+                        const tryLoadFrontJson = async () => {
+                            const candidates = frontJsonCandidates[this.currentService] || [];
+                            for (const candidate of candidates) {
+                                try {
+                                    let resFront = await fetch(candidate.startsWith('/') ? candidate : `/${candidate}`);
+                                    if (!resFront.ok) {
+                                        resFront = await fetch(candidate);
+                                    }
+                                    if (!resFront.ok) continue;
+                                    const jsonFront = await resFront.json();
+                                    const arr = Array.isArray(jsonFront) ? jsonFront : (Array.isArray(jsonFront.items) ? jsonFront.items : (Array.isArray(jsonFront.tweets) ? jsonFront.tweets : []));
+                                    const nowLocal = Date.now();
+                                    return arr.map(it => ({
+                                        source: (it.source || this.currentService).toString().toUpperCase(),
+                                        title: it.title || it.text || it.headline || `${it.hashtag || ''} @${it.username || 'user'}: ${it.comment || it.text || ''}`.trim(),
+                                        url: it.url || (it.username ? `https://twitter.com/${it.username}` : '#'),
+                                        ts: it.ts || nowLocal
+                                    }));
+                                } catch (_) {}
+                            }
+                            return [];
+                        };
+
+                        const front = await tryLoadFrontJson();
+
+                        const mapped = items.slice(0, this.options.maxHeadlines).map(mapItemToHeadline);
+                        if (front.length > 0) {
+                            const key = h => `${(h.title || '').trim()}|${(h.url || '').trim()}`;
+                            const seen = new Set(front.map(key));
+                            const rest = mapped.filter(h => !seen.has(key(h)));
+                            this.headlines = [...front, ...rest];
+                        } else {
+                            this.headlines = mapped;
+                        }
                         console.info(`Loaded ${this.headlines.length} items from ${jsonPath} (offline fallback)`);
                     } catch (err) {
                         console.warn('Failed to load JSON from directive, falling back to plain lines:', err.message);
@@ -453,7 +494,48 @@ class NewsTicker {
                             url: item.url || (item.username ? `https://twitter.com/${item.username}` : '#'),
                             ts: item.ts || now
                         });
-                        this.headlines = items.slice(0, this.options.maxHeadlines).map(mapItemToHeadline);
+
+                        // Try to prepend front-section JSON locally
+                        const frontJsonCandidates = {
+                            news: ['news.json', 'News.json'],
+                            local: ['local.json', 'Local.json'],
+                            sports: ['sports.json', 'Sports.json'],
+                            weather: ['weather.json', 'Weather.json']
+                        };
+
+                        const tryLoadFrontJson = async () => {
+                            const candidates = frontJsonCandidates[this.currentService] || [];
+                            for (const candidate of candidates) {
+                                try {
+                                    let resFront = await fetch(candidate.startsWith('/') ? candidate : `/${candidate}`);
+                                    if (!resFront.ok) {
+                                        resFront = await fetch(candidate);
+                                    }
+                                    if (!resFront.ok) continue;
+                                    const jsonFront = await resFront.json();
+                                    const arr = Array.isArray(jsonFront) ? jsonFront : (Array.isArray(jsonFront.items) ? jsonFront.items : (Array.isArray(jsonFront.tweets) ? jsonFront.tweets : []));
+                                    const nowLocal = Date.now();
+                                    return arr.map(it => ({
+                                        source: (it.source || this.currentService).toString().toUpperCase(),
+                                        title: it.title || it.text || it.headline || `${it.hashtag || ''} @${it.username || 'user'}: ${it.comment || it.text || ''}`.trim(),
+                                        url: it.url || (it.username ? `https://twitter.com/${it.username}` : '#'),
+                                        ts: it.ts || nowLocal
+                                    }));
+                                } catch (_) {}
+                            }
+                            return [];
+                        };
+
+                        const front = await tryLoadFrontJson();
+                        const mapped = items.slice(0, this.options.maxHeadlines).map(mapItemToHeadline);
+                        if (front.length > 0) {
+                            const key = h => `${(h.title || '').trim()}|${(h.url || '').trim()}`;
+                            const seen = new Set(front.map(key));
+                            const rest = mapped.filter(h => !seen.has(key(h)));
+                            this.headlines = [...front, ...rest];
+                        } else {
+                            this.headlines = mapped;
+                        }
                         console.info(`Loaded ${this.headlines.length} items from ${jsonPath} (offline fallback direct .json)`);
                     } catch (err) {
                         console.warn('Failed to load direct JSON line, will fall back to plain lines:', err.message);
@@ -464,12 +546,52 @@ class NewsTicker {
             // If not tweets or directive failed, fall back to plain lines
             if (!this.headlines || this.headlines.length === 0) {
                 const now = Date.now();
-                this.headlines = lines.slice(0, this.options.maxHeadlines).map(line => ({
+                const basic = lines.slice(0, this.options.maxHeadlines).map(line => ({
                     source: this.currentService.toUpperCase(),
                     title: line,
                     url: '#',
                     ts: now
                 }));
+
+                // Attempt to prepend front JSON even for plain lines fallback
+                try {
+                    const frontJsonCandidates = {
+                        news: ['news.json', 'News.json'],
+                        local: ['local.json', 'Local.json'],
+                        sports: ['sports.json', 'Sports.json'],
+                        weather: ['weather.json', 'Weather.json']
+                    };
+                    const candidates = frontJsonCandidates[this.currentService] || [];
+                    let front = [];
+                    for (const candidate of candidates) {
+                        try {
+                            let resFront = await fetch(candidate.startsWith('/') ? candidate : `/${candidate}`);
+                            if (!resFront.ok) {
+                                resFront = await fetch(candidate);
+                            }
+                            if (!resFront.ok) continue;
+                            const jsonFront = await resFront.json();
+                            const arr = Array.isArray(jsonFront) ? jsonFront : (Array.isArray(jsonFront.items) ? jsonFront.items : (Array.isArray(jsonFront.tweets) ? jsonFront.tweets : []));
+                            front = arr.map(it => ({
+                                source: (it.source || this.currentService).toString().toUpperCase(),
+                                title: it.title || it.text || it.headline || `${it.hashtag || ''} @${it.username || 'user'}: ${it.comment || it.text || ''}`.trim(),
+                                url: it.url || (it.username ? `https://twitter.com/${it.username}` : '#'),
+                                ts: it.ts || now
+                            }));
+                            break;
+                        } catch (_) {}
+                    }
+                    if (front.length > 0) {
+                        const key = h => `${(h.title || '').trim()}|${(h.url || '').trim()}`;
+                        const seen = new Set(front.map(key));
+                        const rest = basic.filter(h => !seen.has(key(h)));
+                        this.headlines = [...front, ...rest];
+                    } else {
+                        this.headlines = basic;
+                    }
+                } catch (_) {
+                    this.headlines = basic;
+                }
             }
 
             console.info(`Loaded ${this.headlines.length} fallback headlines from ${res.url.includes('backup-') ? backupFile : file}`);
