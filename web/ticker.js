@@ -1,9 +1,15 @@
 // News Ticker Module
 class NewsTicker {
     constructor(options = {}) {
+        const computedDefaultEndpoint = (typeof window !== 'undefined' && window.NEWS_API_ENDPOINT)
+            ? window.NEWS_API_ENDPOINT
+            : ((typeof location !== 'undefined' && location.hostname && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1')
+                ? 'https://ajanner.onrender.com/api/news'
+                : '/api/news');
+
         this.options = {
             target: options.target || '#news-ticker',
-            endpoint: options.endpoint || '/api/news',
+            endpoint: options.endpoint || computedDefaultEndpoint,
             speed: options.speed || 60, // pixels per second
             gap: options.gap || 48, // gap between headlines
             pauseOnHover: options.pauseOnHover !== false,
