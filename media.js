@@ -5580,14 +5580,23 @@ function closeProjectMPanel() {
             panel.style.display = 'none';
         }
         
-        // Hide control buttons
-        hideRetryButton();
-        hideLocalEffectButton();
+        // Hide control buttons - check if functions exist before calling
+        if (typeof hideRetryButton === 'function') {
+            hideRetryButton();
+        }
+        if (typeof hideLocalEffectButton === 'function') {
+            hideLocalEffectButton();
+        }
         
         logger.info('🎨 Visualization panel closed');
         
     } catch (error) {
         console.error('Failed to close ProjectM panel:', error);
+        // Ensure panel is hidden even if there's an error
+        const panel = document.getElementById('projectmPanel');
+        if (panel) {
+            panel.style.display = 'none';
+        }
     }
 }
 
@@ -5779,228 +5788,28 @@ function createButterchurnVisualizer() {
 
 function initializeLocalFallback() {
     try {
-        console.log('🔄 Initializing enhanced local fallback visualization system');
+        console.log('🔄 Initializing local visualization fallback...');
         
-        const canvas = document.getElementById('butterchurnCanvas');
-        if (!canvas) {
-            console.error('Canvas element not found');
-            return;
+        // Check if local visualizer is available
+        if (typeof window.LocalVisualizer !== 'undefined') {
+            console.log('✅ Local visualizer available as fallback');
+            const presetStatus = document.getElementById('presetStatus');
+            if (presetStatus) presetStatus.textContent = 'Using local visualizer';
+        } else {
+            console.log('⚠️ Local visualizer not available, showing error message');
+            const presetStatus = document.getElementById('presetStatus');
+            if (presetStatus) presetStatus.textContent = 'Visualization unavailable';
         }
         
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-            console.error('Canvas 2D context not available');
-            return;
+        // Show local effect button if available
+        if (typeof showLocalEffectButton === 'function') {
+            showLocalEffectButton();
         }
-        
-        // Safely update UI elements if they exist
-        const presetStatus = document.getElementById('presetStatus');
-        const currentPreset = document.getElementById('currentPreset');
-        const totalPresets = document.getElementById('totalPresets');
-        
-        if (presetStatus) presetStatus.textContent = 'Using enhanced local fallback';
-        if (currentPreset) currentPreset.textContent = 'Enhanced Local Fallback';
-        if (totalPresets) totalPresets.textContent = '5 Effects';
-        
-        // Create enhanced local fallback visualizer with multiple preset-like effects
-        const localViz = {
-            canvas: canvas,
-            ctx: ctx,
-            isRunning: false,
-            time: 0,
-            currentEffect: 0,
-            effects: [
-                'wavePattern',
-                'particleSystem', 
-                'circularRings',
-                'spectrumBars',
-                'geometricShapes'
-            ],
-            
-            start: function() {
-                this.isRunning = true;
-                this.render();
-            },
-            
-            stop: function() {
-                this.isRunning = false;
-            },
-            
-            nextEffect: function() {
-                this.currentEffect = (this.currentEffect + 1) % this.effects.length;
-                this.time = 0; // Reset time for new effect
-                console.log(`🎨 Local effect: ${this.effects[this.currentEffect]}`);
-            },
-            
-            render: function() {
-                if (!this.isRunning) return;
-                
-                const width = this.canvas.width;
-                const height = this.canvas.height;
-                
-                // Clear canvas with fade effect
-                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-                this.ctx.fillRect(0, 0, width, height);
-                
-                // Render current effect
-                switch(this.effects[this.currentEffect]) {
-                    case 'wavePattern':
-                        this.renderWavePattern(width, height);
-                        break;
-                    case 'particleSystem':
-                        this.renderParticleSystem(width, height);
-                        break;
-                    case 'circularRings':
-                        this.renderCircularRings(width, height);
-                        break;
-                    case 'spectrumBars':
-                        this.renderSpectrumBars(width, height);
-                        break;
-                    case 'geometricShapes':
-                        this.renderGeometricShapes(width, height);
-                        break;
-                }
-                
-                this.time += 0.02;
-                
-                // Auto-switch effects every 10 seconds
-                if (Math.floor(this.time * 50) % 500 === 0) {
-                    this.nextEffect();
-                }
-                
-                requestAnimationFrame(() => this.render());
-            },
-            
-            renderWavePattern: function(width, height) {
-                // Complex wave pattern with multiple frequencies
-                this.ctx.strokeStyle = `hsl(${(this.time * 50) % 360}, 70%, 60%)`;
-                this.ctx.lineWidth = 3;
-                this.ctx.beginPath();
-                
-                for (let x = 0; x < width; x += 2) {
-                    const progress = x / width;
-                    const wave1 = Math.sin(this.time + progress * Math.PI * 4) * 50;
-                    const wave2 = Math.sin(this.time * 0.7 + progress * Math.PI * 8) * 30;
-                    const wave3 = Math.sin(this.time * 0.5 + progress * Math.PI * 2) * 20;
-                    const wave4 = Math.sin(this.time * 0.3 + progress * Math.PI * 12) * 15;
-                    
-                    const y = height / 2 + wave1 + wave2 + wave3 + wave4;
-                    if (x === 0) {
-                        this.ctx.moveTo(x, y);
-                    } else {
-                        this.ctx.lineTo(x, y);
-                    }
-                }
-                
-                this.ctx.stroke();
-            },
-            
-            renderParticleSystem: function(width, height) {
-                // Dynamic particle system with physics-like behavior
-                for (let i = 0; i < 30; i++) {
-                    const angle = (i / 30) * Math.PI * 2 + this.time * 0.5;
-                    const radius = 80 + Math.sin(this.time * 2 + i * 0.5) * 60;
-                    const x = width / 2 + Math.cos(angle) * radius;
-                    const y = height / 2 + Math.sin(angle) * radius;
-                    const size = 4 + Math.sin(this.time * 3 + i * 0.3) * 4;
-                    
-                    // Add velocity effect
-                    const velocityX = Math.sin(this.time + i * 0.2) * 2;
-                    const velocityY = Math.cos(this.time + i * 0.2) * 2;
-                    
-                    this.ctx.fillStyle = `hsl(${(i * 12 + this.time * 30) % 360}, 80%, 70%)`;
-                    this.ctx.beginPath();
-                    this.ctx.arc(x + velocityX, y + velocityY, size, 0, Math.PI * 2);
-                    this.ctx.fill();
-                }
-            },
-            
-            renderCircularRings: function(width, height) {
-                // Expanding circular rings with ripple effects
-                const centerX = width / 2;
-                const centerY = height / 2;
-                
-                for (let ring = 0; ring < 5; ring++) {
-                    const ringRadius = (this.time * 20 + ring * 40) % (Math.max(width, height) / 2);
-                    const ringOpacity = Math.max(0, 1 - (ringRadius / (Math.max(width, height) / 2)));
-                    const ringWidth = 3 + Math.sin(this.time * 2 + ring) * 2;
-                    
-                    this.ctx.strokeStyle = `hsla(${(this.time * 100 + ring * 60) % 360}, 80%, 60%, ${ringOpacity})`;
-                    this.ctx.lineWidth = ringWidth;
-                    this.ctx.beginPath();
-                    this.ctx.arc(centerX, centerY, ringRadius, 0, Math.PI * 2);
-                    this.ctx.stroke();
-                }
-            },
-            
-            renderSpectrumBars: function(width, height) {
-                // Audio spectrum-like bars with wave motion
-                const barCount = 20;
-                const barWidth = width / barCount;
-                
-                for (let i = 0; i < barCount; i++) {
-                    const x = i * barWidth;
-                    const progress = i / barCount;
-                    
-                    const barHeight = 20 + Math.sin(this.time * 2 + progress * Math.PI * 4) * 80;
-                    const barY = height - barHeight;
-                    
-                    this.ctx.fillStyle = `hsl(${(progress * 360 + this.time * 100) % 360}, 80%, 60%)`;
-                    this.ctx.fillRect(x + 2, barY, barWidth - 4, barHeight);
-                }
-            },
-            
-            renderGeometricShapes: function(width, height) {
-                // Rotating geometric shapes with color evolution
-                const centerX = width / 2;
-                const centerY = height / 2;
-                const shapeCount = 6;
-                
-                for (let i = 0; i < shapeCount; i++) {
-                    const angle = (i / shapeCount) * Math.PI * 2 + this.time;
-                    const radius = 60 + Math.sin(this.time * 1.5 + i * 0.5) * 20;
-                    const x = centerX + Math.cos(angle) * radius;
-                    const y = centerY + Math.sin(angle) * radius;
-                    const size = 15 + Math.sin(this.time * 2 + i * 0.3) * 8;
-                    
-                    this.ctx.fillStyle = `hsl(${(i * 60 + this.time * 80) % 360}, 80%, 60%)`;
-                    this.ctx.beginPath();
-                    
-                    // Draw different shapes
-                    if (i % 3 === 0) {
-                        // Circle
-                        this.ctx.arc(x, y, size, 0, Math.PI * 2);
-                    } else if (i % 3 === 1) {
-                        // Square
-                        this.ctx.rect(x - size, y - size, size * 2, size * 2);
-                    } else {
-                        // Triangle
-                        this.ctx.moveTo(x, y - size);
-                        this.ctx.lineTo(x - size, y + size);
-                        this.ctx.lineTo(x + size, y + size);
-                        this.ctx.closePath();
-                    }
-                    
-                    this.ctx.fill();
-                }
-            }
-        };
-        
-        // Store local visualizer
-        window.localVisualizer = localViz;
-        
-        // Show local effect button
-        showLocalEffectButton();
-        
-        // Start local visualizer
-        localViz.start();
-        
-        logger.info('🎨 Enhanced local fallback visualization system initialized');
         
     } catch (error) {
-        console.error('Failed to initialize enhanced local fallback:', error);
+        console.error('Failed to initialize local fallback:', error);
         const presetStatus = document.getElementById('presetStatus');
-        if (presetStatus) presetStatus.textContent = 'All systems failed';
+        if (presetStatus) presetStatus.textContent = 'Fallback failed';
     }
 }
 
@@ -6472,6 +6281,13 @@ function showRetryButton() {
     }
 }
 
+function hideRetryButton() {
+    const retryBtn = document.getElementById('retryBtn');
+    if (retryBtn) {
+        retryBtn.style.display = 'none';
+    }
+}
+
 function nextLocalEffect() {
     if (window.localVisualizer) {
         window.localVisualizer.nextEffect();
@@ -6570,3 +6386,74 @@ function connectLocalVisualizerToAudio(audioElement) {
         console.error('Failed to connect local visualizer to audio:', error);
     }
 }
+
+// ===== BUTTERCHURN CDN LOADING FUNCTIONS =====
+window.loadButterchurnDynamically = function() {
+    return new Promise((resolve, reject) => {
+        console.log('🔄 Loading Butterchurn from CDN...');
+        
+        // Multiple CDN sources for redundancy
+        const cdnSources = [
+            'https://unpkg.com/butterchurn@latest/dist/butterchurn.min.js',
+            'https://cdn.jsdelivr.net/npm/butterchurn@latest/dist/butterchurn.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/butterchurn/0.3.0/butterchurn.min.js'
+        ];
+        
+        let currentSourceIndex = 0;
+        
+        function tryNextSource() {
+            if (currentSourceIndex >= cdnSources.length) {
+                reject(new Error('All CDN sources failed'));
+                return;
+            }
+            
+            const source = cdnSources[currentSourceIndex];
+            console.log(`🔄 Trying CDN source ${currentSourceIndex + 1}: ${source}`);
+            
+            const script = document.createElement('script');
+            script.src = source;
+            script.onload = () => {
+                console.log(`✅ Butterchurn loaded successfully from: ${source}`);
+                resolve();
+            };
+            script.onerror = () => {
+                console.warn(`⚠️ Failed to load from: ${source}`);
+                currentSourceIndex++;
+                tryNextSource();
+            };
+            
+            document.head.appendChild(script);
+        }
+        
+        tryNextSource();
+    });
+};
+
+window.loadButterchurnPresetsDynamically = function() {
+    return new Promise((resolve, reject) => {
+        console.log('🔄 Loading Butterchurn presets...');
+        
+        // Load preset files from your local presets directory
+        const presetPromises = [
+            fetch('presets/effects/aurora-borealis.js'),
+            fetch('presets/effects/fractal-universe.js'),
+            fetch('presets/effects/holographic-display.js'),
+            fetch('presets/effects/neon-pulse.js'),
+            fetch('presets/effects/quantum-plasma-storm.js'),
+            fetch('presets/effects/rainbow-spiral-GL.js'),
+            fetch('presets/effects/solar-flare.js'),
+            fetch('presets/effects/spirograph-orbital.js')
+        ];
+        
+        Promise.allSettled(presetPromises)
+            .then(results => {
+                const successful = results.filter(r => r.status === 'fulfilled').length;
+                console.log(`✅ Loaded ${successful} preset files`);
+                resolve();
+            })
+            .catch(error => {
+                console.warn('⚠️ Some presets failed to load:', error);
+                resolve(); // Don't fail completely if presets fail
+            });
+    });
+};
