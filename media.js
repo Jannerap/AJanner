@@ -5732,48 +5732,37 @@ function startButterchurn() {
 
 function initializeButterchurn() {
     try {
-        // Check if Butterchurn is already available
+        // If already available, proceed
         if (typeof butterchurn !== 'undefined' && typeof butterchurn.createVisualizer === 'function') {
             console.log('✅ Butterchurn already available, creating visualizer...');
-            createButterchurnVisualizer();
+            // Ensure presets are loaded before creating and populating
+            window.loadButterchurnPresetsDynamically()
+                .then(() => {
+                    const presetStatus = document.getElementById('presetStatus');
+                    if (presetStatus) presetStatus.textContent = 'Presets loaded';
+                    createButterchurnVisualizer();
+                })
+                .catch((e) => {
+                    console.warn('⚠️ Could not load presets, continuing with fallback preset:', e.message);
+                    createButterchurnVisualizer();
+                });
             return;
         }
-        
-        // Use dynamic loading system
-        console.log('🔄 Loading Butterchurn dynamically...');
         
         const presetStatus = document.getElementById('presetStatus');
         if (presetStatus) presetStatus.textContent = 'Loading Butterchurn from CDN...';
         
-        // Load Butterchurn core first
+        // Load core, then presets, then create
         window.loadButterchurnDynamically()
+            .then(() => window.loadButterchurnPresetsDynamically())
             .then(() => {
-                console.log('✅ Butterchurn core loaded successfully');
-                
-                // Verify Butterchurn is available
-                if (typeof butterchurn === 'undefined') {
-                    throw new Error('Butterchurn loaded but object not available');
-                }
-                
-                if (typeof butterchurn.createVisualizer !== 'function') {
-                    throw new Error('Butterchurn.createVisualizer method not found');
-                }
-                
-                if (presetStatus) presetStatus.textContent = 'Butterchurn loaded successfully';
-                
-                // Create visualizer
+                if (presetStatus) presetStatus.textContent = 'Butterchurn + presets loaded';
                 createButterchurnVisualizer();
             })
             .catch((error) => {
-                console.error('❌ Failed to load Butterchurn:', error);
-                if (presetStatus) presetStatus.textContent = 'CDN loading failed - using local fallback';
-                
-                // Show retry button
-                if (typeof showRetryButton === 'function') {
-                    showRetryButton();
-                }
-                
-                // Fallback to local visualization system
+                console.error('❌ Failed to load Butterchurn or presets:', error);
+                if (presetStatus) presetStatus.textContent = 'CDN failed - using local visualizer';
+                if (typeof showRetryButton === 'function') showRetryButton();
                 initializeLocalFallback();
             });
         
@@ -5781,8 +5770,6 @@ function initializeButterchurn() {
         console.error('Failed to initialize Butterchurn:', error);
         const presetStatus = document.getElementById('presetStatus');
         if (presetStatus) presetStatus.textContent = 'Initialization failed - using local fallback';
-        
-        // Fallback to local visualization system
         initializeLocalFallback();
     }
 }
@@ -5946,15 +5933,23 @@ function loadButterchurnScripts() {
 
 function connectCurrentAudio() {
     if (!butterchurnCtx || !butterchurnAnalyser) return;
-    
     try {
-        // Connect to current audio element if playing
-        if (window.currentAudio && !window.currentAudio.paused) {
-            const source = butterchurnCtx.createMediaElementSource(window.currentAudio);
-            const gain = butterchurnCtx.createGain();
-            source.connect(gain);
-            gain.connect(butterchurnAnalyser);
-            gain.connect(butterchurnCtx.destination); // Route to speakers
+        if (window.currentAudio) {
+            // Resume context if suspended
+            if (butterchurnCtx.state === 'suspended') {
+                butterchurnCtx.resume().catch(() => {});
+            }
+            // Reuse existing source if bound to same element
+            if (!butterchurnMediaSource || butterchurnMediaSource.mediaElement !== window.currentAudio) {
+                // Disconnect previous
+                try { butterchurnMediaSource && butterchurnMediaSource.disconnect(); } catch {}
+                const src = butterchurnCtx.createMediaElementSource(window.currentAudio);
+                butterchurnMediaSource = src;
+                const gain = butterchurnCtx.createGain();
+                src.connect(gain);
+                gain.connect(butterchurnAnalyser);
+                gain.connect(butterchurnCtx.destination);
+            }
             logger.info('🎵 Connected to current audio');
         }
     } catch (error) {
@@ -6505,30 +6500,46 @@ window.loadButterchurnDynamically = function() {
 
 window.loadButterchurnPresetsDynamically = function() {
     return new Promise((resolve, reject) => {
-        console.log('🔄 Loading Butterchurn presets...');
+        console.log('🔄 Loading Butterchurn presets (CDN)...');
         
-        // Load preset files from your local presets directory
-        const presetPromises = [
-            fetch('presets/effects/aurora-borealis.js'),
-            fetch('presets/effects/fractal-universe.js'),
-            fetch('presets/effects/holographic-display.js'),
-            fetch('presets/effects/neon-pulse.js'),
-            fetch('presets/effects/quantum-plasma-storm.js'),
-            fetch('presets/effects/rainbow-spiral-GL.js'),
-            fetch('presets/effects/solar-flare.js'),
-            fetch('presets/effects/spirograph-orbital.js')
+        const presetSources = [
+            'https://unpkg.com/butterchurn-presets@2.4.7/dist/butterchurn-presets.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/butterchurn-presets/2.4.7/butterchurn-presets.min.js',
+            'https://cdn.jsdelivr.net/npm/butterchurn-presets@2.4.7/dist/butterchurn-presets.min.js'
         ];
         
-        Promise.allSettled(presetPromises)
-            .then(results => {
-                const successful = results.filter(r => r.status === 'fulfilled').length;
-                console.log(`✅ Loaded ${successful} preset files`);
-                resolve();
-            })
-            .catch(error => {
-                console.warn('⚠️ Some presets failed to load:', error);
-                resolve(); // Don't fail completely if presets fail
-            });
+        let idx = 0;
+        
+        function tryNext() {
+            if (idx >= presetSources.length) {
+                return reject(new Error('All butterchurn-presets CDN sources failed'));
+            }
+            const src = presetSources[idx];
+            console.log(`🔄 Trying presets CDN ${idx + 1}: ${src}`);
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = () => {
+                // Verify global is present
+                setTimeout(() => {
+                    if (window.butterchurnPresets && typeof window.butterchurnPresets.getPresets === 'function') {
+                        console.log('✅ butterchurn-presets loaded');
+                        resolve();
+                    } else {
+                        console.warn('⚠️ Presets script loaded but API missing, trying next');
+                        idx += 1;
+                        tryNext();
+                    }
+                }, 100);
+            };
+            script.onerror = () => {
+                console.warn(`⚠️ Failed to load presets from ${src}`);
+                idx += 1;
+                tryNext();
+            };
+            document.head.appendChild(script);
+        }
+        
+        tryNext();
     });
 };
 
