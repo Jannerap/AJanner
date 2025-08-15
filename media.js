@@ -5681,96 +5681,33 @@ let autoPresetTimer = null;
 let isVisualizerRunning = false;
 
 function startButterchurn() {
+    // Temporarily disable Butterchurn; use LocalVisualizer only
     try {
-        // Check if we have presets loaded
-        if (butterchurnPresets.length === 0) {
-            logger.warn('📋 No presets loaded. Click "Load Local Presets" first.');
-            const presetStatus = document.getElementById('presetStatus');
-            if (presetStatus) presetStatus.textContent = 'No presets loaded - click Load Local Presets';
-            return;
-        }
-        
-        // Stop any conflicting visualizers
-        if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.isRunning) {
-            window.LocalVisualizer.stop();
-            logger.info('🔄 Stopped LocalVisualizer to prevent conflicts');
-        }
-        
-        // Prefer Butterchurn visualizer; initialize if needed
-        if (!butterchurnViz) {
-            initializeButterchurn();
-        }
-
-        // Start render loop and connect audio
-        isVisualizerRunning = true;
-        connectCurrentAudio();
-        startRenderLoop();
-
-        // Update preset UI
-        updatePresetSelect();
-        updatePresetInfo();
-        updateCurrentPreset();
-
-        logger.info(`🎬 Butterchurn visualizer started with ${butterchurnPresets.length} presets`);
-        
-        // Update status
         const presetStatus = document.getElementById('presetStatus');
-        if (presetStatus) presetStatus.textContent = `Running with ${butterchurnPresets.length} presets`;
-        
-    } catch (error) {
-        console.error('Failed to start Butterchurn visualizer:', error);
-        logger.error('Failed to start Butterchurn visualizer: ' + error.message);
-        
-        // Try to fall back to local visualizer
+        if (presetStatus) presetStatus.textContent = 'Using local presets only';
         if (typeof window.LocalVisualizer !== 'undefined') {
-            logger.info('🔄 Falling back to LocalVisualizer...');
             window.LocalVisualizer.start();
             isVisualizerRunning = true;
+            updatePresetSelect();
+            updatePresetInfo();
+            updateCurrentPreset();
+            logger.info('🎨 Started LocalVisualizer (Butterchurn disabled)');
         }
+    } catch (e) {
+        console.error('Failed to start LocalVisualizer:', e);
     }
 }
 
 function initializeButterchurn() {
-    try {
-        // If already available, proceed
-        if (typeof butterchurn !== 'undefined' && typeof butterchurn.createVisualizer === 'function') {
-            console.log('✅ Butterchurn already available, creating visualizer...');
-            // Ensure presets are loaded before creating and populating
-            window.loadButterchurnPresetsDynamically()
-                .then(() => {
-                    const presetStatus = document.getElementById('presetStatus');
-                    if (presetStatus) presetStatus.textContent = 'Presets loaded';
-                    createButterchurnVisualizer();
-                })
-                .catch((e) => {
-                    console.warn('⚠️ Could not load presets, continuing with fallback preset:', e.message);
-                    createButterchurnVisualizer();
-                });
-            return;
-        }
-        
-        const presetStatus = document.getElementById('presetStatus');
-        if (presetStatus) presetStatus.textContent = 'Loading Butterchurn from CDN...';
-        
-        // Load core, then presets, then create
-        window.loadButterchurnDynamically()
-            .then(() => window.loadButterchurnPresetsDynamically())
-            .then(() => {
-                if (presetStatus) presetStatus.textContent = 'Butterchurn + presets loaded';
-                createButterchurnVisualizer();
-            })
-            .catch((error) => {
-                console.error('❌ Failed to load Butterchurn or presets:', error);
-                if (presetStatus) presetStatus.textContent = 'CDN failed - using local visualizer';
-                if (typeof showRetryButton === 'function') showRetryButton();
-                initializeLocalFallback();
-            });
-        
-    } catch (error) {
-        console.error('Failed to initialize Butterchurn:', error);
-        const presetStatus = document.getElementById('presetStatus');
-        if (presetStatus) presetStatus.textContent = 'Initialization failed - using local fallback';
-        initializeLocalFallback();
+    // Disabled; always use local presets
+    const presetStatus = document.getElementById('presetStatus');
+    if (presetStatus) presetStatus.textContent = 'Butterchurn disabled - using local presets';
+    if (typeof window.LocalVisualizer !== 'undefined') {
+        window.LocalVisualizer.start();
+        isVisualizerRunning = true;
+        updatePresetSelect();
+        updatePresetInfo();
+        updateCurrentPreset();
     }
 }
 
@@ -6655,28 +6592,10 @@ async function loadLocalPresets() {
 
 // Retry Butterchurn loading
 function retryButterchurn() {
-    try {
-        console.log('🔄 Retrying Butterchurn loading...');
-        
-        const presetStatus = document.getElementById('presetStatus');
-        if (presetStatus) presetStatus.textContent = 'Retrying Butterchurn...';
-        
-        // Hide retry button
-        if (typeof hideRetryButton === 'function') {
-            hideRetryButton();
-        }
-        
-        // Try to initialize Butterchurn again
-        initializeButterchurn();
-        
-    } catch (error) {
-        console.error('Failed to retry Butterchurn:', error);
-        const presetStatus = document.getElementById('presetStatus');
-        if (presetStatus) presetStatus.textContent = 'Retry failed - using local fallback';
-        
-        // Fallback to local visualizer
-        initializeLocalFallback();
-    }
+    // Disabled; keep using local presets only
+    const presetStatus = document.getElementById('presetStatus');
+    if (presetStatus) presetStatus.textContent = 'Butterchurn disabled - using local presets';
+    if (typeof hideRetryButton === 'function') hideRetryButton();
 }
 
 // Make functions globally available
