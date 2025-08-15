@@ -534,7 +534,13 @@ function clearDrawingVisually() {
       
       if (loadedImages[src] && loadedImages[src].complete) {
         try {
-          ctx.drawImage(loadedImages[src], -a.radius, -a.radius, a.radius * 2, a.radius * 2);
+          const img = loadedImages[src];
+          const maxW = a.radius * 2;
+          const maxH = a.radius * 2;
+          const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+          const drawW = img.naturalWidth * scale;
+          const drawH = img.naturalHeight * scale;
+          ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
         } catch (error) {
           logger.error("❌ Error drawing image for bubble:", a.title, "Error:", error);
           a.image = null;
@@ -672,7 +678,13 @@ function redrawBackgroundAndBubblesNoEffects() {
       
       if (loadedImages[src] && loadedImages[src].complete) {
         try {
-          ctx.drawImage(loadedImages[src], -a.radius, -a.radius, a.radius * 2, a.radius * 2);
+          const img = loadedImages[src];
+          const maxW = a.radius * 2;
+          const maxH = a.radius * 2;
+          const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+          const drawW = img.naturalWidth * scale;
+          const drawH = img.naturalHeight * scale;
+          ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
         } catch (error) {
           logger.error("❌ Error drawing image for bubble:", a.title, "Error:", error);
           a.image = null;
@@ -821,7 +833,13 @@ function clearDrawingOnly() {
       
       if (loadedImages[src] && loadedImages[src].complete) {
         try {
-          ctx.drawImage(loadedImages[src], -a.radius, -a.radius, a.radius * 2, a.radius * 2);
+          const img = loadedImages[src];
+          const maxW = a.radius * 2;
+          const maxH = a.radius * 2;
+          const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+          const drawW = img.naturalWidth * scale;
+          const drawH = img.naturalHeight * scale;
+          ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
         } catch (error) {
           logger.error("❌ Error drawing image for bubble:", a.title, "Error:", error);
           a.image = null;
@@ -1066,7 +1084,13 @@ function startExistingDrawingsFlash() {
         
         if (loadedImages[src] && loadedImages[src].complete) {
           try {
-            ctx.drawImage(loadedImages[src], -a.radius, -a.radius, a.radius * 2, a.radius * 2);
+            const img = loadedImages[src];
+            const maxW = a.radius * 2;
+            const maxH = a.radius * 2;
+            const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+            const drawW = img.naturalWidth * scale;
+            const drawH = img.naturalHeight * scale;
+            ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
           } catch (error) {
             logger.error("❌ Error drawing image for bubble:", { title: a.title, error: error });
             a.image = null;
@@ -1310,7 +1334,13 @@ function startDrawingGlow() {
         
         if (loadedImages[src] && loadedImages[src].complete) {
           try {
-            ctx.drawImage(loadedImages[src], -a.radius, -a.radius, a.radius * 2, a.radius * 2);
+            const img = loadedImages[src];
+            const maxW = a.radius * 2;
+            const maxH = a.radius * 2;
+            const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+            const drawW = img.naturalWidth * scale;
+            const drawH = img.naturalHeight * scale;
+            ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
           } catch (error) {
             logger.error("❌ Error drawing image for bubble:", { title: a.title, error: error });
             a.image = null;
@@ -1577,7 +1607,13 @@ function smoothLastLine() {
       const src = a.image;
       if (loadedImages[src] && loadedImages[src].complete) {
         try {
-          ctx.drawImage(loadedImages[src], -a.radius, -a.radius, a.radius * 2, a.radius * 2);
+          const img = loadedImages[src];
+          const maxW = a.radius * 2;
+          const maxH = a.radius * 2;
+          const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+          const drawW = img.naturalWidth * scale;
+          const drawH = img.naturalHeight * scale;
+          ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
         } catch (error) {
           logger.error("❌ Error drawing image for bubble:", a.title, "Error:", error);
           a.image = null;
@@ -2371,8 +2407,31 @@ function endIdeasCooldown() {
 
 
 function resize() {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
+  // High-DPI rendering for crisper images (Retina/4K etc.)
+  const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+  const cssW = window.innerWidth;
+  const cssH = window.innerHeight;
+
+  // Set CSS size for layout
+  canvas.style.width = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+
+  // Set backing store size for resolution
+  canvas.width = Math.floor(cssW * dpr);
+  canvas.height = Math.floor(cssH * dpr);
+
+  // Use logical coordinates in CSS pixels
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  // Prefer high quality resampling when scaling images
+  try {
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+  } catch (_) {}
+
+  // App-level logical width/height remain in CSS pixels
+  width = cssW;
+  height = cssH;
 }
 
 // ===== IDEA MANAGEMENT =====
@@ -4376,7 +4435,18 @@ function draw() {
       
       if (loadedImages[src] && loadedImages[src].complete) {
         try {
-          ctx.drawImage(loadedImages[src], -a.radius, -a.radius, a.radius * 2, a.radius * 2);
+          const img = loadedImages[src];
+          // Preserve the original aspect ratio of the uploaded PNG/JPG
+          const maxW = a.radius * 2;
+          const maxH = a.radius * 2;
+          // Scale to fit within the bubble diameter WITHOUT stretching
+          const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+          const drawW = img.naturalWidth * scale;
+          const drawH = img.naturalHeight * scale;
+          // Center the image within the bubble area
+          const drawX = -drawW / 2;
+          const drawY = -drawH / 2;
+          ctx.drawImage(img, drawX, drawY, drawW, drawH);
         } catch (error) {
           logger.error("❌ Error drawing image for bubble:", { title: a.title, error: error });
           a.image = null;
@@ -5569,6 +5639,41 @@ function setupEventListeners() {
         break;
     }
   });
+}
+
+// ===== DESCRIPTION INPUT MODAL HANDLERS =====
+function openDescriptionInput() {
+  try {
+    const modal = document.getElementById('descriptionInputModal');
+    const textarea = document.getElementById('descriptionInputText');
+    const panelDesc = document.getElementById('description');
+    if (!modal || !textarea || !panelDesc) return;
+    // Seed with current description (from selected idea if present, else from panel)
+    const current = (typeof selectedIdea !== 'undefined' && selectedIdea && typeof selectedIdea.description === 'string')
+      ? selectedIdea.description
+      : panelDesc.value || '';
+    textarea.value = current;
+    modal.style.display = 'flex';
+  } catch (_) {}
+}
+
+function closeDescriptionInput() {
+  const modal = document.getElementById('descriptionInputModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function saveDescriptionInput() {
+  const textarea = document.getElementById('descriptionInputText');
+  const panelDesc = document.getElementById('description');
+  if (!textarea || !panelDesc) return;
+  const newText = textarea.value;
+  // Update selected idea if present
+  if (typeof selectedIdea !== 'undefined' && selectedIdea) {
+    selectedIdea.description = newText;
+  }
+  // Sync panel description field
+  panelDesc.value = newText;
+  closeDescriptionInput();
 }
 
 function resizePanelToggle() {
