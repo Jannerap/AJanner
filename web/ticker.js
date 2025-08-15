@@ -234,18 +234,39 @@ class NewsTicker {
             console.log(`✅ Received ${headlines.length} headlines for ${this.currentService}`);
             
             // Sort headlines with Plymouth sources first, then by timestamp (most recent first)
-            // Filter out Plymouth Argyle-only sports items when viewing local service
-            const filtered = (this.currentService === 'local')
-                ? headlines.filter(h => {
-                    const s = (h.source || '').toLowerCase();
-                    const t = (h.title || '').toLowerCase();
-                    // Keep Plymouth Herald local news, but drop obvious sports/argyle-only
-                    const isSports = t.includes('argyle') || t.includes('sport') || t.includes('football');
-                    const isHerald = s.includes('plymouthherald');
-                    // allow Herald non-sports; drop sports; keep other local sources
-                    return !(isHerald && isSports);
-                })
-                : headlines;
+            // Filter and prioritize for 'local' to avoid Herald block of older items at the top
+            const filtered = (this.currentService === 'local') ? (() => {
+                const list = headlines.filter(h => {
+                    const src = (h.source || '').toLowerCase();
+                    const title = (h.title || '').toLowerCase();
+                    // Drop manual placeholder and obvious sports
+                    if (src === 'manual') return false;
+                    const isHerald = src.includes('plymouthherald');
+                    const isSports = title.includes('argyle') || title.includes('sport') || title.includes('football');
+                    if (isHerald && isSports) return false;
+                    return true;
+                });
+
+                const getPriority = (h) => {
+                    const src = (h.source || '').toLowerCase();
+                    const url = (h.url || '').toLowerCase();
+                    const isHerald = src.includes('plymouthherald');
+                    if (!isHerald) return 0; // non-Herald first
+                    // Strict Herald local paths next
+                    const heraldStrictLocal = url.includes('/news/plymouth-news/') || url.includes('/news/local-news/');
+                    return heraldStrictLocal ? 1 : 2; // other Herald last
+                };
+
+                return list.sort((a, b) => {
+                    // Sports page keeps its own priority elsewhere
+                    if (this.currentService === 'sports') return 0;
+                    const pa = getPriority(a);
+                    const pb = getPriority(b);
+                    if (pa !== pb) return pa - pb;
+                    // Within same group, prefer most recent
+                    return (b.ts || 0) - (a.ts || 0);
+                });
+            })() : headlines;
 
             this.headlines = filtered
                 .sort((a, b) => {
@@ -255,12 +276,10 @@ class NewsTicker {
                                           (a.source || '').toLowerCase().includes('pafc');
                         const bIsPlymouth = (b.source || '').toLowerCase().includes('plymouth') || 
                                           (b.source || '').toLowerCase().includes('pafc');
-                        
                         if (aIsPlymouth && !bIsPlymouth) return -1;
                         if (!aIsPlymouth && bIsPlymouth) return 1;
                     }
-                    
-                    // Priority 2: Most recent first
+                    // Fallback: recency
                     return (b.ts || 0) - (a.ts || 0);
                 })
                 .slice(0, this.options.maxHeadlines);
