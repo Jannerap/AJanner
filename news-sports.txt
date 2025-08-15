@@ -1,11 +1,11 @@
-# Sports News Sources
-# Plymouth Argyle News (Auto-scraped from website)
+# Sports News Sources - Plymouth Priority
+# Plymouth Argyle News (Auto-scraped from website) - HIGHEST PRIORITY
 plymouth-argyle https://www.pafc.co.uk/news
 
-# Plymouth Herald Football News (Auto-scraped from website)
+# Plymouth Herald Football News (Auto-scraped from website) - HIGH PRIORITY
 plymouth-herald-sports https://www.plymouthherald.co.uk/sport/football/
 
-# General Sports Feeds
+# General Sports Feeds - LOWER PRIORITY
 feed https://www.bbc.co.uk/sport/rss.xml
 feed https://www.skysports.com/rss/0,20514,11661,00.xml
 feed https://www.espn.com/espn/rss/news

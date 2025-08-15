@@ -654,10 +654,34 @@ class NewsSourceParser {
             }
         }
 
-        // Sort by timestamp (newest first) and limit
-        return allHeadlines
-            .sort((a, b) => b.ts - a.ts)
-            .slice(0, opts.maxHeadlines || MAX_HEADLINES);
+        // Sort headlines with Plymouth sources first, then by timestamp
+        console.log('🔄 Sorting headlines with Plymouth priority...');
+        const sortedHeadlines = allHeadlines.sort((a, b) => {
+            // Priority 1: Plymouth sources first
+            const aIsPlymouth = a.source.includes('plymouth') || a.source.includes('pafc');
+            const bIsPlymouth = b.source.includes('plymouth') || b.source.includes('pafc');
+            
+            if (aIsPlymouth && !bIsPlymouth) {
+                console.log(`✅ Prioritizing Plymouth source: ${a.source} over ${b.source}`);
+                return -1;
+            }
+            if (!aIsPlymouth && bIsPlymouth) {
+                console.log(`✅ Prioritizing Plymouth source: ${b.source} over ${a.source}`);
+                return 1;
+            }
+            
+            // Priority 2: Most recent first (for same priority level)
+            return (b.ts || 0) - (a.ts || 0);
+        });
+
+        console.log(`📊 Final headline order (first 5):`);
+        sortedHeadlines.slice(0, 5).forEach((h, i) => {
+            const isPlymouth = h.source.includes('plymouth') || h.source.includes('pafc');
+            console.log(`  ${i + 1}. ${h.title} [${h.source}] ${isPlymouth ? '🏠 PLYMOUTH' : '🌍 OTHER'}`);
+        });
+
+        // Limit to max headlines
+        return sortedHeadlines.slice(0, opts.maxHeadlines || MAX_HEADLINES);
     }
 
     async saveHeadlines(headlines) {

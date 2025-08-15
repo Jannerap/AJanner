@@ -233,9 +233,23 @@ class NewsTicker {
             const headlines = await response.json();
             console.log(`✅ Received ${headlines.length} headlines for ${this.currentService}`);
             
-            // Sort headlines by timestamp (most recent first) and take the limit
+            // Sort headlines with Plymouth sources first, then by timestamp (most recent first)
             this.headlines = headlines
-                .sort((a, b) => (b.ts || 0) - (a.ts || 0))
+                .sort((a, b) => {
+                    // Priority 1: Plymouth sources first (for sports service)
+                    if (this.currentService === 'sports') {
+                        const aIsPlymouth = (a.source || '').toLowerCase().includes('plymouth') || 
+                                          (a.source || '').toLowerCase().includes('pafc');
+                        const bIsPlymouth = (b.source || '').toLowerCase().includes('plymouth') || 
+                                          (b.source || '').toLowerCase().includes('pafc');
+                        
+                        if (aIsPlymouth && !bIsPlymouth) return -1;
+                        if (!aIsPlymouth && bIsPlymouth) return 1;
+                    }
+                    
+                    // Priority 2: Most recent first
+                    return (b.ts || 0) - (a.ts || 0);
+                })
                 .slice(0, this.options.maxHeadlines);
             
             this.offlineMode = false;
