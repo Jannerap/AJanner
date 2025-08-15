@@ -5733,7 +5733,8 @@ function startButterchurn() {
 function initializeButterchurn() {
     try {
         // Check if Butterchurn is already available
-        if (typeof butterchurn !== 'undefined') {
+        if (typeof butterchurn !== 'undefined' && typeof butterchurn.createVisualizer === 'function') {
+            console.log('✅ Butterchurn already available, creating visualizer...');
             createButterchurnVisualizer();
             return;
         }
@@ -5742,25 +5743,36 @@ function initializeButterchurn() {
         console.log('🔄 Loading Butterchurn dynamically...');
         
         const presetStatus = document.getElementById('presetStatus');
-        if (presetStatus) presetStatus.textContent = 'Loading Butterchurn...';
+        if (presetStatus) presetStatus.textContent = 'Loading Butterchurn from CDN...';
         
         // Load Butterchurn core first
         window.loadButterchurnDynamically()
             .then(() => {
                 console.log('✅ Butterchurn core loaded successfully');
-                // Then load presets
-                return window.loadButterchurnPresetsDynamically();
-            })
-            .then(() => {
-                console.log('✅ Butterchurn presets loaded successfully');
-                if (presetStatus) presetStatus.textContent = 'Butterchurn loaded';
+                
+                // Verify Butterchurn is available
+                if (typeof butterchurn === 'undefined') {
+                    throw new Error('Butterchurn loaded but object not available');
+                }
+                
+                if (typeof butterchurn.createVisualizer !== 'function') {
+                    throw new Error('Butterchurn.createVisualizer method not found');
+                }
+                
+                if (presetStatus) presetStatus.textContent = 'Butterchurn loaded successfully';
+                
                 // Create visualizer
                 createButterchurnVisualizer();
             })
             .catch((error) => {
                 console.error('❌ Failed to load Butterchurn:', error);
-                if (presetStatus) presetStatus.textContent = 'CDN loading failed';
-                showRetryButton();
+                if (presetStatus) presetStatus.textContent = 'CDN loading failed - using local fallback';
+                
+                // Show retry button
+                if (typeof showRetryButton === 'function') {
+                    showRetryButton();
+                }
+                
                 // Fallback to local visualization system
                 initializeLocalFallback();
             });
@@ -5768,7 +5780,9 @@ function initializeButterchurn() {
     } catch (error) {
         console.error('Failed to initialize Butterchurn:', error);
         const presetStatus = document.getElementById('presetStatus');
-        if (presetStatus) presetStatus.textContent = 'Initialization failed';
+        if (presetStatus) presetStatus.textContent = 'Initialization failed - using local fallback';
+        
+        // Fallback to local visualization system
         initializeLocalFallback();
     }
 }
@@ -5779,6 +5793,18 @@ function createButterchurnVisualizer() {
         if (!canvas) {
             throw new Error('Canvas not found');
         }
+        
+        // Check if Butterchurn is actually available
+        if (typeof butterchurn === 'undefined') {
+            throw new Error('Butterchurn library not loaded');
+        }
+        
+        // Check if the createVisualizer method exists
+        if (typeof butterchurn.createVisualizer !== 'function') {
+            throw new Error('Butterchurn.createVisualizer is not a function - version compatibility issue');
+        }
+        
+        console.log('🎨 Creating Butterchurn visualizer with:', butterchurn);
         
         // Create audio context
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -5813,7 +5839,10 @@ function createButterchurnVisualizer() {
         
     } catch (error) {
         console.error('Failed to create Butterchurn visualizer:', error);
-        document.getElementById('presetStatus').textContent = 'Visualizer creation failed';
+        const presetStatus = document.getElementById('presetStatus');
+        if (presetStatus) presetStatus.textContent = 'Visualizer creation failed - using fallback';
+        
+        // Try to use local visualizer as fallback
         initializeLocalFallback();
     }
 }
@@ -6424,11 +6453,13 @@ window.loadButterchurnDynamically = function() {
     return new Promise((resolve, reject) => {
         console.log('🔄 Loading Butterchurn from CDN...');
         
-        // Multiple CDN sources for redundancy
+        // Multiple CDN sources with specific versions for compatibility
         const cdnSources = [
+            'https://unpkg.com/butterchurn@2.6.7/dist/butterchurn.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/butterchurn/2.6.7/butterchurn.min.js',
+            'https://cdn.jsdelivr.net/npm/butterchurn@2.6.7/dist/butterchurn.min.js',
             'https://unpkg.com/butterchurn@latest/dist/butterchurn.min.js',
-            'https://cdn.jsdelivr.net/npm/butterchurn@latest/dist/butterchurn.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/butterchurn/0.3.0/butterchurn.min.js'
+            'https://cdn.jsdelivr.net/npm/butterchurn@latest/dist/butterchurn.min.js'
         ];
         
         let currentSourceIndex = 0;
@@ -6446,7 +6477,18 @@ window.loadButterchurnDynamically = function() {
             script.src = source;
             script.onload = () => {
                 console.log(`✅ Butterchurn loaded successfully from: ${source}`);
-                resolve();
+                
+                // Wait a moment for the script to initialize
+                setTimeout(() => {
+                    if (typeof butterchurn !== 'undefined') {
+                        console.log('✅ Butterchurn object available:', butterchurn);
+                        resolve();
+                    } else {
+                        console.warn('⚠️ Butterchurn loaded but object not available, trying next source');
+                        currentSourceIndex++;
+                        tryNextSource();
+                    }
+                }, 100);
             };
             script.onerror = () => {
                 console.warn(`⚠️ Failed to load from: ${source}`);
@@ -6600,6 +6642,33 @@ async function loadLocalPresets() {
     }
 }
 
+// Retry Butterchurn loading
+function retryButterchurn() {
+    try {
+        console.log('🔄 Retrying Butterchurn loading...');
+        
+        const presetStatus = document.getElementById('presetStatus');
+        if (presetStatus) presetStatus.textContent = 'Retrying Butterchurn...';
+        
+        // Hide retry button
+        if (typeof hideRetryButton === 'function') {
+            hideRetryButton();
+        }
+        
+        // Try to initialize Butterchurn again
+        initializeButterchurn();
+        
+    } catch (error) {
+        console.error('Failed to retry Butterchurn:', error);
+        const presetStatus = document.getElementById('presetStatus');
+        if (presetStatus) presetStatus.textContent = 'Retry failed - using local fallback';
+        
+        // Fallback to local visualizer
+        initializeLocalFallback();
+    }
+}
+
 // Make functions globally available
 window.loadLocalPresets = loadLocalPresets;
 window.autoLoadLocalPresets = autoLoadLocalPresets;
+window.retryButterchurn = retryButterchurn;
