@@ -2159,6 +2159,25 @@ function toggleMediaToolbarVisibility() {
   }
 }
 
+// Function to control toolbar visibility without affecting news ticker
+function toggleMediaToolbarVisibilityOnly() {
+  const bar = document.getElementById("mediaToolbar");
+  if (bar) {
+    const currentDisplay = bar.style.display || getComputedStyle(bar).display;
+    const newDisplay = (currentDisplay === "none" || currentDisplay === "") ? "flex" : "none";
+    bar.style.display = newDisplay;
+    isMediaToolbarVisible = (newDisplay === "flex");
+    
+    // Don't update news ticker visibility - only control toolbar
+    logger.info(`📺 Media toolbar visibility toggled to: ${newDisplay} (news ticker unaffected)`);
+  }
+}
+
+// Make the new function available globally
+if (typeof window !== 'undefined') {
+  window.toggleMediaToolbarVisibilityOnly = toggleMediaToolbarVisibilityOnly;
+}
+
 // ===== MOBILE TOOLBAR INITIALIZATION =====
 // Cache mobile detection result to avoid repeated calls
 let cachedMobileStatus = null;
