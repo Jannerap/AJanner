@@ -209,10 +209,11 @@ class NewsTicker {
             panel.className = 'news-settings-panel';
             panel.style.display = 'none';
             panel.innerHTML = `
-                <div class="news-settings-header">
-                    <span>News Settings</span>
-                    <button class="news-settings-close" id="news-settings-close" title="Close">✕</button>
-                </div>
+                                    <div class="news-settings-header">
+                        <span>News Settings</span>
+                        <button id="news-settings-reset" title="Reset to Sports" style="background: #4CAF50; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 10px; margin-right: 5px;">⏼</button>
+                        <button class="news-settings-close" id="news-settings-close" title="Close">✕</button>
+                    </div>
                 <div class="news-settings-body">
                     <label class="news-settings-row">
                         <span>Show Ticker</span>
@@ -238,9 +239,6 @@ class NewsTicker {
                         <input type="range" id="news-settings-speed" min="20" max="200" step="2" />
                         <span id="news-settings-speed-value" class="news-settings-value"></span>
                     </label>
-                    <div class="news-settings-row" style="text-align: center; margin-top: 15px;">
-                        <button id="news-settings-reset" style="background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px;">Reset to Sports</button>
-                    </div>
                 </div>`;
             document.body.appendChild(panel);
         }
@@ -416,11 +414,28 @@ class NewsTicker {
         this.currentServiceIndex = 0;
         this.currentService = 'sports';
         this.preferences.service = 'sports';
+        this.preferences.headlineColor = '#ffffff';
+        this.preferences.speed = 60;
         this.savePreferences();
         
         // Update button text
         const btn = this.container.querySelector('#news-service-btn');
         if (btn) btn.textContent = 'Sports';
+        
+        // Reset headline color and speed
+        this.setHeadlineColor('#ffffff');
+        this.setSpeed(60);
+        
+        // Update settings panel controls if open
+        const panel = document.getElementById('news-settings-panel');
+        if (panel && panel.style.display !== 'none') {
+            const colorEl = panel.querySelector('#news-settings-color');
+            const speedEl = panel.querySelector('#news-settings-speed');
+            const speedVal = panel.querySelector('#news-settings-speed-value');
+            if (colorEl) colorEl.value = '#ffffff';
+            if (speedEl) speedEl.value = '60';
+            if (speedVal) speedVal.textContent = '60px/s';
+        }
         
         // Clear headlines and reload
         this.headlines = [];
@@ -431,7 +446,7 @@ class NewsTicker {
         // Load sports headlines
         this.loadHeadlines();
         
-        console.log('🔄 Reset to Sports section');
+        console.log('🔄 Reset to Sports section with default color and speed');
     }
 
     applyPreferences() {
