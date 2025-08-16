@@ -1073,6 +1073,22 @@
       }
     };
     
+    // Function to clear news ticker cache and reset to sports
+    window.clearNewsTickerCache = function() {
+        try {
+            localStorage.removeItem('news-ticker-preferences');
+            console.log('🗑️ News ticker cache cleared');
+            
+            // If ticker exists, reset it to sports
+            if (window.newsTicker && typeof window.newsTicker.resetToSports === 'function') {
+                window.newsTicker.resetToSports();
+                console.log('🔄 News ticker reset to Sports');
+            }
+        } catch (error) {
+            console.error('❌ Error clearing news ticker cache:', error);
+        }
+    };
+
     // Debug function to test ticker visibility
     window.testNewsTicker = function() {
       const tickerElement = document.getElementById('news-ticker');

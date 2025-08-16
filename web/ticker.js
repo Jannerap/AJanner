@@ -50,6 +50,8 @@ class NewsTicker {
             this.loadPreferences();
             this.applyPreferences();
             this.syncSettingsControls && this.syncSettingsControls();
+            
+            console.log(`🎯 News ticker initialized with service: ${this.currentService} (index: ${this.currentServiceIndex})`);
 
             // Show initial loading state on first fetch
             const serviceBtn = this.container.querySelector('#news-service-btn');
@@ -59,6 +61,13 @@ class NewsTicker {
                 serviceBtn.classList.add('loading');
             }
 
+            // Force start with sports on first load, regardless of cache
+            if (!this.preferences.hasOwnProperty('service')) {
+                this.currentServiceIndex = 0;
+                this.currentService = 'sports';
+                console.log('🔄 Forcing initial load to Sports section');
+            }
+            
             // Perform initial load with spinner, then restore button state
             await this.loadHeadlines().catch((err) => {
                 console.error('Initial headlines load failed:', err);
@@ -66,7 +75,7 @@ class NewsTicker {
             this.isLoading = false;
             if (serviceBtn && this.serviceCycle && typeof this.currentServiceIndex === 'number') {
                 const currentService = this.serviceCycle[this.currentServiceIndex];
-                serviceBtn.textContent = currentService ? currentService.label : 'News';
+                serviceBtn.textContent = currentService ? currentService.label : 'Sports';
                 serviceBtn.classList.remove('loading');
             }
 
@@ -229,6 +238,9 @@ class NewsTicker {
                         <input type="range" id="news-settings-speed" min="20" max="200" step="2" />
                         <span id="news-settings-speed-value" class="news-settings-value"></span>
                     </label>
+                    <div class="news-settings-row" style="text-align: center; margin-top: 15px;">
+                        <button id="news-settings-reset" style="background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 12px;">Reset to Sports</button>
+                    </div>
                 </div>`;
             document.body.appendChild(panel);
         }
@@ -239,6 +251,7 @@ class NewsTicker {
         const colorEl = panel.querySelector('#news-settings-color');
         const speedEl = panel.querySelector('#news-settings-speed');
         const speedVal = panel.querySelector('#news-settings-speed-value');
+        const resetBtn = panel.querySelector('#news-settings-reset');
 
         // Initialize controls from preferences
         if (visibleEl) visibleEl.checked = !!this.preferences.visible;
@@ -273,6 +286,12 @@ class NewsTicker {
             if (speedVal) speedVal.textContent = `${v}px/s`;
             this.preferences.speed = v;
             this.savePreferences();
+        });
+        
+        if (resetBtn) resetBtn.addEventListener('click', () => {
+            this.resetToSports();
+            // Update the dropdown to show sports
+            if (serviceEl) serviceEl.value = 'sports';
         });
 
         // Close panel when clicking outside
@@ -392,12 +411,38 @@ class NewsTicker {
         } catch (_) {}
     }
 
+    // Function to reset to sports and clear cache
+    resetToSports() {
+        this.currentServiceIndex = 0;
+        this.currentService = 'sports';
+        this.preferences.service = 'sports';
+        this.savePreferences();
+        
+        // Update button text
+        const btn = this.container.querySelector('#news-service-btn');
+        if (btn) btn.textContent = 'Sports';
+        
+        // Clear headlines and reload
+        this.headlines = [];
+        if (this.tickerList) {
+            this.tickerList.innerHTML = '';
+        }
+        
+        // Load sports headlines
+        this.loadHeadlines();
+        
+        console.log('🔄 Reset to Sports section');
+    }
+
     applyPreferences() {
         if (!this.preferences) return;
         if (typeof this.preferences.visible === 'boolean') this.setTickerVisible(this.preferences.visible);
         if (typeof this.preferences.speed === 'number') this.setSpeed(this.preferences.speed);
         if (typeof this.preferences.headlineColor === 'string') this.setHeadlineColor(this.preferences.headlineColor);
-        if (typeof this.preferences.service === 'string') {
+        
+        // Only apply saved service preference if it's not the first load
+        // On first load, always start with sports regardless of cache
+        if (typeof this.preferences.service === 'string' && this.preferences.hasOwnProperty('service')) {
             const idx = this.serviceCycle ? this.serviceCycle.findIndex(s => s.service === this.preferences.service) : -1;
             if (idx >= 0) {
                 this.currentServiceIndex = idx;
@@ -405,6 +450,12 @@ class NewsTicker {
                 const btn = this.container.querySelector('#news-service-btn');
                 if (btn) btn.textContent = this.serviceCycle[idx].label;
             }
+        } else {
+            // First load or no service preference - ensure we start with sports
+            this.currentServiceIndex = 0; // Sports is at index 0
+            this.currentService = 'sports';
+            const btn = this.container.querySelector('#news-service-btn');
+            if (btn) btn.textContent = this.serviceCycle[0].label;
         }
     }
 
@@ -421,7 +472,7 @@ class NewsTicker {
         const speedVal = this.container.querySelector('#news-settings-speed-value');
         const prefs = this.preferences || {};
         if (visibleEl) visibleEl.checked = !!prefs.visible;
-        if (serviceEl) serviceEl.value = prefs.service || this.currentService || 'sports';
+        if (serviceEl) serviceEl.value = prefs.service || 'sports';
         if (colorEl) colorEl.value = prefs.headlineColor || '#ffffff';
         if (speedEl) {
             const v = prefs.speed || this.options.speed;

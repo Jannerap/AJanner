@@ -2248,6 +2248,14 @@ function openAnalysisIframe(type) {
     // Show the container
     container.style.display = 'block';
     
+    // Auto-close after 5 minutes (300,000 milliseconds)
+    setTimeout(() => {
+      if (container.style.display === 'block') {
+        closeAnalysisIframe();
+        logger.info('📊 Analysis iframe auto-closed after 5 minutes');
+      }
+    }, 300000);
+    
     logger.info('📊 Analysis iframe opened for:', type);
   }
 }
