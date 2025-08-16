@@ -1554,10 +1554,9 @@ function playMp4Video() {
   isPlayingMp4 = true;
   videoIsPlaying = true;
   
-  // Update video button to show active state
-  const videoButton = document.querySelector('[data-icon="video"]');
-  if (videoButton && typeof PNGLoader !== 'undefined') {
-    PNGLoader.applyPNG(videoButton, 'video2.png');
+  // Update video button icon based on current state
+  if (typeof updateVideoButtonIcon === 'function') {
+    updateVideoButtonIcon();
   }
   
   // Show video player if hidden
@@ -1584,10 +1583,9 @@ function stopMp4Video() {
     isPlayingMp4 = false;
     videoIsPlaying = false;
     
-    // Update video button to show inactive state
-    const videoButton = document.querySelector('[data-icon="video"]');
-    if (videoButton && typeof PNGLoader !== 'undefined') {
-      PNGLoader.applyPNG(videoButton, 'video.png');
+    // Update video button icon based on current state
+    if (typeof updateVideoButtonIcon === 'function') {
+      updateVideoButtonIcon();
     }
     
     logger.video('MP4 video stopped');
