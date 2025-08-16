@@ -495,12 +495,15 @@
 
   <!-- Main Panel -->
   <div class="panel" id="panel">
-    <div style="position: relative; margin-bottom: 10px; padding-top: 5px; height: 30px; display: flex; align-items: center; gap: 6px;">
-      <div class="panel-close-btn" onclick="closePanel()" title="Close Panel" style="position: static;">ⓧ</div>
-      <button onclick="minimizePanel()" title="Minimize" style="background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px;">Minimize</button>
-      <button onclick="openDescriptionInput()" title="Input" style="background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px;">Input</button>
-      <button onclick="resizePanelToggle()" title="Resize Panel" style="margin-left: auto; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px;">Resize</button>
-      <input type="checkbox" id="disablePanelTimeout" title="Disable Panel Timeout" style="width: 12px; height: 12px; cursor: pointer;">
+    <div style="position: relative; margin-bottom: 10px; padding-top: 5px; height: 30px; display: flex; align-items: center; gap: 0px;">
+      <div class="panel-close-btn" onclick="closePanel()" title="Close Panel" style="position: static; margin: 0; flex: 1;">ⓧ</div>
+      <button onclick="minimizePanel()" title="Minimize" style="background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px; margin: 0; flex: 1;">Minimize</button>
+      <button onclick="savePanel()" title="Save" style="background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px; margin: 0; flex: 1;">💾</button>
+      <button onclick="deleteIdea()" title="Delete Bubble" style="background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px; margin: 0; flex: 1;">␡</button>
+      <button onclick="togglePanelSide()" title="Toggle Panel Side" style="background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px; margin: 0; flex: 1;">↔️</button>
+      <button onclick="openDescriptionInput()" title="Input" style="background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px; margin: 0; flex: 1;">Input</button>
+      <button onclick="resizePanelToggle()" title="Resize Panel" style="background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 2px 6px; cursor: pointer; font-size: 10px; margin: 0; flex: 1;">Resize</button>
+      <input type="checkbox" id="disablePanelTimeout" title="Disable Panel Timeout" style="width: 12px; height: 12px; cursor: pointer; margin: 0; flex: 1;">
     </div>
     <input id="title" placeholder="Title"/>
     <div style="display: flex; gap: 10px; margin: 10px 0;">
@@ -509,16 +512,11 @@
     </div>
     <textarea id="description" placeholder="Description" rows="1"></textarea>
     
-    <div style="margin: 10px 0; display: flex; flex-wrap: wrap; gap: 0px;">
-      <button onclick="savePanel()" title="Save" class="bubble-btn" data-png="busave" style="flex: 0 0 33.333%;">Save💾</button>
-      <button onclick="deleteIdea()" title="Delete Bubble" class="bubble-btn" data-png="budelete" style="flex: 0 0 33.333%;">Delete💭️</button>
-      <button onclick="clearUploadedImage()" title="Clear IMG" class="bubble-btn" data-png="buimage" style="flex: 0 0 33.333%;">🗑️Image</button>
-    </div>
-    
     <div class="resize-handle">⤡</div>
     
-    <div style="margin-top: 1px;">
-      <input accept="image/*" id="uploadImage" type="file"/>
+    <div style="margin-top: 1px; display: flex; align-items: center; gap: 8px;">
+      <input accept="image/*" id="uploadImage" type="file" style="flex: 1;"/>
+      <button onclick="clearUploadedImage()" title="Clear IMG" style="background: rgba(0,0,0,0.7); color: white; border: 2px solid darkgreen; border-radius: 3px; padding: 4px 8px; cursor: pointer; font-size: 12px;">🗑️</button>
     </div>
     
     <label style="margin-left: 10px;">⬆️ Upload PNG | ⬇️ Change 💭 Size
@@ -643,7 +641,6 @@
     <div style="margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 0px;">
       <button onclick="changeColor()" title="Bubble Colour" class="bubble-btn large" data-png="bucolor">💭️Colour</button>
       <button onclick="changeTextColor()" title="Text Colour" class="bubble-btn large" data-png="butextcolor">💬Colour</button>
-      <button onclick="closePanel()" title="Close" class="bubble-btn large" data-png="buclose">Close💭️</button>
       <button onclick="toggleGlow()" title="Toggle Glow" class="bubble-btn large" data-png="buglow">Glow🔆</button>
       <button onclick="changeGlowColor()" title="Change Glow Color" class="bubble-btn large" data-png="buglowcolor">Colour🔅</button>
       <button onclick="toggleFlash()" title="Toggle Flash" class="bubble-btn large" data-png="buflash">Flash🎇</button>
@@ -652,14 +649,15 @@
       <button onclick="toggleStatic()" title="Toggle Static Mode" class="bubble-btn large" data-png="bustatic">Static🧽</button>
       <button onclick="cycleFont()" title="Cycle Fonts" class="bubble-btn large" data-png="bufont">Font</button>
       <button onclick="toggleCheckeredBorder()" title="Toggle Checkered Border" class="bubble-btn large" data-png="bucheck">Check🏁</button>
-      <button onclick="togglePanelSide()" title="Toggle Panel Side" class="bubble-btn large" data-png="buside">↔️</button>
     </div>
-    <div style="margin: 8px 0; display: flex; align-items: center; gap: 8px;">
-      <label style="color: gold; font-size: 12px;">🎧Audio:</label>
+    <div style="margin: 8px 0; display: flex; align-items: center; gap: 0px;">
+      <label style="color: gold; font-size: 12px; flex: 0 0 auto;">🎧Audio:</label>
       <input accept="audio/*" id="uploadAudio" type="file" style="flex: 1;">
-      <span id="uploadAudioName" style="font-size: 12px; color: #ccc; max-width: 40%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"></span>
-      <button id="playBubbleAudioBtn" onclick="playSelectedBubbleAudio()" title="Play/Pause Bubble Audio" style="background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 4px 8px; cursor: pointer; font-size: 12px;">▶︎</button>
-      <button id="stopBubbleAudioBtn" onclick="stopSelectedBubbleAudio()" title="Stop Bubble Audio" style="background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 3px; padding: 4px 8px; cursor: pointer; font-size: 12px;">■</button>
+      <button id="playBubbleAudioBtn" onclick="playSelectedBubbleAudio()" title="Play/Pause Bubble Audio" style="background: rgba(0,0,0,0.7); color: white; border: 2px solid darkgreen; border-radius: 3px; padding: 4px 8px; cursor: pointer; font-size: 12px; flex: 1;">▶︎</button>
+      <button id="deleteBubbleAudioBtn" onclick="clearSelectedBubbleAudio()" title="Delete Audio" style="background: rgba(0,0,0,0.7); color: white; border: 2px solid darkgreen; border-radius: 3px; padding: 4px 8px; cursor: pointer; font-size: 12px; flex: 1;">🔇</button>
+    </div>
+    <div style="margin: 4px 0; display: flex; align-items: center;">
+      <span id="uploadAudioName" style="font-size: 12px; color: #ccc; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">No file selected.</span>
     </div>
     <div style="margin: 6px 0; display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap;">
       <label style="color: gold; font-size: 12px;">📎 Files:</label>
