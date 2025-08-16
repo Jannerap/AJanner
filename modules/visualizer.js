@@ -104,6 +104,11 @@ class LocalVisualizer {
         this.presets = window.globalPresets;
         console.log(`✅ Loaded ${this.presets.length} presets from global object (including ${this.presets.filter(p => p.custom).length} custom)`);
         console.log('📋 Preset names:', this.presets.map(p => p.name));
+        
+        // Ensure custom effects are available
+        if (window.customEffects) {
+          console.log('🎨 Custom effects available:', Object.keys(window.customEffects));
+        }
         return;
       }
       
@@ -117,6 +122,7 @@ class LocalVisualizer {
         // Expose custom effects globally so attachEffects can wire them
         if (customPresets.customEffects) {
           window.customEffects = customPresets.customEffects;
+          console.log('🎨 Custom effects loaded:', Object.keys(customPresets.customEffects));
         }
         console.log(`✅ Loaded ${this.presets.length} presets from import (including ${customPresets.presets.filter(p => p.custom).length} custom)`);
         console.log('📋 Preset names:', this.presets.map(p => p.name));
@@ -451,16 +457,20 @@ class LocalVisualizer {
       // Get current preset
       const preset = this.presets[this.currentPreset];
       if (!preset) {
+        console.warn('⚠️ No preset found at index:', this.currentPreset);
         this.renderFallback(width, height);
         return;
       }
       
       // Call the appropriate render function
       const renderMethod = `render${preset.type.charAt(0).toUpperCase() + preset.type.slice(1)}`;
+      console.log(`🎨 Rendering preset: ${preset.name} (type: ${preset.type}, method: ${renderMethod})`);
+      
       if (typeof this[renderMethod] === 'function') {
         this[renderMethod](width, height);
       } else {
         console.warn(`⚠️ Render method ${renderMethod} not found for preset: ${preset.name}`);
+        console.log('🔍 Available render methods:', Object.getOwnPropertyNames(this).filter(name => name.startsWith('render')));
         this.renderFallback(width, height);
       }
       

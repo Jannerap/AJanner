@@ -5765,13 +5765,14 @@ function startButterchurn() {
 function initializeButterchurn() {
     // Disabled; always use local presets
     const presetStatus = document.getElementById('presetStatus');
-    if (presetStatus) presetStatus.textContent = 'Butterchurn disabled - using local presets';
+    if (presetStatus) presetStatus.textContent = 'Ready - Click Start Visualizer to begin';
+    
+    // Don't auto-start, just prepare the presets
     if (typeof window.LocalVisualizer !== 'undefined') {
-        window.LocalVisualizer.start();
-        isVisualizerRunning = true;
         updatePresetSelect();
         updatePresetInfo();
         updateCurrentPreset();
+        console.log('🎨 LocalVisualizer ready - not auto-started');
     }
 }
 
@@ -6132,9 +6133,20 @@ function selectPreset(value) {
         }
     } else if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.presets) {
         if (index >= 0 && index < window.LocalVisualizer.presets.length) {
+            // Update the current preset
             window.LocalVisualizer.currentPreset = index;
+            
+            // Force a render update to show the new preset
+            if (window.LocalVisualizer.isRunning) {
+                // Trigger a render to show the new preset immediately
+                window.LocalVisualizer.render();
+            }
+            
+            // Update UI
             window.LocalVisualizer.updatePresetInfo();
             updateCurrentPreset();
+            
+            console.log(`🎯 Selected preset: ${window.LocalVisualizer.presets[index].name} (type: ${window.LocalVisualizer.presets[index].type})`);
             logger.info(`🎯 Selected preset: ${window.LocalVisualizer.presets[index].name}`);
         }
     }
