@@ -1735,16 +1735,25 @@ button[data-png="bucheck"].has-png {
 }
 
 #mediaToolbar.minimized {
-  height: 40px; /* Reduced height - removed top/bottom boundaries */
-  overflow: hidden;
-  padding: 0 5px; /* Removed top/bottom padding */
+  height: auto; /* Let content define height */
+  overflow: hidden; /* ensure content does not hang out */
+  padding: 1px 0 1px 6px; /* Smaller top/bottom gap, no right padding */
   border-top: none;
-  box-shadow: 0 -1px 5px rgba(0,0,0,0.2);
   display: flex;
-  justify-content: center;
+  justify-content: flex-end; /* Align buttons to the right */
   align-items: center;
+  flex-wrap: nowrap; /* prevent wrapping */
   z-index: 60000;
-  background: rgba(26, 26, 26, 0.6); /* Semi-transparent background using rgba */
+  background: rgba(26, 26, 26, 0.6); /* Background only around content */
+  border: 1px solid #000; /* Black border */
+  border-right: none; /* No boundary on right edge */
+  border-radius: 6px 0 0 6px; /* Rounded except right side */
+  width: fit-content !important; /* shrink to content width */
+  min-width: 0 !important;
+  left: auto; /* Anchor to right side */
+  right: 0;
+  box-shadow: none; /* Remove full-width style shadow */
+  gap: 2px; /* tiny gaps between buttons */
 }
 
 #mediaToolbar.minimized .media-separator,
@@ -1754,32 +1763,38 @@ button[data-png="bucheck"].has-png {
 #mediaToolbar.minimized label,
 #mediaToolbar.minimized input,
 #mediaToolbar.minimized select {
-  display: none;
+  display: none !important; /* override any inline display */
 }
 
 #mediaToolbar.minimized button {
-  margin: 0 2px;
+  margin: 0; /* remove gaps */
   padding: 0;
   font-size: 12px;
-  width: 36px !important; /* Reduced from 48px to fit new height */
-  height: 36px !important; /* Reduced from 48px to fit new height */
+  width: 34px !important; /* slightly smaller to tighten bar */
+  height: 34px !important; /* slightly smaller to tighten bar */
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   transform: none !important;
-  min-width: 36px !important; /* Reduced from 48px */
-  max-width: 36px !important; /* Reduced from 48px */
-  min-height: 36px !important; /* Reduced from 48px */
-  max-height: 36px !important; /* Reduced from 48px */
+  min-width: 34px !important;
+  max-width: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  flex: 0 0 auto !important; /* prevent stretching */
+}
+
+/* Ensure direct children do not stretch toolbar width */
+#mediaToolbar.minimized > * {
+  flex: 0 0 auto !important;
 }
 
 /* Center first row controls wrapper when minimized */
 #mediaToolbar.minimized .controls-row {
   width: auto !important;
-  margin: 0 auto;
+  margin: 0; /* No centering margin */
   display: flex;
-  justify-content: center;
+  justify-content: flex-end; /* Match right alignment */
   align-items: center;
 }
 
