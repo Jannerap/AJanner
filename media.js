@@ -5679,6 +5679,70 @@ let butterchurnPresets = [];
 let currentPresetIndex = 0;
 let autoPresetTimer = null;
 let isVisualizerRunning = false;
+let globalVisualizerState = {
+    isRunning: false,
+    type: null, // 'butterchurn' or 'local'
+    instance: null
+};
+
+function toggleButterchurn() {
+    if (globalVisualizerState.isRunning) {
+        // Stop visualizer
+        if (globalVisualizerState.instance && typeof globalVisualizerState.instance.stop === 'function') {
+            globalVisualizerState.instance.stop();
+        }
+        if (typeof window.LocalVisualizer !== 'undefined') {
+            window.LocalVisualizer.stop();
+        }
+        
+        // Reset global state
+        globalVisualizerState.isRunning = false;
+        globalVisualizerState.type = null;
+        globalVisualizerState.instance = null;
+        isVisualizerRunning = false;
+        
+        // Update button text and status
+        const toggleBtn = document.getElementById('toggleVisualizerBtn');
+        if (toggleBtn) toggleBtn.textContent = '🎵 Start Visualizer';
+        
+        const presetStatus = document.getElementById('presetStatus');
+        if (presetStatus) presetStatus.textContent = 'Stopped';
+        
+        logger.info('🎨 Visualizer stopped');
+    } else {
+        // Start visualizer
+        try {
+            const presetStatus = document.getElementById('presetStatus');
+            if (presetStatus) presetStatus.textContent = 'Using local presets only';
+            if (typeof window.LocalVisualizer !== 'undefined') {
+                window.LocalVisualizer.start();
+                
+                // Update global state
+                globalVisualizerState.isRunning = true;
+                globalVisualizerState.type = 'local';
+                globalVisualizerState.instance = window.LocalVisualizer;
+                isVisualizerRunning = true;
+                
+                updatePresetSelect();
+                updatePresetInfo();
+                updateCurrentPreset();
+                
+                // Update button text
+                const toggleBtn = document.getElementById('toggleVisualizerBtn');
+                if (toggleBtn) toggleBtn.textContent = '⏹️ Stop Visualizer';
+                
+                // Ensure presets are loaded and dropdown is populated
+                if (window.LocalVisualizer && window.LocalVisualizer.presets) {
+                    console.log(`🎯 Loaded ${window.LocalVisualizer.presets.length} presets:`, window.LocalVisualizer.presets.map(p => p.name));
+                }
+                
+                logger.info('🎨 Started LocalVisualizer (Butterchurn disabled)');
+            }
+        } catch (e) {
+            console.error('Failed to start LocalVisualizer:', e);
+        }
+    }
+}
 
 function startButterchurn() {
     // Temporarily disable Butterchurn; use LocalVisualizer only
@@ -5964,14 +6028,24 @@ function updatePresetSelect() {
         });
         presetSelect.value = String(currentPresetIndex);
     } else if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.presets) {
-        window.LocalVisualizer.presets.forEach((preset, index) => {
+        // Ensure we have the latest presets
+        const presets = window.LocalVisualizer.presets;
+        console.log(`🎯 Populating dropdown with ${presets.length} presets:`, presets.map(p => p.name));
+        
+        presets.forEach((preset, index) => {
             const option = document.createElement('option');
             option.value = index;
             option.textContent = preset.name;
             presetSelect.appendChild(option);
         });
-        presetSelect.value = window.LocalVisualizer.currentPreset;
+        
+        if (typeof window.LocalVisualizer.currentPreset === 'number') {
+            presetSelect.value = window.LocalVisualizer.currentPreset;
+        }
     }
+    
+    // Log the final dropdown state
+    console.log(`📋 Preset dropdown populated with ${presetSelect.options.length} options`);
 }
 
 function updatePresetInfo() {

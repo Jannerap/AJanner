@@ -460,8 +460,10 @@
       <div class="projectm-close-btn" onclick="closeProjectMPanel()" title="Close Visualization">✖️</div>
     </h3>
     <div class="projectm-controls">
-      <button onclick="startButterchurn()">🎵 Start Visualizer</button>
+      <button onclick="toggleButterchurn()" id="toggleVisualizerBtn">🎵 Start Visualizer</button>
       <button onclick="loadLocalPresets()">🏠 Load Local Presets</button>
+      <button onclick="refreshVisualizerPresets()">🔄 Refresh Presets</button>
+      <button onclick="checkVisualizerState()">🔍 Debug State</button>
       <button onclick="retryButterchurn()" id="retryBtn" style="display: none;">🔄 Retry Loading</button>
       <button onclick="nextLocalEffect()" id="nextLocalEffectBtn" style="display: none;">🎨 Next Effect</button>
       <button onclick="previousPreset()">⏮️ Previous</button>
@@ -1087,6 +1089,33 @@
         } catch (error) {
             console.error('❌ Error clearing news ticker cache:', error);
         }
+    };
+
+    // Function to refresh visualizer presets
+    window.refreshVisualizerPresets = function() {
+        if (typeof window.LocalVisualizer !== 'undefined' && window.LocalVisualizer.presets) {
+            console.log('🔄 Refreshing visualizer presets...');
+            if (typeof updatePresetSelect === 'function') {
+                updatePresetSelect();
+                updatePresetInfo();
+                updateCurrentPreset();
+                console.log(`✅ Refreshed presets: ${window.LocalVisualizer.presets.length} available`);
+            }
+        }
+    };
+
+    // Function to check visualizer state
+    window.checkVisualizerState = function() {
+        console.log('🔍 Visualizer State Check:');
+        console.log('- LocalVisualizer available:', typeof window.LocalVisualizer !== 'undefined');
+        if (typeof window.LocalVisualizer !== 'undefined') {
+            console.log('- LocalVisualizer running:', window.LocalVisualizer.isRunning);
+            console.log('- LocalVisualizer presets:', window.LocalVisualizer.presets?.length || 0);
+            console.log('- Current preset:', window.LocalVisualizer.currentPreset);
+            console.log('- Preset names:', window.LocalVisualizer.presets?.map(p => p.name) || []);
+        }
+        console.log('- Global state:', window.globalVisualizerState || 'Not defined');
+        console.log('- Preset dropdown options:', document.getElementById('presetSelect')?.options?.length || 0);
     };
 
     // Debug function to test ticker visibility

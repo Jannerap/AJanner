@@ -17,6 +17,7 @@ import { renderNeuralNetwork } from './effects/neural-network.js';
 import { renderFractalUniverse } from './effects/fractal-universe.js';
 import { renderHolographicDisplay } from './effects/holographic-display.js';
 import { renderSolarFlare } from './effects/solar-flare.js';
+import { renderSupernovaBurst2 } from './effects/supernovaburst-2.js';
 
 // Preset definitions
 export const presets = [
@@ -293,6 +294,13 @@ export const presets = [
     description: 'Intense solar flare with explosive energy and plasma streams',
     category: 'Custom',
     custom: true
+  },
+  {
+    name: 'Supernova Burst 2',
+    type: 'supernovaBurst2',
+    description: 'Enhanced supernova explosion with advanced particle systems',
+    category: 'Custom',
+    custom: true
   }
 ];
 
@@ -310,7 +318,8 @@ export const customEffects = {
   neuralNetwork: renderNeuralNetwork,
   fractalUniverse: renderFractalUniverse,
   holographicDisplay: renderHolographicDisplay,
-  solarFlare: renderSolarFlare
+  solarFlare: renderSolarFlare,
+  supernovaBurst2: renderSupernovaBurst2
 };
 
 // Make customEffects available globally
