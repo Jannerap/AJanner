@@ -4707,7 +4707,7 @@ const PNG_CONFIG = {
     { dataIcon: 'cycle', file: 'cycle.png' },
     { dataIcon: 'rand', file: 'rand.png' },
     { dataIcon: 'pause', file: 'pause.png' },
-    { dataIcon: 'video', file: 'video.png' },
+    { dataIcon: 'video', file: 'video2.png' },
     { dataIcon: 'snapshot', file: 'snapshot.png' },
     { dataIcon: 'save', file: 'save.png' },
     { dataIcon: 'load', file: 'load.png' },
