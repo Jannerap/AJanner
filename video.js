@@ -73,11 +73,176 @@ let videoPlayerMode = 'centered';
 
 // Note: updateVideoPlaylistDisplay is defined in media.js
 
-// videoPlayVideo function is now defined in media.js
+function videoPlayVideo(index) {
+  if (index < 0 || index >= videoPlaylist.length) return;
+  
+  videoCurrentIndex = index;
+  const url = videoPlaylist[index];
+  const videoId = extractYouTubeId(url);
+  
+  if (videoId) {
+    // Handle YouTube videos
+    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&loop=0&enablejsapi=1&origin=${window.location.origin}`;
+    const videoIframe = document.getElementById('videoIframe');
+    if (videoIframe) {
+      videoIframe.src = embedUrl;
+      videoIframe.style.display = 'block';
+      videoIframe.style.zIndex = '1';
+      videoIsPlaying = true;
+      updateVideoPlaylistDisplay();
+      window.videoLogger.info('🎵 Video Playing YouTube video:', { index: index + 1, total: videoPlaylist.length, videoId: videoId });
+      
+      // Add event listener for iframe load to handle autoplay restrictions
+      videoIframe.onload = function() {
+        window.videoLogger.debug('🎥 Video iframe loaded');
+        // Try to force play after load
+        setTimeout(() => {
+          try {
+            videoIframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+            window.videoLogger.debug('🎥 Attempted to force play video');
+          } catch (error) {
+            window.videoLogger.warn('⚠️ Could not force play video (autoplay restriction)');
+          }
+        }, 1000);
+      };
+    }
+  } else {
+    // Handle non-YouTube URLs (webcam streams, direct video links, etc.)
+    window.videoLogger.info('🌐 Playing non-YouTube URL from playlist:', url);
+    
+    const contentType = detectContentType(url);
+    let embedUrl;
+    
+    switch(contentType) {
+      case 'video':
+        // Handle direct video streams by creating an HTML5 video player
+        const videoHtml = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { margin: 0; padding: 0; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
+              video { max-width: 100%; max-height: 100%; object-fit: contain; }
+            </style>
+          </head>
+          <body>
+            <video controls autoplay loop crossorigin="anonymous">
+              <source src="${url}" type="video/mp4">
+              <source src="${url}" type="video/webm">
+              <source src="${url}" type="video/ogg">
+              <source src="${url}">
+              <p>Your browser doesn't support HTML5 video. <a href="${url}">Download the video</a> instead.</p>
+            </video>
+            <script>
+              const video = document.querySelector('video');
+              video.addEventListener('loadstart', () => {
+                console.log('🎥 Video loading started');
+              });
+              video.addEventListener('error', (e) => {
+                console.error('🎥 Video error:', e);
+                document.body.innerHTML = '<div style="color: white; text-align: center; padding: 20px;">Error loading video stream. Please check the URL and try again.</div>';
+              });
+              video.addEventListener('canplay', () => {
+                console.log('🎥 Video ready to play');
+              });
+            </script>
+          </body>
+          </html>
+        `;
+        
+        const blob = new Blob([videoHtml], { type: 'text/html' });
+        embedUrl = URL.createObjectURL(blob);
+        window.videoLogger.info('🎥 Created HTML5 video player for video stream in playlist');
+        break;
+        
+      case 'website':
+      default:
+        // Handle regular websites by loading them directly in iframe
+        embedUrl = url;
+        window.videoLogger.info('🌐 Loading website directly in iframe from playlist');
+        break;
+    }
+    
+    // Load the content in the iframe
+    const videoIframe = document.getElementById('videoIframe');
+    if (videoIframe) {
+      videoIframe.src = embedUrl;
+      videoIframe.style.display = 'block';
+      videoIframe.style.zIndex = '1';
+      videoIsPlaying = true;
+      updateVideoPlaylistDisplay();
+      window.videoLogger.info('🌐 Playing non-YouTube content:', { index: index + 1, total: videoPlaylist.length, url: url });
+    }
+  }
+}
 
-// extractYouTubeId function is now defined in media.js
+function extractYouTubeId(url) {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\s&]+)/);
+  return match ? match[1] : null;
+}
 
 // fetchVideoTitle function is now defined in media.js
+
+// Helper function to detect content type
+function detectContentType(url) {
+  // Check if it's a YouTube URL first
+  if (extractYouTubeId(url)) {
+    return 'youtube';
+  }
+  
+  // Check if it's a direct video file
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.avi', '.mov', '.wmv', '.flv', '.m4v'];
+  const streamingFormats = ['.m3u8', '.mpd', '.f4m'];
+  const allVideoFormats = [...videoExtensions, ...streamingFormats];
+  
+  const urlLower = url.toLowerCase();
+  if (allVideoFormats.some(ext => urlLower.includes(ext))) {
+    return 'video';
+  }
+  
+  // Check for webcam and streaming URL patterns
+  const streamingPatterns = [
+    '/webcams/stream/',
+    '/stream/',
+    '/live/',
+    '/broadcast/',
+    '/camera/',
+    '/webcam/',
+    '/feed/',
+    '/view/'
+  ];
+  
+  if (streamingPatterns.some(pattern => urlLower.includes(pattern))) {
+    return 'video';
+  }
+  
+  // Check for common video streaming domains
+  const videoStreamingDomains = [
+    'vimeo.com',
+    'dailymotion.com', 
+    'twitch.tv',
+    'streamable.com',
+    'video.google.com',
+    'facebook.com/watch',
+    'instagram.com/p/',
+    'tiktok.com',
+    'webcams.windy.com',
+    'cdn.',
+    'stream.',
+    'video.',
+    'media.',
+    'webcam.',
+    'live.',
+    'broadcast.'
+  ];
+  
+  if (videoStreamingDomains.some(domain => urlLower.includes(domain))) {
+    return 'video';
+  }
+  
+  // Default to website
+  return 'website';
+}
 
 // ===== VIDEO CONTROL FUNCTIONS =====
 // Note: Video control functions are defined in media.js
