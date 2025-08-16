@@ -4880,12 +4880,12 @@ function updateVideoPlayButtonIcon() {
 function updateVideoButtonIcon() {
   const videoButton = document.querySelector('[data-icon="video"]');
   if (videoButton && typeof PNGLoader !== 'undefined') {
-    // Show video.png when the player is open (even if paused/background)
-    // Show video2.png only when NO video is active and player is closed
+    // Show video.png when the player is open OR when any video is actively playing (even if UI hidden)
+    // Show video2.png only when player is closed AND nothing is playing
     const player = document.getElementById('videoPlayer');
     const isPlayerOpen = player && (player.style.display !== 'none' || getComputedStyle(player).display !== 'none');
-    const hasActiveContent = !!(currentSingleVideoUrl || (Array.isArray(videoPlaylist) && videoPlaylist.length > 0));
-    const showPlayerIcon = isPlayerOpen || hasActiveContent;
+    const hasActivePlayback = !!videoIsPlaying; // unified playback flag
+    const showPlayerIcon = isPlayerOpen || hasActivePlayback;
     const filename = showPlayerIcon ? 'video.png' : 'video2.png';
     PNGLoader.applyPNG(videoButton, filename);
     logger.info(`🎥 Updated video button to ${filename} (open:${showPlayerIcon}, playing:${videoIsPlaying})`, null, 'VIDEO');
