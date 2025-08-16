@@ -2122,10 +2122,8 @@ function toggleMediaToolbar() {
     bar.style.display = newDisplay;
     isMediaToolbarVisible = (newDisplay === "flex");
     
-    // Update news ticker visibility
-    if (typeof window.updateNewsTickerVisibility === 'function') {
-      window.updateNewsTickerVisibility(isMediaToolbarVisible);
-    }
+    // News ticker visibility no longer controlled by media toolbar
+    logger.info(`📺 Media toolbar visibility toggled to: ${newDisplay} (news ticker unaffected)`);
   }
 }
 
@@ -2152,10 +2150,8 @@ function toggleMediaToolbarVisibility() {
     bar.style.display = newDisplay;
     isMediaToolbarVisible = (newDisplay === "flex");
     
-    // Update news ticker visibility
-    if (typeof window.updateNewsTickerVisibility === 'function') {
-      window.updateNewsTickerVisibility(isMediaToolbarVisible);
-    }
+    // News ticker visibility no longer controlled by media toolbar
+    logger.info(`📺 Media toolbar visibility toggled to: ${newDisplay} (news ticker unaffected)`);
   }
 }
 
