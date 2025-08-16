@@ -1994,6 +1994,22 @@ function detectContentType(url) {
     return 'video';
   }
   
+  // Check for webcam and streaming URL patterns
+  const streamingPatterns = [
+    '/webcams/stream/',
+    '/stream/',
+    '/live/',
+    '/broadcast/',
+    '/camera/',
+    '/webcam/',
+    '/feed/',
+    '/view/'
+  ];
+  
+  if (streamingPatterns.some(pattern => urlLower.includes(pattern))) {
+    return 'video';
+  }
+  
   // Check for common video streaming domains
   const videoStreamingDomains = [
     'vimeo.com',
@@ -2004,10 +2020,14 @@ function detectContentType(url) {
     'facebook.com/watch',
     'instagram.com/p/',
     'tiktok.com',
+    'webcams.windy.com',
     'cdn.',
     'stream.',
     'video.',
-    'media.'
+    'media.',
+    'webcam.',
+    'live.',
+    'broadcast.'
   ];
   
   if (videoStreamingDomains.some(domain => urlLower.includes(domain))) {
@@ -2687,12 +2707,16 @@ async function loadVideoPlaylist() {
     const content = await response.text();
     const lines = content.split('\n').filter(line => line.trim() !== '');
     
-    // Filter for YouTube URLs
+    // Filter for valid URLs (including YouTube, webcam streams, etc.)
     videoPlaylist = lines.filter(line => {
-      return line.includes('youtube.com') || line.includes('youtu.be');
+      const trimmedLine = line.trim();
+      // Check if it's a valid URL (starts with http:// or https://)
+      return trimmedLine.startsWith('http://') || trimmedLine.startsWith('https://');
     });
     
-    logger.info(`📋 Video Loaded ${videoPlaylist.length} videos from playlist`);
+    const youtubeCount = videoPlaylist.filter(url => url.includes('youtube.com') || url.includes('youtu.be')).length;
+    const otherCount = videoPlaylist.length - youtubeCount;
+    logger.info(`📋 Video Loaded ${videoPlaylist.length} URLs from playlist (${youtubeCount} YouTube videos, ${otherCount} other content)`);
     
     // Update display after loading
     if (typeof updateVideoPlaylistDisplay === 'function') {
@@ -2743,20 +2767,22 @@ async function uploadPlaylist() {
     const content = e.target.result;
     const lines = content.split('\n').filter(line => line.trim() !== '');
     
-    // Extract YouTube URLs from lines and remove duplicates
-    const youtubeUrls = lines.filter(line => {
-      return line.includes('youtube.com') || line.includes('youtu.be');
+    // Extract all valid URLs from lines and remove duplicates
+    const validUrls = lines.filter(line => {
+      const trimmedLine = line.trim();
+      // Check if it's a valid URL (starts with http:// or https://)
+      return trimmedLine.startsWith('http://') || trimmedLine.startsWith('https://');
     });
     
-    if (youtubeUrls.length === 0) {
-      alert('No YouTube URLs found in the file. Please include YouTube links (one per line).');
+    if (validUrls.length === 0) {
+      alert('No valid URLs found in the file. Please include valid URLs (one per line) starting with http:// or https://.');
       return;
     }
     
     // Remove duplicate URLs to prevent playlist duplication
-    const uniqueUrls = [...new Set(youtubeUrls)];
-    if (uniqueUrls.length !== youtubeUrls.length) {
-      logger.warn(`📋 Removed ${youtubeUrls.length - uniqueUrls.length} duplicate URLs from playlist`);
+    const uniqueUrls = [...new Set(validUrls)];
+    if (uniqueUrls.length !== validUrls.length) {
+      logger.warn(`📋 Removed ${validUrls.length - uniqueUrls.length} duplicate URLs from playlist`);
     }
     
     // Replace current playlist with uploaded one (using unique URLs)
@@ -2771,14 +2797,14 @@ async function uploadPlaylist() {
     if (existingIndex === -1) {
       uploadedPlaylists.push({
         name: playlistName,
-        urls: youtubeUrls
+        urls: uniqueUrls
       });
       currentPlaylistIndex = uploadedPlaylists.length - 1; // Set to the newly uploaded playlist
     } else {
       // Replace existing playlist
       uploadedPlaylists[existingIndex] = {
         name: playlistName,
-        urls: youtubeUrls
+        urls: uniqueUrls
       };
       currentPlaylistIndex = existingIndex;
     }
@@ -2791,8 +2817,10 @@ async function uploadPlaylist() {
     // Clear the file input
     fileInput.value = '';
     
-    logger.info(`📋 Uploaded playlist "${playlistName}" with ${youtubeUrls.length} videos`);
-    alert(`✅ Uploaded playlist "${playlistName}" with ${youtubeUrls.length} videos`);
+    const youtubeCount = uniqueUrls.filter(url => url.includes('youtube.com') || url.includes('youtu.be')).length;
+    const otherCount = uniqueUrls.length - youtubeCount;
+    logger.info(`📋 Uploaded playlist "${playlistName}" with ${uniqueUrls.length} URLs (${youtubeCount} YouTube videos, ${otherCount} other content)`);
+    alert(`✅ Uploaded playlist "${playlistName}" with ${uniqueUrls.length} URLs (${youtubeCount} YouTube videos, ${otherCount} other content)`);
   };
   
   reader.readAsText(file);
@@ -2944,10 +2972,10 @@ async function fetchVideoTitle(videoId) {
 function videoPlayVideo(index) {
   if (index < 0 || index >= videoPlaylist.length) return;
   
-  // Stop any currently playing MP4 video when switching to YouTube playlist video
+  // Stop any currently playing MP4 video when switching to playlist video
   if (isPlayingMp4) {
     stopMp4Video();
-            logger.info('🎬 Stopped MP4 video to play YouTube playlist video');
+            logger.info('🎬 Stopped MP4 video to play playlist video');
   }
   
   // Stop any currently playing single video stream when switching to playlist video
@@ -2960,14 +2988,16 @@ function videoPlayVideo(index) {
   const url = videoPlaylist[index];
   const videoId = extractYouTubeId(url);
   
-  if (!videoId) {
-    logger.error('❌ Invalid YouTube URL:', url);
+  const iframe = document.getElementById('videoIframe');
+  if (!iframe) {
+    logger.error('❌ Video iframe not found');
     return;
   }
   
-  const iframe = document.getElementById('videoIframe');
-  if (iframe) {
-            logger.debug('🎵 videoPlayVideo debug:', {
+  // Check if it's a YouTube URL or other type of URL
+  if (videoId) {
+    // Handle YouTube videos
+    logger.debug('🎵 videoPlayVideo debug (YouTube):', {
       index: index,
       videoId: videoId
     });
@@ -2979,6 +3009,7 @@ function videoPlayVideo(index) {
       logger.warn('📺 Opening video on YouTube due to embed restrictions', videoId, 'VIDEO');
       return;
     }
+    
     // Prefer IFrame API; fallback to standard embed
     ensureYouTubeAPI().then(() => {
       try {
@@ -2988,19 +3019,75 @@ function videoPlayVideo(index) {
         iframe.src = embedUrl;
       }
       videoIsPlaying = true;
-      logger.info('🎵 Video Playing video:', index + 1, 'of', videoPlaylist.length, 'Video ID:', videoId);
+      logger.info('🎵 Video Playing YouTube video:', index + 1, 'of', videoPlaylist.length, 'Video ID:', videoId);
     });
+  } else {
+    // Handle non-YouTube URLs (webcam streams, direct video links, etc.)
+    logger.info('🌐 Playing non-YouTube URL from playlist:', url);
     
-    // Update the play button icon after a short delay to allow iframe to load
-    setTimeout(() => {
-      updateVideoPlayButtonIcon();
-    }, 1000);
+    const contentType = detectContentType(url);
+    let embedUrl;
     
-    // Update the play button icon after a short delay to allow iframe to load
-    setTimeout(() => {
-      updateVideoPlayButtonIcon();
-    }, 1000);
+    switch(contentType) {
+      case 'video':
+        // Handle direct video streams by creating an HTML5 video player
+        const videoHtml = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { margin: 0; padding: 0; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
+              video { max-width: 100%; max-height: 100%; object-fit: contain; }
+            </style>
+          </head>
+          <body>
+            <video controls autoplay loop crossorigin="anonymous">
+              <source src="${url}" type="video/mp4">
+              <source src="${url}" type="video/webm">
+              <source src="${url}" type="video/ogg">
+              <source src="${url}">
+              <p>Your browser doesn't support HTML5 video. <a href="${url}">Download the video</a> instead.</p>
+            </video>
+            <script>
+              const video = document.querySelector('video');
+              video.addEventListener('loadstart', () => {
+                console.log('🎥 Video loading started');
+              });
+              video.addEventListener('error', (e) => {
+                console.error('🎥 Video error:', e);
+                document.body.innerHTML = '<div style="color: white; text-align: center; padding: 20px;">Error loading video stream. Please check the URL and try again.</div>';
+              });
+              video.addEventListener('canplay', () => {
+                console.log('🎥 Video ready to play');
+              });
+            </script>
+          </body>
+          </html>
+        `;
+        
+        const blob = new Blob([videoHtml], { type: 'text/html' });
+        embedUrl = URL.createObjectURL(blob);
+        logger.info('🎥 Created HTML5 video player for video stream in playlist');
+        break;
+        
+      case 'website':
+      default:
+        // Handle regular websites by loading them directly in iframe
+        embedUrl = url;
+        logger.info('🌐 Loading website directly in iframe from playlist');
+        break;
+    }
+    
+    // Load the content in the iframe
+    iframe.src = embedUrl;
+    videoIsPlaying = true;
+    logger.info('🌐 Playing non-YouTube content:', index + 1, 'of', videoPlaylist.length, 'URL:', url);
   }
+  
+  // Update the play button icon after a short delay to allow iframe to load
+  setTimeout(() => {
+    updateVideoPlayButtonIcon();
+  }, 1000);
   
   // Update display without triggering the flag system
   updateVideoPlaylistDisplaySilent();
@@ -3423,7 +3510,7 @@ async function updateVideoPlaylistDisplay() {
     }
   } else {
     if (playlistHeader) {
-      playlistHeader.textContent = '💚 YouTube Playlist ♻️';
+      playlistHeader.textContent = '💚 Video Playlist ♻️';
     }
     if (currentPlaylistLabel) {
       currentPlaylistLabel.textContent = '📋 Upload Playlist (.txt):';
@@ -3469,12 +3556,34 @@ async function updateVideoPlaylistDisplay() {
       }
     }
     
-    // Use title if available, otherwise fall back to ID
-    const displayText = title ? title : (videoId ? `Video ${index + 1} (${videoId})` : `Video ${index + 1} (Invalid URL)`);
+    // Generate display text for different types of URLs
+    let displayText;
+    if (title) {
+      displayText = title;
+    } else if (videoId) {
+      displayText = `Video ${index + 1} (${videoId})`;
+    } else {
+      // For non-YouTube URLs, create a descriptive title
+      const contentType = detectContentType(url);
+      if (contentType === 'video') {
+        // Extract filename from URL or use domain
+        const urlObj = new URL(url);
+        const pathname = urlObj.pathname;
+        const filename = pathname.split('/').pop() || urlObj.hostname;
+        displayText = `Stream ${index + 1} (${filename})`;
+      } else if (contentType === 'website') {
+        // Use domain name for websites
+        const urlObj = new URL(url);
+        displayText = `Website ${index + 1} (${urlObj.hostname})`;
+      } else {
+        displayText = `Content ${index + 1} (${url})`;
+      }
+    }
+    
     item.textContent = displayText;
     
     item.onclick = () => {
-      logger.info('📋 Video Clicked playlist item:', index, 'Title:', title || 'Unknown', 'URL:', url);
+      logger.info('📋 Video Clicked playlist item:', index, 'Title:', displayText, 'URL:', url);
       videoPlayVideo(index);
       showVideoPlaylist(); // Show playlist when clicking
     };
@@ -3511,7 +3620,7 @@ async function updateVideoPlaylistDisplaySilent() {
     }
   } else {
     if (playlistHeader) {
-      playlistHeader.textContent = '💚 YouTube Playlist ♻️';
+      playlistHeader.textContent = '💚 Video Playlist ♻️';
     }
     if (currentPlaylistLabel) {
       currentPlaylistLabel.textContent = '📋 Upload Playlist (.txt):';
@@ -3548,12 +3657,34 @@ async function updateVideoPlaylistDisplaySilent() {
       }
     }
     
-    // Use title if available, otherwise fall back to ID
-    const displayText = title ? title : (videoId ? `Video ${index + 1} (${videoId})` : `Video ${index + 1} (Invalid URL)`);
+    // Generate display text for different types of URLs
+    let displayText;
+    if (title) {
+      displayText = title;
+    } else if (videoId) {
+      displayText = `Video ${index + 1} (${videoId})`;
+    } else {
+      // For non-YouTube URLs, create a descriptive title
+      const contentType = detectContentType(url);
+      if (contentType === 'video') {
+        // Extract filename from URL or use domain
+        const urlObj = new URL(url);
+        const pathname = urlObj.pathname;
+        const filename = pathname.split('/').pop() || urlObj.hostname;
+        displayText = `Stream ${index + 1} (${filename})`;
+      } else if (contentType === 'website') {
+        // Use domain name for websites
+        const urlObj = new URL(url);
+        displayText = `Website ${index + 1} (${urlObj.hostname})`;
+      } else {
+        displayText = `Content ${index + 1} (${url})`;
+      }
+    }
+    
     item.textContent = displayText;
     
     item.onclick = () => {
-      logger.info('📋 Video Clicked playlist item:', index, 'Title:', title || 'Unknown', 'URL:', url);
+      logger.info('📋 Video Clicked playlist item:', index, 'Title:', displayText, 'URL:', url);
       videoPlayVideo(index);
       showVideoPlaylist(); // Show playlist when clicking
     };
@@ -4855,16 +4986,18 @@ async function preloadPlaylists() {
         const content = await response.text();
         const lines = content.split('\n').filter(line => line.trim() !== '');
         
-        // Extract YouTube URLs from lines and remove duplicates
-        const youtubeUrls = lines.filter(line => {
-          return line.includes('youtube.com') || line.includes('youtu.be');
+        // Extract all valid URLs from lines and remove duplicates
+        const validUrls = lines.filter(line => {
+          const trimmedLine = line.trim();
+          // Check if it's a valid URL (starts with http:// or https://)
+          return trimmedLine.startsWith('http://') || trimmedLine.startsWith('https://');
         });
         
-        if (youtubeUrls.length > 0) {
+        if (validUrls.length > 0) {
           // Remove duplicate URLs to prevent playlist duplication
-          const uniqueUrls = [...new Set(youtubeUrls)];
-          if (uniqueUrls.length !== youtubeUrls.length) {
-            logger.warn(`📋 Removed ${youtubeUrls.length - uniqueUrls.length} duplicate URLs from preloaded playlist "${filename}"`, null, 'PLAYLIST');
+          const uniqueUrls = [...new Set(validUrls)];
+          if (uniqueUrls.length !== validUrls.length) {
+            logger.warn(`📋 Removed ${validUrls.length - uniqueUrls.length} duplicate URLs from preloaded playlist "${filename}"`, null, 'PLAYLIST');
           }
           
           const playlistName = filename.replace('.txt', '');
@@ -4876,12 +5009,12 @@ async function preloadPlaylists() {
               name: playlistName,
               urls: uniqueUrls
             });
-            logger.success(`📋 Pre-loaded playlist "${playlistName}" with ${uniqueUrls.length} videos`, null, 'PLAYLIST');
+            logger.success(`📋 Pre-loaded playlist "${playlistName}" with ${uniqueUrls.length} URLs (including ${uniqueUrls.filter(url => url.includes('youtube.com') || url.includes('youtu.be')).length} YouTube videos)`, null, 'PLAYLIST');
           } else {
             logger.warn(`⚠️ Playlist "${playlistName}" already exists, skipping duplicate`, null, 'PLAYLIST');
           }
         } else {
-          logger.warn(`⚠️ No YouTube URLs found in ${filename}`, null, 'PLAYLIST');
+          logger.warn(`⚠️ No valid URLs found in ${filename}`, null, 'PLAYLIST');
         }
       } else {
         logger.warn(`⚠️ Could not load ${filename}: ${response.status}`, null, 'PLAYLIST');
