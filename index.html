@@ -1121,6 +1121,17 @@
         }
     };
 
+    // Function to sync news ticker settings panel
+    window.syncNewsTickerSettings = function() {
+        if (window.newsTicker && typeof window.newsTicker.syncSettingsControls === 'function') {
+            console.log('🔄 Syncing news ticker settings panel...');
+            window.newsTicker.syncSettingsControls();
+            console.log(`✅ Settings panel synced. Current service: ${window.newsTicker.currentService}`);
+        } else {
+            console.log('❌ News ticker or sync function not available');
+        }
+    };
+
     // Function to check visualizer state
     window.checkVisualizerState = function() {
         console.log('🔍 Visualizer State Check:');

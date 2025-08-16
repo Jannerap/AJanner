@@ -486,8 +486,14 @@ class NewsTicker {
         const speedEl = this.container.querySelector('#news-settings-speed');
         const speedVal = this.container.querySelector('#news-settings-speed-value');
         const prefs = this.preferences || {};
+        
         if (visibleEl) visibleEl.checked = !!prefs.visible;
-        if (serviceEl) serviceEl.value = prefs.service || 'sports';
+        
+        // Prioritize current service over saved preference for real-time sync
+        if (serviceEl) {
+            serviceEl.value = this.currentService || prefs.service || 'sports';
+        }
+        
         if (colorEl) colorEl.value = prefs.headlineColor || '#ffffff';
         if (speedEl) {
             const v = prefs.speed || this.options.speed;
@@ -524,7 +530,12 @@ class NewsTicker {
         // Update current service
         this.currentService = nextService.service;
         
+        // Update preferences to keep settings panel in sync
+        this.preferences.service = nextService.service;
+        this.savePreferences();
+        
         console.log(`🔄 Switching to service: ${nextService.service}`);
+        console.log(`📋 Updated preferences.service to: ${this.preferences.service}`);
         
         // Load headlines for the new service
         this.loadHeadlines().finally(() => {
@@ -532,12 +543,20 @@ class NewsTicker {
             this.isLoading = false;
             serviceBtn.textContent = nextService.label;
             serviceBtn.classList.remove('loading');
+            
+            // Sync settings panel to reflect the new service
+            this.syncSettingsControls();
         }).catch((error) => {
             // Additional error handling to ensure button state is restored
             console.error('Error loading headlines:', error);
             this.isLoading = false;
             serviceBtn.textContent = nextService.label;
             serviceBtn.classList.remove('loading');
+            
+            // Sync settings panel even on error
+            this.syncSettingsControls();
+            
+            console.log(`🔄 Settings panel synced after service change to: ${this.currentService}`);
         });
     }
 
