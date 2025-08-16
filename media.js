@@ -4889,9 +4889,15 @@ function updateVideoPlayButtonIcon() {
 function updateVideoButtonIcon() {
   const videoButton = document.querySelector('[data-icon="video"]');
   if (videoButton && typeof PNGLoader !== 'undefined') {
-    const filename = videoIsPlaying ? 'video2.png' : 'video.png';
+    // Show video.png when the player is open (even if paused/background)
+    // Show video2.png only when NO video is active and player is closed
+    const player = document.getElementById('videoPlayer');
+    const isPlayerOpen = player && (player.style.display !== 'none' || getComputedStyle(player).display !== 'none');
+    const hasActiveContent = !!(currentSingleVideoUrl || (Array.isArray(videoPlaylist) && videoPlaylist.length > 0));
+    const showPlayerIcon = isPlayerOpen || hasActiveContent;
+    const filename = showPlayerIcon ? 'video.png' : 'video2.png';
     PNGLoader.applyPNG(videoButton, filename);
-    logger.info(`🎥 Updated video button to ${filename} (playing: ${videoIsPlaying})`, null, 'VIDEO');
+    logger.info(`🎥 Updated video button to ${filename} (open:${showPlayerIcon}, playing:${videoIsPlaying})`, null, 'VIDEO');
   }
 }
 
