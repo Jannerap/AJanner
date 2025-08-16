@@ -73,88 +73,11 @@ let videoPlayerMode = 'centered';
 
 // Note: updateVideoPlaylistDisplay is defined in media.js
 
-function videoPlayVideo(index) {
-  if (index < 0 || index >= videoPlaylist.length) return;
-  
-  videoCurrentIndex = index;
-  const url = videoPlaylist[index];
-  const videoId = extractYouTubeId(url);
-  
-  if (videoId) {
-    // Use the working approach from the example
-    const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&loop=0&enablejsapi=1&origin=${window.location.origin}`;
-    const videoIframe = document.getElementById('videoIframe');
-    if (videoIframe) {
-      videoIframe.src = embedUrl;
-      videoIframe.style.display = 'block';
-      videoIframe.style.zIndex = '1';
-      videoIsPlaying = true;
-      updateVideoPlaylistDisplay();
-      window.videoLogger.info('🎵 Video Playing video:', { index: index + 1, total: videoPlaylist.length, videoId: videoId });
-      
-      // Add event listener for iframe load to handle autoplay restrictions
-      videoIframe.onload = function() {
-        window.videoLogger.debug('🎥 Video iframe loaded');
-        // Try to force play after load
-        setTimeout(() => {
-          try {
-            videoIframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-            window.videoLogger.debug('🎥 Attempted to force play video');
-          } catch (error) {
-            window.videoLogger.warn('⚠️ Could not force play video (autoplay restriction)');
-          }
-        }, 1000);
-      };
-    }
-  } else {
-    window.videoLogger.error('❌ Invalid YouTube URL:', { url: url });
-  }
-}
+// videoPlayVideo function is now defined in media.js
 
-function extractYouTubeId(url) {
-  // Handle various YouTube URL formats
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\s&?]+)/,
-    /youtube\.com\/embed\/([^\s&?]+)/,
-    /youtube\.com\/v\/([^\s&?]+)/
-  ];
-  
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match) {
-      return match[1];
-    }
-  }
-  
-  window.videoLogger.error('❌ Could not extract YouTube ID from URL:', { url: url });
-  return null;
-}
+// extractYouTubeId function is now defined in media.js
 
-async function fetchVideoTitle(videoId) {
-  try {
-    // Use YouTube oEmbed API to get video title
-    const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      mode: 'cors' // Explicitly set CORS mode
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      window.videoLogger.info('✅ Successfully fetched video title for', { videoId: videoId, title: data.title });
-      return data.title;
-    } else {
-      window.videoLogger.warn('⚠️ YouTube API returned status:', { status: response.status, videoId: videoId });
-    }
-  } catch (error) {
-    window.videoLogger.warn('⚠️ Network error fetching video title for', { videoId: videoId, error: error.message });
-    // Don't log the full error to avoid console spam
-  }
-  return null;
-}
+// fetchVideoTitle function is now defined in media.js
 
 // ===== VIDEO CONTROL FUNCTIONS =====
 // Note: Video control functions are defined in media.js
