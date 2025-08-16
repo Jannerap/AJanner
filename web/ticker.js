@@ -272,6 +272,13 @@ class NewsTicker {
             await this.switchToService(selected);
             this.preferences.service = selected;
             this.savePreferences();
+            
+            // Ensure the current service index is properly set
+            const idx = this.serviceCycle.findIndex(s => s.service === selected);
+            if (idx >= 0) {
+                this.currentServiceIndex = idx;
+                console.log(`🔄 Service changed via settings to: ${selected} (index: ${idx})`);
+            }
         });
         if (colorEl) colorEl.addEventListener('input', () => {
             this.setHeadlineColor(colorEl.value);
@@ -305,7 +312,10 @@ class NewsTicker {
     openSettingsPanel(e) {
         const panel = document.getElementById('news-settings-panel');
         if (!panel) return;
-        if (this.syncSettingsControls) this.syncSettingsControls();
+        
+        // Always sync controls to current state before showing panel
+        this.syncSettingsControls();
+        
         panel.style.display = 'block';
         // Position near click but clamped inside container
         const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
@@ -455,22 +465,32 @@ class NewsTicker {
         if (typeof this.preferences.speed === 'number') this.setSpeed(this.preferences.speed);
         if (typeof this.preferences.headlineColor === 'string') this.setHeadlineColor(this.preferences.headlineColor);
         
-        // Only apply saved service preference if it's not the first load
-        // On first load, always start with sports regardless of cache
-        if (typeof this.preferences.service === 'string' && this.preferences.hasOwnProperty('service')) {
+        // Apply saved service preference if it exists and is valid
+        if (this.preferences.service && typeof this.preferences.service === 'string') {
             const idx = this.serviceCycle ? this.serviceCycle.findIndex(s => s.service === this.preferences.service) : -1;
             if (idx >= 0) {
                 this.currentServiceIndex = idx;
                 this.currentService = this.preferences.service;
                 const btn = this.container.querySelector('#news-service-btn');
                 if (btn) btn.textContent = this.serviceCycle[idx].label;
+                console.log(`🔄 Applied saved service preference: ${this.preferences.service} (index: ${idx})`);
+            } else {
+                // Invalid service preference, reset to sports
+                this.currentServiceIndex = 0;
+                this.currentService = 'sports';
+                this.preferences.service = 'sports';
+                this.savePreferences();
+                const btn = this.container.querySelector('#news-service-btn');
+                if (btn) btn.textContent = 'Sports';
+                console.log(`🔄 Invalid service preference, reset to Sports`);
             }
         } else {
-            // First load or no service preference - ensure we start with sports
-            this.currentServiceIndex = 0; // Sports is at index 0
+            // No service preference - start with sports
+            this.currentServiceIndex = 0;
             this.currentService = 'sports';
             const btn = this.container.querySelector('#news-service-btn');
-            if (btn) btn.textContent = this.serviceCycle[0].label;
+            if (btn) btn.textContent = 'Sports';
+            console.log(`🔄 No service preference, starting with Sports`);
         }
     }
 
@@ -480,18 +500,23 @@ class NewsTicker {
     }
 
     syncSettingsControls() {
-        const visibleEl = this.container.querySelector('#news-settings-visible');
-        const serviceEl = this.container.querySelector('#news-settings-service');
-        const colorEl = this.container.querySelector('#news-settings-color');
-        const speedEl = this.container.querySelector('#news-settings-speed');
-        const speedVal = this.container.querySelector('#news-settings-speed-value');
+        // Get elements from the settings panel (not from container)
+        const panel = document.getElementById('news-settings-panel');
+        if (!panel) return;
+        
+        const visibleEl = panel.querySelector('#news-settings-visible');
+        const serviceEl = panel.querySelector('#news-settings-service');
+        const colorEl = panel.querySelector('#news-settings-color');
+        const speedEl = panel.querySelector('#news-settings-speed');
+        const speedVal = panel.querySelector('#news-settings-speed-value');
         const prefs = this.preferences || {};
         
         if (visibleEl) visibleEl.checked = !!prefs.visible;
         
-        // Prioritize current service over saved preference for real-time sync
+        // Always sync the dropdown to the current service for real-time updates
         if (serviceEl) {
-            serviceEl.value = this.currentService || prefs.service || 'sports';
+            serviceEl.value = this.currentService || 'sports';
+            console.log(`🔄 Synced settings dropdown to: ${this.currentService}`);
         }
         
         if (colorEl) colorEl.value = prefs.headlineColor || '#ffffff';
@@ -546,6 +571,8 @@ class NewsTicker {
             
             // Sync settings panel to reflect the new service
             this.syncSettingsControls();
+            
+            console.log(`🔄 Settings panel synced after service change to: ${this.currentService}`);
         }).catch((error) => {
             // Additional error handling to ensure button state is restored
             console.error('Error loading headlines:', error);
@@ -1014,8 +1041,16 @@ class NewsTicker {
     }
 
     formatTimeAgo(timestamp) {
+        // Parse ISO 8601 timestamp string to milliseconds
+        const timestampMs = new Date(timestamp).getTime();
+        
+        // Check if timestamp is valid
+        if (isNaN(timestampMs)) {
+            return 'unknown time';
+        }
+        
         const now = Date.now();
-        const diff = now - timestamp;
+        const diff = now - timestampMs;
         const minutes = Math.floor(diff / 60000);
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);
