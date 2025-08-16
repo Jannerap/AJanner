@@ -1994,45 +1994,9 @@ function detectContentType(url) {
     return 'video';
   }
   
-  // Check for webcam and streaming URL patterns
-  const streamingPatterns = [
-    '/webcams/stream/',
-    '/stream/',
-    '/live/',
-    '/broadcast/',
-    '/camera/',
-    '/webcam/',
-    '/feed/',
-    '/view/'
-  ];
-  
-  if (streamingPatterns.some(pattern => urlLower.includes(pattern))) {
-    return 'video';
-  }
-  
-  // Check for common video streaming domains
-  const videoStreamingDomains = [
-    'vimeo.com',
-    'dailymotion.com', 
-    'twitch.tv',
-    'streamable.com',
-    'video.google.com',
-    'facebook.com/watch',
-    'instagram.com/p/',
-    'tiktok.com',
-    'webcams.windy.com',
-    'cdn.',
-    'stream.',
-    'video.',
-    'media.',
-    'webcam.',
-    'live.',
-    'broadcast.'
-  ];
-  
-  if (videoStreamingDomains.some(domain => urlLower.includes(domain))) {
-    return 'video';
-  }
+  // IMPORTANT: Do NOT guess 'video' for generic streaming paths/domains.
+  // Only explicit file or manifest extensions above should be classified as 'video'.
+  // Everything else should be treated as 'website' so it embeds in an iframe.
   
   // Default to website
   return 'website';
