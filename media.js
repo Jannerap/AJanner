@@ -3328,10 +3328,9 @@ function videoClose() {
   
   videoPlaylistVisible = false;
   
-  // Update video button to show inactive state
-  const videoButton = document.querySelector('[data-icon="video"]');
-  if (videoButton && typeof PNGLoader !== 'undefined') {
-    PNGLoader.applyPNG(videoButton, 'video.png');
+  // Update toolbar icon based on current state
+  if (typeof updateVideoButtonIcon === 'function') {
+    updateVideoButtonIcon();
   }
   
   // Clean up video enhancement
@@ -3708,12 +3707,9 @@ async function toggleVideoPlayer() {
     videoPlayerFirstOpen = true;
     window.videoPlayerFirstOpen = true;
     
-    // Update video button to show inactive state (only if not playing)
-    if (!videoIsPlaying) {
-      const videoButton = document.querySelector('[data-icon="video"]');
-      if (videoButton && typeof PNGLoader !== 'undefined') {
-        PNGLoader.applyPNG(videoButton, 'video.png');
-      }
+    // Keep icon logic centralized
+    if (typeof updateVideoButtonIcon === 'function') {
+      updateVideoButtonIcon();
     }
   } else {
     // Show video player with proper z-index and current opacity
@@ -3826,12 +3822,9 @@ async function toggleVideoPlayer() {
     // Reset playlist visibility state
     videoPlaylistVisible = false;
     
-    // Update video button to show active state (only if playing)
-    if (videoIsPlaying) {
-      const videoButton = document.querySelector('[data-icon="video"]');
-      if (videoButton && typeof PNGLoader !== 'undefined') {
-        PNGLoader.applyPNG(videoButton, 'video2.png');
-      }
+    // Keep icon logic centralized
+    if (typeof updateVideoButtonIcon === 'function') {
+      updateVideoButtonIcon();
     }
   }
   
