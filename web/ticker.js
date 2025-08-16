@@ -81,8 +81,8 @@ class NewsTicker {
 
             this.startAnimation();
 
-            // Set up periodic refresh
-            setInterval(() => this.loadHeadlines(), 300000); // 5 minutes
+            // Set up periodic refresh (every 10 minutes)
+            setInterval(() => this.loadHeadlines(), 600000); // 10 minutes
 
         } catch (error) {
             console.error('Failed to initialize news ticker:', error);
