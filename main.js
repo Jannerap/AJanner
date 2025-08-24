@@ -2445,6 +2445,13 @@ function resize() {
 // ===== IDEA MANAGEMENT =====
 
 function addIdea(x, y, title = "", description = "", color = randomColor(), textColor = "white", radius = 80) {
+  // On touch devices, default to half-size bubbles for easier layout
+  try {
+    const isTouch = 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+    if (isTouch && radius && typeof radius === 'number') {
+      radius = Math.max(10, Math.round(radius / 2));
+    }
+  } catch (_) {}
   const maxSpeed = 3;
   const bubbleColor = color || randomColor();
   
@@ -4856,12 +4863,19 @@ function setupEventListeners() {
   // Touch to create/select bubbles
   canvas.addEventListener("touchstart", (e) => {
     if (isDragging) return;
-    if (isDrawingMode) return;
     if (!e.touches || e.touches.length === 0) return;
     const touch = e.touches[0];
     const rect = canvas.getBoundingClientRect();
     const x = touch.clientX - rect.left;
     const y = touch.clientY - rect.top;
+
+    // Double-tap detection
+    const now = Date.now();
+    window.__lastTapTime = window.__lastTapTime || 0;
+    const isDoubleTap = (now - window.__lastTapTime) < 350; // 350ms window
+    window.__lastTapTime = now;
+
+    // Hit test
     let tappedBubble = null;
     for (let idea of ideas) {
       const dx = x - idea.x;
@@ -4869,12 +4883,30 @@ function setupEventListeners() {
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist < idea.radius) { tappedBubble = idea; break; }
     }
+
+    // If currently in drawing mode: only allow double-tap to toggle out/in
+    if (isDrawingMode) {
+      if (isDoubleTap) {
+        toggleDrawingMode();
+      }
+      e.preventDefault();
+      return;
+    }
+
+    // Not in drawing mode (bubble mode)
     if (tappedBubble) {
       selectedIdea = tappedBubble;
-      const panel = document.getElementById('panel');
-      if (panel && panel.style.display === 'block') showPanel();
+      if (isDoubleTap) {
+        showPanel();
+      }
     } else {
-      addIdea(x, y);
+      if (isDoubleTap) {
+        // Double-tap empty area switches to drawing mode (no bubble creation)
+        toggleDrawingMode();
+      } else {
+        // Single tap empty area creates a bubble
+        addIdea(x, y);
+      }
     }
     e.preventDefault();
   }, { passive: false });
