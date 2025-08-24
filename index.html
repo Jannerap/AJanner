@@ -100,14 +100,21 @@
             });
             const dropdown = document.getElementById('toolbarDropdowns');
             const toolbarWidth = toolbar.clientWidth;
-            const dropdownMin = 0; // dropdown absorbs all leftover space
+            let dropdownMin = 0; // dropdown absorbs all leftover space
             const count = items.length;
             // Use integer size to avoid subpixel accumulation overflow
-            const maxBtnSize = 60; // cap so dropdowns always have room at wide widths
-            const size = count > 0 ? Math.min(maxBtnSize, (toolbarWidth / count)) : 0;
+            const maxBtnSize = 60; // cap at wide widths
+            dropdownMin = 140; // try to reserve space for dropdowns on small widths
+            let size = 0;
+            if (count > 0) {
+              // Aim to leave dropdownMin for the dropdown; cap at maxBtnSize
+              size = (toolbarWidth - dropdownMin) / count;
+              size = Math.min(maxBtnSize, size);
+              // If too narrow, allow size to shrink further (no minimum), but avoid negative
+              if (size < 0) size = toolbarWidth / count;
+            }
             toolbar.style.setProperty('--btn-size', size + 'px');
             toolbar.style.height = size + 'px';
-            // Give dropdown the exact leftover space (can be zero)
             if (dropdown) {
               const leftover = Math.max(0, toolbarWidth - (size * count));
               dropdown.style.flex = `0 0 ${leftover}px`;
