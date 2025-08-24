@@ -40,14 +40,15 @@ html, body {
   background: #111;
   opacity: 0.7;
   color: white;
-  padding: 2px 0px 10px 0px;
+  padding: 2px 0px 8px 0px;
   display: flex;
   justify-content: flex-start;
-  align-items: center;
+  align-items: stretch;
   z-index: 10001;
   transition: opacity 0.5s ease;
-  min-height: 60px;
-  max-height: 200px;
+  height: var(--btn-size);
+  gap: 0 !important;
+  flex-wrap: nowrap;
 }
 
 #toolbar button {
@@ -60,11 +61,11 @@ html, body {
   margin: 0;
   cursor: pointer;
   transition: all 0.3s ease;
-  flex: 1 1 0;
+  flex: 0 0 auto;
   height: 100%;
   min-width: 60px;
   max-width: none;
-  min-height: 50px;
+  min-height: 0;
   max-height: none;
   aspect-ratio: 1;
   box-sizing: border-box;
@@ -81,10 +82,10 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  flex: 1 1 0;
+  flex: 0 0 auto;
   min-width: 60px;
   max-width: none;
-  min-height: 50px;
+  min-height: 0;
   max-height: none;
   aspect-ratio: 1;
   border: none;
@@ -96,8 +97,8 @@ html, body {
 
 /* Toolbar dropdown section - takes space of two buttons */
 #toolbarDropdowns {
-  flex: 3 1 280px;
-  min-width: 200px;
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -107,8 +108,8 @@ html, body {
 #toolbarDropdowns > div:first-child {
   display: flex;
   flex-direction: row;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 0;
+  margin-bottom: 0;
 }
 
 /* Individual dropdown containers */
@@ -120,7 +121,7 @@ html, body {
 
 /* Ensure dropdowns can shrink and match button width */
 #toolbarDropdowns select {
-  min-width: 140px;
+  min-width: 0;
   flex-shrink: 1;
   height: 40px;
   padding: 4px 16px;
@@ -155,15 +156,16 @@ html, body {
 
 /* Video and music button containers - match button sizing exactly */
 #toolbar > div[style*="flex-direction: column"] {
-  flex: 1 1 0 !important;
-  min-width: 50px !important;
-  min-height: 50px !important;
+  flex: 0 0 auto !important;
+  min-width: 60px !important;
+  min-height: 0 !important;
   aspect-ratio: 1 !important;
 }
 
-/* Ensure the wrapper divs maintain uniform sizing */
 #toolbar > div[style*="flex-direction: column"] {
-  height: auto !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: stretch !important;
 }
 
 /* Ensure buttons inside video and music containers maintain square shape */
@@ -171,7 +173,9 @@ html, body {
   width: 100% !important;
   height: 100% !important;
   aspect-ratio: 1 !important;
-  flex: 1 1 0 !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* Override inline styles for video and music buttons specifically */
@@ -180,16 +184,30 @@ html, body {
   aspect-ratio: 1 !important;
   width: 100% !important;
   height: 100% !important;
-  flex: 1 1 0 !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Ensure all immediate children of toolbar match its height for perfect alignment */
+#toolbar > * {
+  height: 100% !important;
+  margin: 0 !important;
+}
+
+/* Width of square buttons/wrappers is driven by a CSS variable set in JS */
+#toolbar > *:not(#toolbarDropdowns) {
+  width: var(--btn-size) !important;
+  min-width: 0 !important;
 }
 
 /* Normalize the video/music wrapper containers to follow standard toolbar button sizing */
 #toolbar > div[style*="flex-direction: column"] {
   width: auto !important;
-  height: auto !important;
+  height: 100% !important;
   max-width: none !important;
   max-height: none !important;
-  flex: 1 1 0 !important;
+  flex: 0 0 auto !important;
 }
 
 /* Make the visualizers fill the wrapper square exactly */
@@ -219,23 +237,26 @@ html, body {
 /* Ensure all toolbar buttons maintain consistent sizing and aspect ratio */
 #toolbar button,
 #toolbar .toolbar-btn {
-  aspect-ratio: 1;
+  aspect-ratio: 1 !important;
+  height: 100% !important;
+  width: 100% !important;
 }
 
 /* Responsive design for smaller screens - maintain button proportions */
 @media screen and (max-width: 1200px) {
+  #toolbar { height: var(--btn-size) !important; }
   #toolbar button,
   #toolbar .toolbar-btn {
-    min-width: 70px;
+    min-width: 0;
     max-width: none;
-    min-height: 45px;
+    min-height: 0;
     max-height: none;
   }
   
   #toolbar > div[style*="flex-direction: column"] {
-    flex: 1 1 0 !important;
-    min-width: 70px !important;
-    min-height: 45px !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
     aspect-ratio: 1 !important;
   }
   
@@ -251,8 +272,8 @@ html, body {
   #toolbarDropdowns > div:first-child {
     display: flex;
     flex-direction: row;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 0;
+    margin-bottom: 0;
   }
   
   /* Individual dropdown containers */
@@ -267,7 +288,7 @@ html, body {
     flex-shrink: 1;
     height: 36px;
     padding: 4px 14px;
-    width: 200%;
+    width: 100%;
     box-sizing: border-box;
     border: 2px solid darkgreen;
     outline: none;
@@ -296,18 +317,18 @@ html, body {
   
   /* Ensure buttons inside video and music containers maintain square shape at 1200px */
   #toolbar > div[style*="flex-direction: column"] .toolbar-btn {
-    min-width: 70px !important;
+    min-width: 0 !important;
     max-width: none !important;
-    min-height: 45px !important;
+    min-height: 0 !important;
     max-height: none !important;
     aspect-ratio: 1 !important;
   }
   
   #toolbar button[data-icon="video"],
   #toolbar button[data-icon="music"] {
-    min-width: 70px !important;
+    min-width: 0 !important;
     max-width: none !important;
-    min-height: 45px !important;
+    min-height: 0 !important;
     max-height: none !important;
     aspect-ratio: 1 !important;
   }
@@ -324,18 +345,19 @@ html, body {
 }
 
 @media screen and (max-width: 900px) {
+  #toolbar { height: var(--btn-size) !important; }
   #toolbar button,
   #toolbar .toolbar-btn {
-    min-width: 50px;
+    min-width: 0;
     max-width: none;
-    min-height: 40px;
+    min-height: 0;
     max-height: none;
   }
   
   #toolbar > div[style*="flex-direction: column"] {
-    flex: 1 1 0 !important;
-    min-width: 50px !important;
-    min-height: 40px !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
     aspect-ratio: 1 !important;
   }
   
@@ -351,8 +373,8 @@ html, body {
   #toolbarDropdowns > div:first-child {
     display: flex;
     flex-direction: row;
-    gap: 6px;
-    margin-bottom: 6px;
+    gap: 0;
+    margin-bottom: 0;
   }
   
   /* Individual dropdown containers */
@@ -367,7 +389,7 @@ html, body {
     flex-shrink: 1;
     height: 32px;
     padding: 4px 12px;
-    width: 200%;
+    width: 100%;
     box-sizing: border-box;
     border: 2px solid darkgreen;
     outline: none;
@@ -398,7 +420,7 @@ html, body {
   #toolbar > div[style*="flex-direction: column"] .toolbar-btn {
     min-width: 50px !important;
     max-width: none !important;
-    min-height: 40px !important;
+    min-height: 0 !important;
     max-height: none !important;
     aspect-ratio: 1 !important;
   }
@@ -407,7 +429,7 @@ html, body {
   #toolbar button[data-icon="music"] {
     min-width: 50px !important;
     max-width: none !important;
-    min-height: 40px !important;
+    min-height: 0 !important;
     max-height: none !important;
     aspect-ratio: 1 !important;
   }
@@ -423,13 +445,15 @@ html, body {
   }
 }
 
+/* Removed snap-point at ~700px to allow continuous resizing without breaks */
+
 
 
 /* All buttons - uniform sizing */
 #toolbar > button {
-  flex: 1 1 0;
-  min-width: 50px;
-  min-height: 50px;
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 0;
   aspect-ratio: 1;
 }
 
@@ -1979,13 +2003,13 @@ button[data-png="bucheck"].has-png {
   #toolbar > button:nth-child(-n+5),
   #toolbar > button:nth-child(n+6) {
     min-width: 40px;
-    max-width: 60px;
-    flex: 1 1 0 !important;
+    max-width: none;
+    flex: 0 0 auto !important;
   }
   
   /* Fix video and music button containers on mobile - maintain square shape and scaling */
   #toolbar > div[style*="flex-direction: column"] {
-    flex: 1 1 0 !important;
+    flex: 0 0 auto !important;
     min-width: 20px !important;
     min-height: 20px !important;
     aspect-ratio: 1 !important;
@@ -2003,7 +2027,7 @@ button[data-png="bucheck"].has-png {
     min-height: 20px !important;
     max-height: none !important;
     aspect-ratio: 1 !important;
-    flex: 1 1 0 !important;
+    flex: 0 0 auto !important;
   }
   
   /* Scale visualizations to match button size on mobile */
@@ -2048,6 +2072,14 @@ button[data-png="bucheck"].has-png {
   #toolbar > div {
     margin-right: 0 !important;
     margin-left: 0 !important;
+    flex: 0 0 auto !important;
+  }
+  /* Ensure buttons are tightly packed with no extra spacing */
+  #toolbar > button,
+  #toolbar > div {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+    flex: 0 0 auto !important;
   }
   
   /* Scale entire toolbar proportionally on mobile while maintaining ratios */
@@ -2059,7 +2091,7 @@ button[data-png="bucheck"].has-png {
   
   /* All elements use consistent sizing on mobile */
   #toolbarDropdowns {
-    flex: 2 1 0;
+    flex: 1 1 auto;
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -2070,8 +2102,8 @@ button[data-png="bucheck"].has-png {
   #toolbarDropdowns > div:first-child {
     display: flex;
     flex-direction: row;
-    gap: 4px;
-    margin-bottom: 4px;
+    gap: 0;
+    margin-bottom: 0;
   }
   
   /* Individual dropdown containers */
@@ -2086,7 +2118,7 @@ button[data-png="bucheck"].has-png {
     flex-shrink: 1;
     height: 28px;
     padding: 4px 10px;
-    width: 200%;
+    width: 100%;
     box-sizing: border-box;
     border: 2px solid darkgreen;
     outline: none;
@@ -2115,11 +2147,11 @@ button[data-png="bucheck"].has-png {
   
   /* All buttons use consistent sizing on mobile */
   #toolbar > button {
-    flex: 1 1 0 !important;
-    min-width: 40px !important;
-    max-width: 60px !important;
-    min-height: 40px !important;
-    max-height: 60px !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    max-height: none !important;
   }
   
 
@@ -2137,6 +2169,54 @@ button[data-png="bucheck"].has-png {
   border-radius: 3px;
   background: #333;
   outline: none;
+}
+
+/* ===== TOOLBAR UNIFORM OVERRIDES (NO BREAKPOINTS) ===== */
+/* Ensure the top toolbar remains uniform, without gaps, and continuously resizes */
+#toolbar {
+  gap: 0 !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+}
+
+/* All direct children: no margins, no flex growth/shrink-induced gaps */
+#toolbar > * {
+  margin: 0 !important;
+  height: 100% !important;
+  flex: 0 0 auto !important;
+}
+
+/* All buttons: square, tightly packed */
+#toolbar button,
+#toolbar .toolbar-btn {
+  aspect-ratio: 1 !important;
+  margin: 0 !important;
+  flex: 0 0 auto !important;
+}
+
+/* Minimum size that still allows continuous shrinking without break snaps */
+#toolbar > button {
+  min-width: 48px !important;
+}
+
+/* First two wrappers (with visualizers) behave like buttons */
+#toolbar > div[style*="flex-direction: column"] {
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+  height: 100% !important;
+}
+
+/* Dropdown container fills leftover space; no internal spacing */
+#toolbarDropdowns {
+  flex: 1 1 auto !important; /* absorb leftover space */
+  min-width: 0 !important;
+}
+#toolbarDropdowns > div:first-child {
+  gap: 0 !important;
+  margin-bottom: 0 !important;
+}
+#toolbarDropdowns select {
+  width: 100% !important;
 }
 
 #mediaToolbar #mediaPlaybackDuration {

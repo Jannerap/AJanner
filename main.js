@@ -96,11 +96,11 @@
 })();
 
 // Global variables
-let movementDelayActive = true;
+let movementDelayActive = false;
 let backgroundRotation = 0;
-let speedMultiplier = 1.3;
-let previousSpeed = 1; // Store the previous speed for toggling
-let originalSpeed = 1; // Store the original speed before any pauses
+let speedMultiplier = 0; // Start paused for edit mode
+let previousSpeed = 1.3; // Default resume speed
+let originalSpeed = 1.3; // Default original speed
 let showPauseBorder = false; // Track pause border state (renamed from showCheckeredBorder)
 let ideas = [];
 let selectedIdea = null;
@@ -4796,11 +4796,8 @@ function init() {
   resize();
   window.addEventListener("resize", resize);
   
-  // Set up movement delay
-  movementDelayActive = true;
-  setTimeout(() => {
-    movementDelayActive = false;
-  }, 10000);
+  // Start in edit mode (no pre-start delay)
+  movementDelayActive = false;
   
   // Load default theme and first preset
   switchTheme('default');
@@ -5052,6 +5049,107 @@ function setupEventListeners() {
     }
     draggedIdea = null;
   });
+
+  // Touch drag support for mobile
+  canvas.addEventListener("touchstart", (e) => {
+    if (isDrawingMode) return;
+    if (!e.touches || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    for (let idea of ideas) {
+      const dx = x - idea.x;
+      const dy = y - idea.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < idea.radius) {
+        isDragging = true;
+        draggedIdea = idea;
+        dragOffsetX = dx;
+        dragOffsetY = dy;
+        selectedIdea = idea;
+        e.preventDefault();
+        break;
+      }
+    }
+  }, { passive: false });
+
+  canvas.addEventListener("touchmove", (e) => {
+    if (!isDragging || !draggedIdea) return;
+    if (!e.touches || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    draggedIdea.x = x - dragOffsetX;
+    draggedIdea.y = y - dragOffsetY;
+    if (draggedIdea.x - draggedIdea.radius < border) {
+      draggedIdea.x = border + draggedIdea.radius;
+    }
+    if (draggedIdea.x + draggedIdea.radius > width - border) {
+      draggedIdea.x = width - border - draggedIdea.radius;
+    }
+    if (draggedIdea.y - draggedIdea.radius < border + 50) {
+      draggedIdea.y = border + 50 + draggedIdea.radius;
+    }
+    if (draggedIdea.y + draggedIdea.radius > height - border) {
+      draggedIdea.y = height - border - draggedIdea.radius;
+    }
+    e.preventDefault();
+  }, { passive: false });
+
+  const endTouchDrag = () => {
+    isDragging = false;
+    try {
+      if (typeof window.AnimationState !== 'undefined' && window.AnimationState.data) {
+        const anim = window.AnimationState.data;
+        const hasInOut = typeof anim.inPoint === 'number' && typeof anim.outPoint === 'number' && anim.outPoint > anim.inPoint;
+        if (hasInOut) {
+          if (!anim.keyframes || anim.keyframes.length < 2) {
+            const durationSeconds = (anim.duration || 10000) / 1000;
+            const basePositions = typeof window.captureBubblePositions === 'function' ? window.captureBubblePositions() : [];
+            anim.keyframes = [
+              { time: 0, positions: basePositions },
+              { time: durationSeconds, positions: basePositions }
+            ];
+          }
+          const slider = document.getElementById('mediaPlaybackSlider');
+          const durationSeconds = (anim.duration || 10000) / 1000;
+          let currentTime = 0;
+          if (slider) {
+            const progress = Math.max(0, Math.min(1, parseFloat(slider.value) || 0));
+            currentTime = progress * durationSeconds;
+          }
+          const epsilon = 0.01;
+          currentTime = Math.max(anim.inPoint + epsilon, Math.min(anim.outPoint - epsilon, currentTime));
+          if (typeof window.captureBubblePositions === 'function') {
+            const positions = window.captureBubblePositions();
+            const existingIdx = anim.keyframes.findIndex(kf => Math.abs(kf.time - currentTime) < 0.001);
+            if (existingIdx !== -1) {
+              anim.keyframes[existingIdx].positions = positions;
+              anim.keyframes[existingIdx].time = currentTime;
+            } else {
+              anim.keyframes.push({ time: currentTime, positions });
+            }
+            anim.keyframes.sort((a, b) => a.time - b.time);
+            if (typeof window.addTimelineMarker === 'function') {
+              window.addTimelineMarker('keyframe', currentTime);
+            }
+          }
+        }
+      }
+    } catch (_) {}
+    draggedIdea = null;
+  };
+
+  canvas.addEventListener("touchend", (e) => {
+    endTouchDrag();
+    e.preventDefault();
+  }, { passive: false });
+  canvas.addEventListener("touchcancel", (e) => {
+    endTouchDrag();
+    e.preventDefault();
+  }, { passive: false });
 
   // Gamepad controls
   let gamepadConnected = false;
@@ -5498,10 +5596,8 @@ function setupEventListeners() {
           await resolveAllExternalAssets(ideas);
           logger.info(`📋 Loaded ${loaded.length} ideas from JSON file:`, file.name);
         })();
-        movementDelayActive = true;
-        setTimeout(() => {
-          movementDelayActive = false;
-        }, 10000);
+        // Remove pre-start slowdown after loading JSON
+        movementDelayActive = false;
       } catch (err) {
         logger.error("❌ Invalid JSON file:", err.message);
       }

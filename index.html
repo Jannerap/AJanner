@@ -86,6 +86,42 @@
 <body>
   <!-- Toolbar -->
   <div id="toolbar">
+    <script>
+      (function(){
+        function sizeButtons(){
+          try {
+            const toolbar = document.getElementById('toolbar');
+            if(!toolbar) return;
+            // Count only visible non-dropdown children (buttons/wrappers), exclude scripts/hidden nodes
+            const items = Array.from(toolbar.children).filter(c => {
+              if (c.id === 'toolbarDropdowns' || c.tagName === 'SCRIPT') return false;
+              const style = window.getComputedStyle(c);
+              return style.display !== 'none' && style.visibility !== 'hidden' && c.offsetWidth >= 0;
+            });
+            const dropdown = document.getElementById('toolbarDropdowns');
+            const toolbarWidth = toolbar.clientWidth;
+            const dropdownMin = 0; // dropdown absorbs all leftover space
+            const count = items.length;
+            // Use integer size to avoid subpixel accumulation overflow
+            const maxBtnSize = 60; // cap so dropdowns always have room at wide widths
+            const size = count > 0 ? Math.min(maxBtnSize, (toolbarWidth / count)) : 0;
+            toolbar.style.setProperty('--btn-size', size + 'px');
+            toolbar.style.height = size + 'px';
+            // Give dropdown the exact leftover space (can be zero)
+            if (dropdown) {
+              const leftover = Math.max(0, toolbarWidth - (size * count));
+              dropdown.style.flex = `0 0 ${leftover}px`;
+              dropdown.style.width = `${leftover}px`;
+              dropdown.style.maxWidth = `${leftover}px`;
+            }
+          } catch(_){}
+        }
+        window.addEventListener('resize', sizeButtons);
+        window.addEventListener('orientationchange', sizeButtons);
+        document.addEventListener('DOMContentLoaded', sizeButtons);
+        setTimeout(sizeButtons, 0);
+      })();
+    </script>
     <div style="position: relative; display: flex; flex-direction: column; align-items: center; flex: 1; max-width: none; max-height: 180px;">
       <div id="musicVisualizer" style="display: none; position: absolute; top: 2px; left: 0; background: rgba(0,0,0,0.3); border-radius: 6px; overflow: hidden; z-index: 1;">
         <div id="visualizerBars" style="display: flex; justify-content: space-around; align-items: center; height: 100%; padding: 2px;">
@@ -138,7 +174,7 @@
         </select>
       </div>
       <label title="Motion (Right-click to pause/unpause)" style="width: 100%; display: block; margin: 0; padding: 0;"> 
-        <input max="3" min="0.0" onchange="const slider = this; const value = parseFloat(slider.value); if(value !== 0) { previousSpeed = value; originalSpeed = value; slider.classList.remove('paused'); } else { slider.classList.add('paused'); } speedMultiplier = value" oncontextmenu="toggleSpeed(); return false;" step="0.1" type="range" value="1.3" style="width: 100%; margin: 0; padding: 0;"/>
+        <input max="3" min="0.0" onchange="const slider = this; const value = parseFloat(slider.value); if(value !== 0) { previousSpeed = value; originalSpeed = value; slider.classList.remove('paused'); } else { slider.classList.add('paused'); } speedMultiplier = value" oncontextmenu="toggleSpeed(); return false;" step="0.1" type="range" value="0" class="paused" style="width: 100%; margin: 0; padding: 0;"/>
       </label>
     </div>
     
