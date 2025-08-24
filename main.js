@@ -4841,24 +4841,43 @@ function setupEventListeners() {
       const dy = y - idea.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist < idea.radius) {
-        // Left click on bubble - select it and show panel if it's not already open
         selectedIdea = idea;
-        
-        // Check if panel is open
         const panel = document.getElementById('panel');
         if (panel.style.display === 'block') {
-          // Panel is open - update it with the new bubble's information
           showPanel();
         }
-        // If panel is closed, just select the bubble without showing panel
-        
         clicked = true;
         break;
       }
     }
-    
     if (!clicked) addIdea(x, y);
   });
+
+  // Touch to create/select bubbles
+  canvas.addEventListener("touchstart", (e) => {
+    if (isDragging) return;
+    if (isDrawingMode) return;
+    if (!e.touches || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    let tappedBubble = null;
+    for (let idea of ideas) {
+      const dx = x - idea.x;
+      const dy = y - idea.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < idea.radius) { tappedBubble = idea; break; }
+    }
+    if (tappedBubble) {
+      selectedIdea = tappedBubble;
+      const panel = document.getElementById('panel');
+      if (panel && panel.style.display === 'block') showPanel();
+    } else {
+      addIdea(x, y);
+    }
+    e.preventDefault();
+  }, { passive: false });
 
   // Right-click behavior
   canvas.addEventListener("contextmenu", (e) => {
@@ -5685,11 +5704,40 @@ function setupEventListeners() {
     });
   }
   
-  // Drawing mode event listeners (higher priority)
+  // Drawing mode event listeners (mouse)
   canvas.addEventListener('mousedown', startDrawing, true);
   canvas.addEventListener('mousemove', drawLine, true);
   canvas.addEventListener('mouseup', stopDrawing, true);
   canvas.addEventListener('mouseleave', stopDrawing, true);
+
+  // Touch support for drawing
+  canvas.addEventListener('touchstart', (e) => {
+    if (!isDrawingMode) return;
+    if (!e.touches || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const fakeEvent = { clientX: touch.clientX, clientY: touch.clientY, preventDefault: ()=>{}, stopPropagation: ()=>{} };
+    startDrawing(fakeEvent);
+    e.preventDefault();
+  }, { passive: false, capture: true });
+
+  canvas.addEventListener('touchmove', (e) => {
+    if (!isDrawingMode || !e.touches || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const fakeEvent = { clientX: touch.clientX, clientY: touch.clientY, preventDefault: ()=>{}, stopPropagation: ()=>{} };
+    drawLine(fakeEvent);
+    e.preventDefault();
+  }, { passive: false, capture: true });
+
+  canvas.addEventListener('touchend', (e) => {
+    if (!isDrawingMode) return;
+    stopDrawing();
+    e.preventDefault();
+  }, { passive: false, capture: true });
+  canvas.addEventListener('touchcancel', (e) => {
+    if (!isDrawingMode) return;
+    stopDrawing();
+    e.preventDefault();
+  }, { passive: false, capture: true });
   
   // Keyboard shortcuts for drawing
   document.addEventListener('keydown', (e) => {
